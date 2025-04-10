@@ -8,7 +8,22 @@ export type Cuisine =
   | 'African'
   | 'Uzbek'
   | 'Malaysian'
-  | 'Indonesian';
+  | 'Indonesian'
+  | 'Persian'
+  | 'Cafe'
+  | 'Afghan'
+  | 'Chinese';
+
+export interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+  restaurantId: string;
+}
 
 export interface Restaurant {
   id: string;
@@ -16,13 +31,7 @@ export interface Restaurant {
   cuisine: Cuisine;
   address: string;
   description: string;
-  rating: number;
-  votes: {
-    upvotes: number;
-    downvotes: number;
-  };
-  priceRange: '£' | '££' | '£££';
-  phoneNumber?: string;
+  priceRange: '$' | '$$' | '$$$';
   website?: string;
   hours?: {
     [key: string]: string;
