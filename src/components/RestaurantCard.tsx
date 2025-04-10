@@ -1,6 +1,5 @@
 import { Restaurant } from '@/types';
 import Image from 'next/image';
-import Link from 'next/link';
 import { MapPinIcon, ClockIcon } from '@heroicons/react/24/solid';
 
 interface RestaurantCardProps {

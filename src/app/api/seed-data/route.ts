@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   }`;
     
     // Create new content with the added restaurant
-    let existingRestaurants = match[1].trim();
+    const existingRestaurants = match[1].trim();
     const newContent = `export const restaurants = [${existingRestaurants ? `${existingRestaurants},\n${newRestaurantEntry}` : newRestaurantEntry}\n];`;
     
     // Write the updated content back to the file

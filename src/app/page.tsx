@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Restaurant } from '@/types';
 import RestaurantCard from '@/components/RestaurantCard';
 import AddRestaurantForm from '@/components/AddRestaurantForm';
-import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 
@@ -43,7 +43,7 @@ export default function Home() {
 
   // Filter and sort restaurants
   const filteredAndSortedRestaurants = useMemo(() => {
-    let filtered = restaurants.filter(restaurant => {
+    const filtered = restaurants.filter(restaurant => {
       const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisine === selectedCuisine;
       const matchesPriceRange = selectedPriceRange === 'all' || restaurant.priceRange === selectedPriceRange;
       const matchesSearch = searchQuery === '' || 
