@@ -46,6 +46,7 @@ export default function AddRestaurantForm({ onClose }: { onClose: () => void }) 
 
       onClose();
     } catch (error) {
+      console.error('Error adding restaurant:', error);
       setError('Failed to add restaurant. Please try again.');
     } finally {
       setIsSubmitting(false);
