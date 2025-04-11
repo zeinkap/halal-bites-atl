@@ -9,6 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -33,6 +34,7 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
+.env.production
 
 # vercel
 .vercel

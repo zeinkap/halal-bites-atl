@@ -10,15 +10,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CuisineType {
+  MIDDLE_EASTERN
+  INDIAN
+  PAKISTANI
+  TURKISH
+  PERSIAN
+  MEDITERRANEAN
+  MALAYSIAN
+  INDONESIAN
+  AFRICAN
+  CAFE
+  OTHER
+}
+
+enum PriceRange {
+  LOW    @map("$")
+  MEDIUM @map("$$")
+  HIGH   @map("$$$")
+}
+
 model Restaurant {
-  id          String    @id
+  id          String      @id
   name        String
-  cuisine     String
+  cuisine     CuisineType
   address     String
   description String
-  priceRange  String
+  priceRange  PriceRange
   website     String?
   imageUrl    String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-} 
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}

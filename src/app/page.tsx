@@ -10,6 +10,7 @@ type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 
 export default function Home() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -24,6 +25,8 @@ export default function Home() {
       setRestaurants(data);
     } catch (error) {
       console.error('Failed to fetch restaurants:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -185,14 +188,36 @@ export default function Home() {
 
           {/* Results Count */}
           <div className="text-gray-600">
-            Found {filteredAndSortedRestaurants.length} restaurant{filteredAndSortedRestaurants.length !== 1 ? 's' : ''}
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                <span>Loading restaurants...</span>
+              </div>
+            ) : (
+              `Found ${filteredAndSortedRestaurants.length} restaurant${filteredAndSortedRestaurants.length !== 1 ? 's' : ''}`
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAndSortedRestaurants.map((restaurant) => (
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-          ))}
+          {isLoading ? (
+            // Loading skeleton
+            <>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
+                  <div className="aspect-[4/3] bg-gray-200"></div>
+                  <div className="p-4 space-y-4">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            filteredAndSortedRestaurants.map((restaurant) => (
+              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            ))
+          )}
         </div>
 
         {showAddForm && (

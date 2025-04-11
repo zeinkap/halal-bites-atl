@@ -1,3 +1,5 @@
+import { CuisineType, PriceRange } from '@prisma/client';
+
 export type Cuisine = 
   | 'Middle Eastern'
   | 'Indian'
@@ -28,13 +30,15 @@ export interface Review {
 export interface Restaurant {
   id: string;
   name: string;
-  cuisine: Cuisine;
+  cuisine: CuisineType;
   address: string;
   description: string;
-  priceRange: '$' | '$$' | '$$$';
+  priceRange: PriceRange;
   website?: string;
   hours?: {
     [key: string]: string;
   };
   imageUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 } 

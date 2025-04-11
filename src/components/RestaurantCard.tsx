@@ -6,6 +6,19 @@ interface RestaurantCardProps {
   restaurant: Restaurant;
 }
 
+const formatCuisine = (cuisine: string) => {
+  return cuisine.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
+};
+
+const formatPriceRange = (priceRange: string) => {
+  switch (priceRange) {
+    case 'LOW': return '$';
+    case 'MEDIUM': return '$$';
+    case 'HIGH': return '$$$';
+    default: return priceRange;
+  }
+};
+
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   // Function to check if restaurant is open
   const isOpenNow = () => {
@@ -47,7 +60,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
           
           {/* Price Range */}
           <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-black shadow-lg">
-            {restaurant.priceRange}
+            {formatPriceRange(restaurant.priceRange)}
           </div>
 
           {/* Open Status */}
@@ -67,7 +80,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
               {restaurant.name}
             </h3>
             <p className="text-sm text-white/90 font-medium drop-shadow-lg">
-              {restaurant.cuisine}
+              {formatCuisine(restaurant.cuisine)}
             </p>
           </div>
         </div>

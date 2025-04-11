@@ -1,20 +1,21 @@
 import { useState } from 'react';
+import { CuisineType, PriceRange } from '@prisma/client';
 
-const cuisineTypes = [
-  'Middle Eastern',
-  'Indian',
-  'Pakistani',
-  'Turkish',
-  'Persian',
-  'Mediterranean',
-  'Malaysian',
-  'Indonesian',
-  'African',
-  'Cafe',
-  'Other'
-];
+// Convert enum to array of options
+const cuisineTypes = Object.values(CuisineType).map(cuisine => ({
+  value: cuisine,
+  label: cuisine.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
+}));
 
-const priceRanges = ['$', '$$', '$$$'];
+// Convert enum to array of display values
+const priceRanges = Object.values(PriceRange).map(range => {
+  switch (range) {
+    case 'LOW': return '$';
+    case 'MEDIUM': return '$$';
+    case 'HIGH': return '$$$';
+    default: return range;
+  }
+});
 
 export default function AddRestaurantForm({ onClose }: { onClose: () => void }) {
   const [formData, setFormData] = useState({
@@ -37,7 +38,15 @@ export default function AddRestaurantForm({ onClose }: { onClose: () => void }) 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          cuisine: formData.cuisine as CuisineType,
+          priceRange: Object.values(PriceRange).find(p => 
+            p === 'LOW' && formData.priceRange === '$' ||
+            p === 'MEDIUM' && formData.priceRange === '$$' ||
+            p === 'HIGH' && formData.priceRange === '$$$'
+          )
+        }),
       });
 
       if (!response.ok) {
@@ -85,9 +94,9 @@ export default function AddRestaurantForm({ onClose }: { onClose: () => void }) 
               onChange={(e) => setFormData({ ...formData, cuisine: e.target.value })}
             >
               <option value="">Select a cuisine type</option>
-              {cuisineTypes.map((type) => (
-                <option key={type} value={type} className="text-gray-900">
-                  {type}
+              {cuisineTypes.map(({ value, label }) => (
+                <option key={value} value={value} className="text-gray-900">
+                  {label}
                 </option>
               ))}
             </select>

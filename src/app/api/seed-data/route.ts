@@ -42,4 +42,48 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Restaurant ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Read the current seed data
+    const seedDataPath = path.join(process.cwd(), 'prisma', 'seed-data.ts');
+    const seedDataContent = await fs.readFile(seedDataPath, 'utf-8');
+    
+    // Parse the existing restaurants array
+    const match = seedDataContent.match(/export const restaurants = \[([\s\S]*?)\];/);
+    if (!match) {
+      throw new Error('Could not parse seed data file');
+    }
+
+    // Split the restaurants into an array and filter out the one to delete
+    const restaurants = match[1]
+      .split('},')
+      .filter(r => !r.includes(`id: '${id}'`))
+      .join('},');
+
+    // Create new content without the deleted restaurant
+    const newContent = `export const restaurants = [${restaurants}${restaurants.trim().endsWith('}') ? '' : '}'}\n];`;
+    
+    // Write the updated content back to the file
+    await fs.writeFile(seedDataPath, newContent, 'utf-8');
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Failed to update seed data:', error);
+    return NextResponse.json(
+      { error: 'Failed to update seed data' },
+      { status: 500 }
+    );
+  }
 } 
