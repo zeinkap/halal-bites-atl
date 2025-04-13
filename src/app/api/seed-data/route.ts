@@ -1,77 +1,53 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
+import { Restaurant } from '@prisma/client';
 
-const SEED_FILE_PATH = path.join(process.cwd(), 'prisma', 'seed.ts');
-
-async function updateSeedFile(newRestaurant: any) {
-  try {
-    const content = await fs.readFile(SEED_FILE_PATH, 'utf-8');
-    
-    // Find the position before the main() function
-    const insertPosition = content.lastIndexOf('main()');
-    if (insertPosition === -1) throw new Error('Could not find insertion point');
-
-    // Create the new upsert statement
-    const newUpsert = `
-  await prisma.restaurant.upsert({
-    where: { id: '${newRestaurant.id}' },
-    update: {},
-    create: {
-      id: '${newRestaurant.id}',
-      name: '${newRestaurant.name.replace(/'/g, "\\'")}',
-      cuisine: CuisineType.${newRestaurant.cuisine},
-      address: '${newRestaurant.address.replace(/'/g, "\\'")}',
-      description: '${(newRestaurant.description || '').replace(/'/g, "\\'")}',
-      priceRange: PriceRange.${newRestaurant.priceRange},
-      imageUrl: '${newRestaurant.imageUrl || 'https://placehold.co/800x600/orange/white?text=Restaurant+Image'}',
-      hasPrayerRoom: ${newRestaurant.hasPrayerRoom || false},
-      hasOutdoorSeating: ${newRestaurant.hasOutdoorSeating || false},
-      isZabiha: ${newRestaurant.isZabiha ?? true},
-      hasHighChair: ${newRestaurant.hasHighChair || false},
-    },
-  });
-`;
-
-    // Insert the new upsert before main()
-    const updatedContent = content.slice(0, insertPosition) + newUpsert + content.slice(insertPosition);
-    await fs.writeFile(SEED_FILE_PATH, updatedContent, 'utf-8');
-
-    return true;
-  } catch (error) {
-    console.error('Error updating seed file:', error);
-    return false;
+// Function to read seed data
+function readSeedData(): Restaurant[] {
+  const seedDataPath = path.join(process.cwd(), 'prisma', 'seed-data.json');
+  if (!fs.existsSync(seedDataPath)) {
+    fs.writeFileSync(seedDataPath, '[]', 'utf8');
+    return [];
   }
+  return JSON.parse(fs.readFileSync(seedDataPath, 'utf8'));
 }
 
-async function removeFromSeedFile(id: string) {
+// Function to write seed data
+function writeSeedData(data: Restaurant[]): void {
+  const seedDataPath = path.join(process.cwd(), 'prisma', 'seed-data.json');
+  fs.writeFileSync(seedDataPath, JSON.stringify(data, null, 2), 'utf8');
+}
+
+export async function GET(request: Request) {
   try {
-    const content = await fs.readFile(SEED_FILE_PATH, 'utf-8');
-    
-    // Find and remove the upsert block for this ID
-    const regex = new RegExp(`\\s*await prisma\\.restaurant\\.upsert\\({[^}]*id: '${id}'[^}]*}\\);\\s*`, 'g');
-    const updatedContent = content.replace(regex, '');
-    
-    await fs.writeFile(SEED_FILE_PATH, updatedContent, 'utf-8');
-    return true;
-  } catch (error) {
-    console.error('Error removing from seed file:', error);
-    return false;
+    const seedData = readSeedData();
+    return NextResponse.json(seedData);
+  } catch (err) {
+    console.error('Failed to read seed data:', err);
+    return NextResponse.json(
+      { error: 'Failed to read seed data' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const restaurant = await request.json();
-    const success = await updateSeedFile(restaurant);
+    const restaurant = await request.json() as Restaurant;
+    const seedData = readSeedData();
     
-    if (!success) {
-      return NextResponse.json({ error: 'Failed to update seed file' }, { status: 500 });
-    }
-    
+    // Add new restaurant
+    seedData.push(restaurant);
+    writeSeedData(seedData);
+
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+  } catch (err) {
+    console.error('Failed to update seed data:', err);
+    return NextResponse.json(
+      { error: 'Failed to update seed data' },
+      { status: 500 }
+    );
   }
 }
 
@@ -79,19 +55,24 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
-      return NextResponse.json({ error: 'Restaurant ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Restaurant ID is required' },
+        { status: 400 }
+      );
     }
-    
-    const success = await removeFromSeedFile(id);
-    
-    if (!success) {
-      return NextResponse.json({ error: 'Failed to update seed file' }, { status: 500 });
-    }
-    
+
+    const seedData = readSeedData();
+    const updatedData = seedData.filter(restaurant => restaurant.id !== id);
+    writeSeedData(updatedData);
+
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
+  } catch (err) {
+    console.error('Failed to delete from seed data:', err);
+    return NextResponse.json(
+      { error: 'Failed to delete from seed data' },
+      { status: 500 }
+    );
   }
 } 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { StarIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
 
@@ -24,21 +24,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      fetchComments();
-    } else {
-      setIsVisible(false);
-    }
-  }, [isOpen, restaurantId]);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 300); // Wait for animation to complete
-  };
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/comments?restaurantId=${restaurantId}`);
@@ -51,6 +37,20 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
     } finally {
       setIsLoading(false);
     }
+  }, [restaurantId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      fetchComments();
+    } else {
+      setIsVisible(false);
+    }
+  }, [isOpen, restaurantId, fetchComments]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 300); // Wait for animation to complete
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
