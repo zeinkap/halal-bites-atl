@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "ts-node prisma/seed.ts",
+    "seed:prod": "ts-node scripts/seed-prod.ts",
+    "test:e2e": "playwright test"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
