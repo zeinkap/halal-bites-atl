@@ -63,7 +63,16 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, cuisine, address, priceRange } = body;
+    const { 
+      name, 
+      cuisine, 
+      address, 
+      priceRange,
+      hasPrayerRoom,
+      hasOutdoorSeating,
+      isZabiha,
+      hasHighChair 
+    } = body;
 
     // Validate required fields
     if (!name || !cuisine || !address) {
@@ -71,6 +80,27 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    // Check for existing restaurant with same name
+    const existingRestaurant = await prisma.restaurant.findFirst({
+      where: {
+        OR: [
+          { name },
+          { address }
+        ]
+      }
+    });
+
+    if (existingRestaurant) {
+      const errorMessage = existingRestaurant.name === name
+        ? 'A restaurant with this name already exists'
+        : 'A restaurant at this address already exists';
+      
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 409 }
       );
     }
 
@@ -110,7 +140,11 @@ export async function POST(request: Request) {
         address,
         description: body.description || '',
         priceRange: priceRange || 'MEDIUM',
-        imageUrl: body.imageUrl || 'https://images.unsplash.com/photo-1540914124281-342587941389?auto=format&fit=crop&w=800&q=80',
+        imageUrl: body.imageUrl || 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+        hasPrayerRoom: hasPrayerRoom ?? false,
+        hasOutdoorSeating: hasOutdoorSeating ?? false,
+        isZabiha: isZabiha ?? false,
+        hasHighChair: hasHighChair ?? false,
       },
     });
 
@@ -137,6 +171,15 @@ export async function POST(request: Request) {
     return NextResponse.json(restaurant);
   } catch (error) {
     console.error('Failed to add restaurant:', error);
+    
+    // Check if error is a unique constraint violation
+    if (error instanceof Error && error.message.includes('Unique constraint failed on the fields: (`name`)')) {
+      return NextResponse.json(
+        { error: 'A restaurant with this name already exists' },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to add restaurant', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

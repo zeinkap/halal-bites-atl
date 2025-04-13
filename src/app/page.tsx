@@ -4,7 +4,27 @@ import { useState, useEffect, useMemo } from 'react';
 import { Restaurant } from '@/types';
 import RestaurantCard from '@/components/RestaurantCard';
 import AddRestaurantForm from '@/components/AddRestaurantForm';
+import ScrollToTop from '@/components/ScrollToTop';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+
+// Helper function to format cuisine names
+const formatCuisineName = (cuisine: string) => {
+  if (cuisine === 'all') return 'All Cuisines';
+  return cuisine.split('_')
+    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+// Helper function to format price ranges
+const formatPriceRange = (price: string) => {
+  if (price === 'all') return 'Any Price';
+  switch (price) {
+    case 'LOW': return '$';
+    case 'MEDIUM': return '$$';
+    case 'HIGH': return '$$$';
+    default: return price;
+  }
+};
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 
@@ -77,13 +97,18 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Halal Restaurants in Atlanta
-          </h1>
+        <div className="flex justify-between items-start mb-8">
+          <div className="flex-1 text-left md:text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              Halal Bites ATL
+            </h1>
+            <p className="text-gray-600 text-base md:text-lg">
+              Discover the best halal restaurants & muslim-owned cafes in Atlanta
+            </p>
+          </div>
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer"
+            className="ml-4 md:ml-8 bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer"
           >
             Add Restaurant
           </button>
@@ -99,6 +124,7 @@ export default function Home() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search restaurants by name, cuisine, or location..."
                 className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-900"
+                data-testid="search-input"
               />
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
@@ -122,7 +148,7 @@ export default function Home() {
                   id="sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
                 >
                   <option value="name-asc">Name: A to Z</option>
                   <option value="name-desc">Name: Z to A</option>
@@ -140,12 +166,12 @@ export default function Home() {
                   id="cuisine"
                   value={selectedCuisine}
                   onChange={(e) => setSelectedCuisine(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
                 >
                   <option value="all">All Cuisines</option>
                   {cuisines.filter(c => c !== 'all').map((cuisine) => (
                     <option key={cuisine} value={cuisine}>
-                      {cuisine}
+                      {formatCuisineName(cuisine)}
                     </option>
                   ))}
                 </select>
@@ -160,12 +186,12 @@ export default function Home() {
                   id="price"
                   value={selectedPriceRange}
                   onChange={(e) => setSelectedPriceRange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
                 >
                   <option value="all">Any Price</option>
                   {priceRanges.filter(p => p !== 'all').map((price) => (
                     <option key={price} value={price}>
-                      {price}
+                      {formatPriceRange(price)}
                     </option>
                   ))}
                 </select>
@@ -214,21 +240,33 @@ export default function Home() {
               ))}
             </>
           ) : (
-            filteredAndSortedRestaurants.map((restaurant) => (
-              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-            ))
+            filteredAndSortedRestaurants.length === 0 ? (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-600 mb-4">No restaurants found matching your criteria.</p>
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm"
+                >
+                  Add a Restaurant
+                </button>
+              </div>
+            ) : (
+              filteredAndSortedRestaurants.map((restaurant) => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))
+            )
           )}
         </div>
 
-        {showAddForm && (
-          <AddRestaurantForm
-            onClose={() => {
-              setShowAddForm(false);
-              fetchRestaurants(); // Refresh the list after adding
-            }}
-          />
-        )}
+        <AddRestaurantForm
+          isOpen={showAddForm}
+          onClose={() => {
+            setShowAddForm(false);
+            fetchRestaurants(); // Refresh the list after adding
+          }}
+        />
       </div>
+      <ScrollToTop />
     </main>
   );
 }
