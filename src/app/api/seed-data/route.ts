@@ -19,7 +19,7 @@ function writeSeedData(data: Restaurant[]): void {
   fs.writeFileSync(seedDataPath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const seedData = readSeedData();
     return NextResponse.json(seedData);

@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
+// Add proper typing for the global object
 declare global {
+  // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 
