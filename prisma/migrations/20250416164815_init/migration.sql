@@ -1,24 +1,24 @@
 -- CreateEnum
-CREATE TYPE "CuisineType" AS ENUM ('MIDDLE_EASTERN', 'MEDITERRANEAN', 'INDIAN', 'PAKISTANI', 'TURKISH', 'OTHER');
+CREATE TYPE "CuisineType" AS ENUM ('MIDDLE_EASTERN', 'INDIAN_PAKISTANI', 'TURKISH', 'PERSIAN', 'MEDITERRANEAN', 'AFGHAN', 'CAFE', 'OTHER');
 
 -- CreateEnum
-CREATE TYPE "PriceRange" AS ENUM ('INEXPENSIVE', 'MODERATE', 'EXPENSIVE', 'VERY_EXPENSIVE');
+CREATE TYPE "PriceRange" AS ENUM ('LOW', 'MEDIUM', 'HIGH');
 
 -- CreateTable
 CREATE TABLE "Restaurant" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "description" TEXT,
+    "cuisine" "CuisineType" NOT NULL,
     "address" TEXT NOT NULL,
-    "cuisineType" "CuisineType" NOT NULL DEFAULT 'OTHER',
-    "priceRange" "PriceRange" NOT NULL DEFAULT 'MODERATE',
-    "isHalalCertified" BOOLEAN NOT NULL DEFAULT false,
-    "servesAlcohol" BOOLEAN NOT NULL DEFAULT false,
-    "hasHalalSign" BOOLEAN NOT NULL DEFAULT false,
+    "description" TEXT,
+    "priceRange" "PriceRange" NOT NULL,
+    "imageUrl" TEXT,
+    "hasPrayerRoom" BOOLEAN NOT NULL DEFAULT false,
+    "hasOutdoorSeating" BOOLEAN NOT NULL DEFAULT false,
+    "isZabiha" BOOLEAN NOT NULL DEFAULT false,
+    "hasHighChair" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "rating" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "totalRatings" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Restaurant_pkey" PRIMARY KEY ("id")
 );
@@ -27,17 +27,21 @@ CREATE TABLE "Restaurant" (
 CREATE TABLE "Comment" (
     "id" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "rating" INTEGER NOT NULL,
+    "rating" INTEGER NOT NULL DEFAULT 5,
+    "authorName" TEXT NOT NULL,
+    "imageUrl" TEXT,
     "restaurantId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "imageUrl" TEXT,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Restaurant_name_key" ON "Restaurant"("name");
+
+-- CreateIndex
+CREATE INDEX "Comment_restaurantId_idx" ON "Comment"("restaurantId");
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE; 
