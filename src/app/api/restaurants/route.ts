@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { 
       name, 
-      cuisine, 
+      cuisineType, 
       address, 
       priceRange,
       description,
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     } = body;
 
     // Validate required fields
-    if (!name || !cuisine || !address || !priceRange) {
+    if (!name || !cuisineType || !address || !priceRange) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -47,14 +47,14 @@ export async function POST(request: Request) {
     }
 
     // Validate enum values
-    if (!Object.values(CuisineType).includes(cuisine as CuisineType)) {
+    if (!Object.values(CuisineType).includes(cuisineType)) {
       return NextResponse.json(
         { error: 'Invalid cuisine type' },
         { status: 400 }
       );
     }
 
-    if (!Object.values(PriceRange).includes(priceRange as PriceRange)) {
+    if (!Object.values(PriceRange).includes(priceRange)) {
       return NextResponse.json(
         { error: 'Invalid price range' },
         { status: 400 }
@@ -64,9 +64,9 @@ export async function POST(request: Request) {
     const restaurant = await prisma.restaurant.create({
       data: {
         name,
-        cuisine: cuisine as CuisineType,
+        cuisineType,
         address,
-        priceRange: priceRange as PriceRange,
+        priceRange,
         description: description || '',
         hasPrayerRoom: hasPrayerRoom || false,
         hasOutdoorSeating: hasOutdoorSeating || false,

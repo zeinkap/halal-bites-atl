@@ -6,7 +6,11 @@ async function seedProd() {
   try {
     console.log('Starting production database seeding...');
 
-    // Delete all existing restaurants first
+    // Delete all existing comments first
+    await prisma.comment.deleteMany({});
+    console.log('Cleared existing comments');
+
+    // Delete all existing restaurants
     await prisma.restaurant.deleteMany({});
     console.log('Cleared existing restaurants');
 
@@ -315,7 +319,10 @@ async function seedProd() {
 
     // Create all restaurants
     await prisma.restaurant.createMany({
-      data: restaurants,
+      data: restaurants.map(restaurant => ({
+        ...restaurant,
+        cuisineType: restaurant.cuisine
+      })),
       skipDuplicates: true,
     });
 

@@ -10,6 +10,7 @@ import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react
 // Helper function to format cuisine names
 const formatCuisineName = (cuisine: string) => {
   if (cuisine === 'all') return 'All Cuisines';
+  if (cuisine === 'OTHER') return 'Other';
   return cuisine.split('_')
     .map(word => word.charAt(0) + word.slice(1).toLowerCase())
     .join(' ');
@@ -66,22 +67,29 @@ export default function Home() {
 
   // Extract unique cuisines
   const cuisines = useMemo(() => {
-    return ['all', ...new Set(restaurants.map(r => r.cuisine))].sort();
+    const uniqueCuisines = new Set(restaurants.map(r => r.cuisineType));
+    // Remove OTHER from the set if it exists
+    uniqueCuisines.delete('OTHER');
+    // Convert to array, sort, and add OTHER at the end
+    return ['all', ...[...uniqueCuisines].sort(), 'OTHER'];
   }, [restaurants]);
 
   // Extract unique price ranges
   const priceRanges = useMemo(() => {
-    return ['all', ...new Set(restaurants.map(r => r.priceRange))].sort();
+    const uniquePrices = new Set(restaurants.map(r => r.priceRange));
+    // Order them specifically as LOW, MEDIUM, HIGH
+    const orderedPrices = ['LOW', 'MEDIUM', 'HIGH'].filter(price => uniquePrices.has(price));
+    return ['all', ...orderedPrices];
   }, [restaurants]);
 
   // Filter and sort restaurants
   const filteredAndSortedRestaurants = useMemo(() => {
     const filtered = restaurants.filter(restaurant => {
-      const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisine === selectedCuisine;
+      const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisineType === selectedCuisine;
       const matchesPriceRange = selectedPriceRange === 'all' || restaurant.priceRange === selectedPriceRange;
       const matchesSearch = searchQuery === '' || 
         restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.cuisineType.toLowerCase().includes(searchQuery.toLowerCase()) ||
         restaurant.address.toLowerCase().includes(searchQuery.toLowerCase());
       
       return matchesCuisine && matchesPriceRange && matchesSearch;

@@ -1,7 +1,7 @@
 export interface Restaurant {
   id: string;
   name: string;
-  cuisine: string;
+  cuisineType: string;
   address: string;
   description: string;
   priceRange: string;

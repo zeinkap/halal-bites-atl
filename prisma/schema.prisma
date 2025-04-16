@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,6 +5,37 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id                String      @id @default(cuid())
+  name              String      @unique
+  cuisineType       CuisineType
+  address           String
+  description       String?
+  priceRange        PriceRange
+  imageUrl          String?
+  hasPrayerRoom     Boolean     @default(false)
+  hasOutdoorSeating Boolean     @default(false)
+  isZabiha          Boolean     @default(false)
+  hasHighChair      Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  comments          Comment[]
+}
+
+model Comment {
+  id           String     @id @default(cuid())
+  content      String
+  rating       Int        @default(5)
+  authorName   String
+  restaurantId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  imageUrl     String?
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@index([restaurantId])
 }
 
 enum CuisineType {
@@ -25,35 +53,4 @@ enum PriceRange {
   LOW    @map("$")
   MEDIUM @map("$$")
   HIGH   @map("$$$")
-}
-
-model Restaurant {
-  id              String      @id @default(cuid())
-  name            String      @unique
-  cuisine         CuisineType
-  address         String
-  description     String?
-  priceRange      PriceRange
-  imageUrl        String?
-  hasPrayerRoom   Boolean     @default(false)
-  hasOutdoorSeating Boolean   @default(false)
-  isZabiha        Boolean     @default(false)
-  hasHighChair    Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  comments        Comment[]
-}
-
-model Comment {
-  id          String      @id @default(cuid())
-  content     String
-  rating      Int         @default(5)
-  authorName  String
-  imageUrl    String?     @db.Text
-  restaurant  Restaurant  @relation(fields: [restaurantId], references: [id])
-  restaurantId String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-
-  @@index([restaurantId])
 }

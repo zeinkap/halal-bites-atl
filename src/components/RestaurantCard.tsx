@@ -56,7 +56,7 @@ export default function RestaurantCard({ restaurant, isPriority = false }: Resta
                 {restaurant.name}
               </h3>
               <p className="text-sm text-white/90 font-medium drop-shadow-lg" data-testid={`restaurant-cuisine-${restaurant.id}`}>
-                {formatCuisine(restaurant.cuisine)}
+                {formatCuisine(restaurant.cuisineType)}
               </p>
             </div>
           </div>

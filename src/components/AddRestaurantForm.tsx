@@ -28,7 +28,7 @@ interface AddRestaurantFormProps {
 export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantFormProps) {
   const [formData, setFormData] = useState({
     name: '',
-    cuisine: '',
+    cuisineType: '',
     address: '',
     priceRange: '',
     description: '',
@@ -68,12 +68,10 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
         },
         body: JSON.stringify({
           ...formData,
-          cuisine: formData.cuisine as CuisineType,
-          priceRange: Object.values(PriceRange).find(p => 
-            p === 'LOW' && formData.priceRange === '$' ||
-            p === 'MEDIUM' && formData.priceRange === '$$' ||
-            p === 'HIGH' && formData.priceRange === '$$$'
-          )
+          cuisineType: formData.cuisineType as CuisineType,
+          priceRange: formData.priceRange === '$' ? 'LOW' :
+                     formData.priceRange === '$$' ? 'MEDIUM' :
+                     formData.priceRange === '$$$' ? 'HIGH' : formData.priceRange
         }),
       });
 
@@ -102,7 +100,7 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
       // Reset form data
       setFormData({
         name: '',
-        cuisine: '',
+        cuisineType: '',
         address: '',
         priceRange: '',
         description: '',
@@ -216,16 +214,16 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
               </div>
 
               <div>
-                <label htmlFor="cuisine" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="cuisineType" className="block text-sm font-medium text-gray-700">
                   Cuisine Type *
                 </label>
                 <select
-                  name="cuisine"
-                  id="cuisine"
+                  name="cuisineType"
+                  id="cuisineType"
                   data-testid="restaurant-cuisine-select"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
-                  value={formData.cuisine}
-                  onChange={(e) => setFormData({ ...formData, cuisine: e.target.value })}
+                  value={formData.cuisineType}
+                  onChange={(e) => setFormData({ ...formData, cuisineType: e.target.value })}
                   required
                 >
                   <option value="">Select a cuisine type</option>
