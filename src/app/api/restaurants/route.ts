@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { RESTAURANT_ERRORS } from '@/constants/errors';
+import { CuisineType, PriceRange } from '@prisma/client';
 
+// Get all restaurants
 export async function GET() {
   try {
     const restaurants = await prisma.restaurant.findMany({
-      orderBy: {
-        name: 'asc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
-
     return NextResponse.json(restaurants);
   } catch (error) {
     console.error('Error fetching restaurants:', error);
@@ -20,6 +18,76 @@ export async function GET() {
   }
 }
 
+// Add a new restaurant
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { 
+      name, 
+      cuisine, 
+      address, 
+      priceRange,
+      description,
+      hasPrayerRoom,
+      hasOutdoorSeating,
+      isZabiha,
+      hasHighChair
+    } = body;
+
+    // Validate required fields
+    if (!name || !cuisine || !address || !priceRange) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate enum values
+    if (!Object.values(CuisineType).includes(cuisine as CuisineType)) {
+      return NextResponse.json(
+        { error: 'Invalid cuisine type' },
+        { status: 400 }
+      );
+    }
+
+    if (!Object.values(PriceRange).includes(priceRange as PriceRange)) {
+      return NextResponse.json(
+        { error: 'Invalid price range' },
+        { status: 400 }
+      );
+    }
+
+    const restaurant = await prisma.restaurant.create({
+      data: {
+        name,
+        cuisine: cuisine as CuisineType,
+        address,
+        priceRange: priceRange as PriceRange,
+        description: description || '',
+        hasPrayerRoom: hasPrayerRoom || false,
+        hasOutdoorSeating: hasOutdoorSeating || false,
+        isZabiha: isZabiha || false,
+        hasHighChair: hasHighChair || false
+      },
+    });
+
+    return NextResponse.json(restaurant);
+  } catch (error) {
+    console.error('Error creating restaurant:', error);
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: `Error creating restaurant: ${error.message}` },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'Error creating restaurant' },
+      { status: 500 }
+    );
+  }
+}
+
+// Delete a restaurant
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -32,157 +100,21 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Delete the restaurant
-    await prisma.restaurant.delete({
-      where: { id },
+    // Delete associated comments first
+    await prisma.comment.deleteMany({
+      where: { restaurantId: id }
     });
 
-    // Update seed data by removing the restaurant
-    try {
-      const seedResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/seed-data?id=${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!seedResponse.ok) {
-        console.error('Failed to update seed data:', await seedResponse.text());
-      }
-    } catch (error) {
-      console.error('Failed to update seed data:', error);
-      // Don't fail the request if seed data update fails
-    }
+    // Then delete the restaurant
+    await prisma.restaurant.delete({
+      where: { id }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Failed to delete restaurant:', error);
+    console.error('Error deleting restaurant:', error);
     return NextResponse.json(
-      { error: 'Failed to delete restaurant', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { 
-      name, 
-      cuisine, 
-      address, 
-      priceRange,
-      hasPrayerRoom,
-      hasOutdoorSeating,
-      isZabiha,
-      hasHighChair 
-    } = body;
-
-    // Validate required fields
-    if (!name || !cuisine || !address) {
-      console.error('Missing required fields:', { name, cuisine, address });
-      return NextResponse.json(
-        { error: RESTAURANT_ERRORS.MISSING_FIELDS },
-        { status: 400 }
-      );
-    }
-
-    // Check for existing restaurant with same name
-    const existingRestaurant = await prisma.restaurant.findFirst({
-      where: {
-        OR: [
-          { name },
-          { address }
-        ]
-      }
-    });
-
-    if (existingRestaurant) {
-      const errorMessage = existingRestaurant.name === name
-        ? RESTAURANT_ERRORS.DUPLICATE_NAME
-        : RESTAURANT_ERRORS.DUPLICATE_ADDRESS;
-      
-      return NextResponse.json(
-        { error: errorMessage },
-        { status: 409 }
-      );
-    }
-
-    // Get the highest existing ID and increment it
-    const restaurants = await prisma.restaurant.findMany({
-      orderBy: {
-        id: 'desc'
-      },
-      take: 1
-    });
-
-    let nextId = restaurants.length > 0 
-      ? (parseInt(restaurants[0].id) + 1).toString()
-      : '1';
-
-    // Ensure ID is unique
-    let isUnique = false;
-    while (!isUnique) {
-      const existing = await prisma.restaurant.findUnique({
-        where: { id: nextId }
-      });
-      if (!existing) {
-        isUnique = true;
-      } else {
-        nextId = (parseInt(nextId) + 1).toString();
-      }
-    }
-
-    console.log('Creating restaurant with ID:', nextId);
-
-    // Create new restaurant
-    const restaurant = await prisma.restaurant.create({
-      data: {
-        id: nextId,
-        name,
-        cuisine,
-        address,
-        description: body.description || '',
-        priceRange: priceRange || 'MEDIUM',
-        imageUrl: body.imageUrl || 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
-        hasPrayerRoom: hasPrayerRoom ?? false,
-        hasOutdoorSeating: hasOutdoorSeating ?? false,
-        isZabiha: isZabiha ?? false,
-        hasHighChair: hasHighChair ?? false,
-      },
-    });
-
-    console.log('Restaurant created successfully:', restaurant);
-
-    // Update seed data
-    try {
-      const seedResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/seed-data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(restaurant),
-      });
-
-      if (!seedResponse.ok) {
-        console.error('Failed to update seed data:', await seedResponse.text());
-      }
-    } catch (error) {
-      console.error('Failed to update seed data:', error);
-      // Don't fail the request if seed data update fails
-    }
-
-    return NextResponse.json(restaurant);
-  } catch (error) {
-    console.error('Failed to add restaurant:', error);
-    
-    // Check if error is a unique constraint violation
-    if (error instanceof Error && error.message.includes('Unique constraint failed on the fields: (`name`)')) {
-      return NextResponse.json(
-        { error: RESTAURANT_ERRORS.DUPLICATE_NAME },
-        { status: 409 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Failed to add restaurant', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Error deleting restaurant' },
       { status: 500 }
     );
   }

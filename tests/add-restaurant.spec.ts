@@ -9,6 +9,7 @@ const TEST_RESTAURANTS = {
     cuisine: CuisineType.MIDDLE_EASTERN,
     priceRange: '$$' as const,
     address: '123 Test Street, Atlanta, GA 30303',
+    description: 'A test restaurant description',
     features: {
       hasPrayerRoom: true,
       hasOutdoorSeating: true,
@@ -21,6 +22,7 @@ const TEST_RESTAURANTS = {
     cuisine: CuisineType.MIDDLE_EASTERN,
     priceRange: '$$' as const,
     address: '123 Test Street, Atlanta, GA 30303',
+    description: '',
     features: {
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
@@ -59,6 +61,12 @@ test.describe('Add Restaurant Feature', () => {
     
     await page.fill('[data-testid="restaurant-address-input"]', data.address);
     await page.waitForTimeout(100);
+
+    // Fill description if provided
+    if (data.description) {
+      await page.fill('[data-testid="restaurant-description-input"]', data.description);
+      await page.waitForTimeout(100);
+    }
 
     // Set features
     if (data.features.hasPrayerRoom) {

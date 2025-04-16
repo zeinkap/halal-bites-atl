@@ -31,6 +31,7 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
     cuisine: '',
     address: '',
     priceRange: '',
+    description: '',
     hasPrayerRoom: false,
     hasOutdoorSeating: false,
     isZabiha: false,
@@ -39,6 +40,7 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const [halalVerificationConsent, setHalalVerificationConsent] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -103,11 +105,13 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
         cuisine: '',
         address: '',
         priceRange: '',
+        description: '',
         hasPrayerRoom: false,
         hasOutdoorSeating: false,
         isZabiha: false,
         hasHighChair: false
       });
+      setHalalVerificationConsent(false);
 
       // Start closing animation
       setIsVisible(false);
@@ -342,6 +346,48 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
                 </div>
               </div>
 
+              {/* Description Field */}
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <div className="mt-1">
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows={3}
+                    data-testid="restaurant-description-input"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black"
+                    placeholder="Add a description of the restaurant (optional)"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  />
+                </div>
+                <p className="mt-1 text-sm text-gray-500">Brief description of the restaurant, its specialties, or any notable features.</p>
+              </div>
+
+              {/* Halal Verification Consent */}
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="halalVerification"
+                      name="halalVerification"
+                      type="checkbox"
+                      data-testid="halal-verification-checkbox"
+                      checked={halalVerificationConsent}
+                      onChange={(e) => setHalalVerificationConsent(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="halalVerification" className="text-sm text-gray-700">
+                      I confirm that I have personally verified this restaurant serves halal meat and I am adding it in good faith to help the community.
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end space-x-2 sm:space-x-3">
                 <button
                   type="button"
@@ -354,8 +400,8 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
                 <button
                   type="submit"
                   data-testid="submit-restaurant-button"
-                  disabled={isSubmitting}
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer disabled:opacity-50"
+                  disabled={isSubmitting || !halalVerificationConsent}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
