@@ -31,6 +31,7 @@ type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 export default function Home() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -40,11 +41,20 @@ export default function Home() {
 
   const fetchRestaurants = async () => {
     try {
+      setError(null);
       const response = await fetch('/api/restaurants');
+      if (!response.ok) {
+        throw new Error('Failed to fetch restaurants');
+      }
       const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid response format');
+      }
       setRestaurants(data);
     } catch (error) {
       console.error('Failed to fetch restaurants:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch restaurants');
+      setRestaurants([]);
     } finally {
       setIsLoading(false);
     }

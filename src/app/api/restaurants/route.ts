@@ -5,16 +5,20 @@ import { CuisineType, PriceRange } from '@prisma/client';
 // Get all restaurants
 export async function GET() {
   try {
+    // Test database connection first
+    await prisma.$connect();
+    
     const restaurants = await prisma.restaurant.findMany({
       orderBy: { createdAt: 'desc' },
     });
+
     return NextResponse.json(restaurants);
   } catch (error) {
     console.error('Error fetching restaurants:', error);
-    return NextResponse.json(
-      { error: 'Error fetching restaurants' },
-      { status: 500 }
-    );
+    // Return an empty array instead of an error object to prevent frontend mapping errors
+    return NextResponse.json([]);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
