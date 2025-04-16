@@ -107,6 +107,12 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="flex justify-end mb-8">
           <button
             onClick={() => setShowAddForm(true)}
