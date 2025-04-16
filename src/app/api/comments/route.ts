@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { uploadImage } from '@/lib/uploadImage';
 
 // Get comments for a restaurant
 export async function GET(request: Request) {
@@ -32,8 +33,22 @@ export async function GET(request: Request) {
 // Add a new comment
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { content, authorName, restaurantId, rating } = body;
+    const formData = await request.formData();
+    
+    // Log the received form data
+    console.log('Received form data:', {
+      content: formData.get('content'),
+      authorName: formData.get('authorName'),
+      restaurantId: formData.get('restaurantId'),
+      rating: formData.get('rating'),
+      hasImage: formData.has('image'),
+    });
+
+    const content = formData.get('content') as string;
+    const authorName = formData.get('authorName') as string;
+    const restaurantId = formData.get('restaurantId') as string;
+    const rating = parseInt(formData.get('rating') as string) || 5;
+    const image = formData.get('image') as File | null;
 
     if (!content || !authorName || !restaurantId) {
       return NextResponse.json(
@@ -42,18 +57,51 @@ export async function POST(request: Request) {
       );
     }
 
+    let imageUrl: string | undefined;
+    if (image) {
+      try {
+        console.log('Image details:', {
+          type: image.type,
+          size: image.size,
+          name: image.name
+        });
+        
+        const buffer = Buffer.from(await image.arrayBuffer());
+        console.log('Successfully created buffer, size:', buffer.length);
+        
+        imageUrl = await uploadImage(buffer, image.type);
+        console.log('Successfully uploaded image:', imageUrl);
+      } catch (uploadError) {
+        console.error('Error during image upload:', uploadError);
+        throw uploadError;
+      }
+    }
+
     const comment = await prisma.comment.create({
       data: {
         content,
         authorName,
         restaurantId,
-        rating: rating || 5,
+        rating,
+        imageUrl,
       },
     });
 
     return NextResponse.json(comment);
   } catch (error) {
-    console.error('Error adding comment:', error);
+    // Enhanced error logging
+    console.error('Error in POST /api/comments:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      return NextResponse.json(
+        { error: `Error adding comment: ${error.message}` },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
       { error: 'Error adding comment' },
       { status: 500 }

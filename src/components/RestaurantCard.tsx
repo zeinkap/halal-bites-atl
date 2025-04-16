@@ -71,6 +71,16 @@ export default function RestaurantCard({ restaurant, isPriority = false }: Resta
                   {restaurant.address}
                 </p>
               </div>
+
+              {/* Description */}
+              {restaurant.description && (
+                <p 
+                  className="text-sm text-gray-600 mt-2 line-clamp-3" 
+                  data-testid={`restaurant-description-${restaurant.id}`}
+                >
+                  {restaurant.description}
+                </p>
+              )}
               
               {/* New Features Section */}
               <div className="grid grid-cols-2 gap-2 mt-3">

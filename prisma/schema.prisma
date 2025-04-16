@@ -34,7 +34,6 @@ model Restaurant {
   address         String
   description     String?
   priceRange      PriceRange
-  website         String?
   imageUrl        String?
   hasPrayerRoom   Boolean     @default(false)
   hasOutdoorSeating Boolean   @default(false)
@@ -50,6 +49,7 @@ model Comment {
   content     String
   rating      Int         @default(5)
   authorName  String
+  imageUrl    String?     @db.Text
   restaurant  Restaurant  @relation(fields: [restaurantId], references: [id])
   restaurantId String
   createdAt   DateTime    @default(now())

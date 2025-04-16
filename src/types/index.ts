@@ -1,4 +1,3 @@
-
 export interface Restaurant {
   id: string;
   name: string;
@@ -6,7 +5,6 @@ export interface Restaurant {
   address: string;
   description: string;
   priceRange: string;
-  website?: string;
   imageUrl?: string;
   hasPrayerRoom: boolean;
   hasOutdoorSeating: boolean;

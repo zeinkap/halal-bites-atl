@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { StarIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { StarIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
 
 interface Comment {
   id: string;
   content: string;
   authorName: string;
   rating: number;
+  imageUrl?: string;
   createdAt: string;
 }
 
@@ -20,6 +22,9 @@ interface CommentModalProps {
 export default function CommentModal({ isOpen, onClose, restaurantId, restaurantName }: CommentModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState({ content: '', authorName: '', rating: 5 });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -53,23 +58,51 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
     setTimeout(onClose, 300); // Wait for animation to complete
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error('Image size must be less than 5MB');
+        return;
+      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      const formData = new FormData();
+      formData.append('content', newComment.content);
+      formData.append('authorName', newComment.authorName);
+      formData.append('rating', newComment.rating.toString());
+      formData.append('restaurantId', restaurantId);
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
       const response = await fetch('/api/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newComment, restaurantId }),
+        body: formData,
       });
 
       if (!response.ok) throw new Error('Failed to add comment');
       
       const newCommentData = await response.json();
-      // Add the new comment to the beginning of the list with a fade-in effect
       setComments(prevComments => [newCommentData, ...prevComments]);
       setNewComment({ content: '', authorName: '', rating: 5 });
+      setSelectedImage(null);
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       toast.success('Comment added successfully!');
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -168,6 +201,57 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
               />
             </div>
 
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Add Image (optional)
+              </label>
+              <div className="mt-1 flex items-center space-x-4">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  data-testid="comment-image-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center gap-2"
+                >
+                  <PhotoIcon className="h-5 w-5" />
+                  Choose Image
+                </button>
+                {imagePreview && (
+                  <div className="relative w-20 h-20">
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setImagePreview(null);
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = '';
+                        }
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
+              </p>
+            </div>
+
             <button
               type="submit"
               data-testid="submit-comment-button"
@@ -195,6 +279,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
               comments.map((comment) => (
                 <div 
                   key={comment.id} 
+                  data-testid={`comment-container-${comment.id}`}
                   className="bg-gray-50 p-4 rounded-lg transform transition-all duration-300 ease-in-out opacity-100 translate-y-0"
                   style={{
                     animation: 'fadeSlideIn 0.3s ease-out'
@@ -213,11 +298,20 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                     }
                   `}</style>
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-900">{comment.authorName}</h4>
-                    <div className="flex items-center">
+                    <h4 
+                      className="font-medium text-gray-900"
+                      data-testid={`comment-author-${comment.id}`}
+                    >
+                      {comment.authorName}
+                    </h4>
+                    <div 
+                      className="flex items-center"
+                      data-testid={`comment-rating-${comment.id}`}
+                    >
                       {[...Array(5)].map((_, i) => (
                         <StarIcon
                           key={i}
+                          data-testid={`comment-star-${comment.id}-${i + 1}`}
                           className={`h-4 w-4 ${
                             i < comment.rating ? 'text-yellow-400' : 'text-gray-300'
                           }`}
@@ -225,9 +319,33 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                       ))}
                     </div>
                   </div>
-                  <p className="mt-2 text-gray-600">{comment.content}</p>
-                  <p className="mt-2 text-sm text-gray-500">
-                    {new Date(comment.createdAt).toLocaleDateString()}
+                  <p 
+                    className="mt-2 text-gray-600"
+                    data-testid={`comment-content-${comment.id}`}
+                  >
+                    {comment.content}
+                  </p>
+                  {comment.imageUrl && (
+                    <div className="mt-3 relative w-full aspect-video">
+                      <Image
+                        src={comment.imageUrl}
+                        alt={`Image from ${comment.authorName}`}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                  <p 
+                    className="mt-2 text-sm text-gray-500"
+                    data-testid={`comment-date-${comment.id}`}
+                  >
+                    {new Date(comment.createdAt).toLocaleString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </p>
                 </div>
               ))

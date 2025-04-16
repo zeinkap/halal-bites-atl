@@ -18,6 +18,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
 - 💬 Community-driven reviews and ratings:
   - Add comments and share experiences
   - Rate restaurants (1-5 stars)
+  - Upload images with comments
   - View other users' recommendations
   - Help others discover great halal restaurants
 - 🏪 Detailed restaurant information:
@@ -35,6 +36,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Scroll to top button
   - Clear filters option
   - Smooth modal transitions
+  - Image upload preview
 
 ## Tech Stack
 
@@ -48,6 +50,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Next.js API routes
   - Prisma ORM
   - PostgreSQL (Neon)
+  - Cloudinary for image storage
 
 ## Testing
 
@@ -132,9 +135,15 @@ test.describe('Feature Name', () => {
 
 3. Set up environment variables:
    - Create a `.env` file in the root directory
-   - Add your database URL:
+   - Add the following variables:
      ```
+     # Database
      DATABASE_URL="your_development_database_url"
+
+     # Cloudinary Configuration
+     CLOUDINARY_CLOUD_NAME="your_cloud_name"
+     CLOUDINARY_API_KEY="your_api_key"
+     CLOUDINARY_API_SECRET="your_api_secret"
      ```
 
 4. Set up the database:
@@ -157,19 +166,18 @@ The project uses two different environments:
 - **Development**: Uses a separate database for testing and development
 - **Production**: Uses the production database for live data
 
-Make sure to set up both `.env` and `.env.production` files with the appropriate database URLs.
+Make sure to set up both `.env` and `.env.production` files with the appropriate database URLs and Cloudinary credentials.
 
-## Contributing
+## Image Upload
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+The application uses Cloudinary for image storage and optimization. When users add comments, they can:
+- Upload images up to 5MB in size
+- Preview images before submission
+- Images are automatically:
+  - Optimized for quality and size
+  - Resized to appropriate dimensions
+  - Served through Cloudinary's global CDN
+  - Converted to modern formats (WebP) when supported
 
 ## Database Schema
 
@@ -178,17 +186,16 @@ The application uses Prisma with PostgreSQL (Neon) as the database. Here's the s
 ### Restaurant Model
 ```prisma
 model Restaurant {
-  id                String      @id
-  name              String
+  id                String      @id @default(cuid())
+  name              String      @unique
   cuisine           CuisineType
   address           String
-  description       String
+  description       String?
   priceRange        PriceRange
-  website           String?
   imageUrl          String?
   hasPrayerRoom     Boolean     @default(false)
   hasOutdoorSeating Boolean     @default(false)
-  isZabiha          Boolean     @default(true)
+  isZabiha          Boolean     @default(false)
   hasHighChair      Boolean     @default(false)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -200,6 +207,7 @@ model Comment {
   content       String
   rating        Int         @default(5)
   authorName    String
+  imageUrl      String?     @db.Text
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
   restaurantId  String
   createdAt     DateTime    @default(now())
@@ -279,3 +287,15 @@ Easiest way is to run the seed command with the database URL directly via:
 
 To verify data is actually in the Prod database, run this query:
 `DATABASE_URL="PASTE_HERE" npx prisma studio`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
