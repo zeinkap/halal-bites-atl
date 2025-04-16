@@ -90,7 +90,11 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        theme: "colored"
+        theme: "colored",
+        toastId: 'success-toast',
+        data: {
+          'data-testid': 'success-toast'
+        }
       });
 
       // Reset form data
@@ -125,6 +129,8 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
       }
       
       setError(errorMessage);
+      
+      // Show error toast
       toast.error(errorMessage, {
         position: "top-center",
         autoClose: 3000,
@@ -132,7 +138,11 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        theme: "colored"
+        theme: "colored",
+        toastId: 'error-toast',
+        data: {
+          'data-testid': 'error-toast'
+        }
       });
     } finally {
       setIsSubmitting(false);
@@ -175,6 +185,16 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
 
           <div className="p-4">
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div 
+                  className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" 
+                  role="alert"
+                  data-testid="form-error-message"
+                  aria-live="polite"
+                >
+                  {error}
+                </div>
+              )}
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                   Restaurant Name *
@@ -321,8 +341,6 @@ export default function AddRestaurantForm({ isOpen, onClose }: AddRestaurantForm
                   </div>
                 </div>
               </div>
-
-              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <div className="flex justify-end space-x-2 sm:space-x-3">
                 <button
