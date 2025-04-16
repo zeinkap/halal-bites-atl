@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { RESTAURANT_ERRORS } from '@/constants/errors';
 
 export async function GET() {
   try {
@@ -78,7 +79,7 @@ export async function POST(request: Request) {
     if (!name || !cuisine || !address) {
       console.error('Missing required fields:', { name, cuisine, address });
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: RESTAURANT_ERRORS.MISSING_FIELDS },
         { status: 400 }
       );
     }
@@ -95,8 +96,8 @@ export async function POST(request: Request) {
 
     if (existingRestaurant) {
       const errorMessage = existingRestaurant.name === name
-        ? 'A restaurant with this name already exists'
-        : 'A restaurant at this address already exists';
+        ? RESTAURANT_ERRORS.DUPLICATE_NAME
+        : RESTAURANT_ERRORS.DUPLICATE_ADDRESS;
       
       return NextResponse.json(
         { error: errorMessage },
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
     // Check if error is a unique constraint violation
     if (error instanceof Error && error.message.includes('Unique constraint failed on the fields: (`name`)')) {
       return NextResponse.json(
-        { error: 'A restaurant with this name already exists' },
+        { error: RESTAURANT_ERRORS.DUPLICATE_NAME },
         { status: 409 }
       );
     }

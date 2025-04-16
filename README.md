@@ -49,6 +49,74 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Prisma ORM
   - PostgreSQL (Neon)
 
+## Testing
+
+- **End-to-End Testing:**
+  - Playwright for E2E testing
+  - Test coverage for critical user flows:
+    - Adding new restaurants
+    - Handling duplicate restaurant submissions
+    - Form validation
+    - Toast notifications
+    - Search functionality
+
+### Running Tests
+
+1. Install Playwright browsers:
+   ```bash
+   npx playwright install
+   ```
+
+2. Run all tests:
+   ```bash
+   npm run test
+   ```
+
+3. Run tests with UI mode:
+   ```bash
+   npm run test:ui
+   ```
+
+4. Run tests in debug mode:
+   ```bash
+   npx playwright test --debug
+   ```
+
+### Test Structure
+
+Tests are located in the `/tests` directory and follow these conventions:
+- Each feature has its own test file (e.g., `add-restaurant.spec.ts`)
+- Tests use data-testid attributes for reliable element selection
+- Async operations use appropriate timeouts and waits
+- Test data is cleaned up after each test run
+
+### Writing Tests
+
+When writing new tests:
+1. Use data-testid attributes for element selection
+2. Follow the existing patterns for handling async operations
+3. Include proper cleanup in the test teardown
+4. Add appropriate assertions and error checks
+
+Example test structure:
+```typescript
+test.describe('Feature Name', () => {
+  test('should perform specific action', async ({ page }) => {
+    // Arrange - Setup test data and navigation
+    await page.goto('/');
+    
+    // Act - Perform the test actions
+    await page.click('[data-testid="some-button"]');
+    
+    // Assert - Verify the expected outcome
+    await expect(page.locator('[data-testid="result"]')).toBeVisible();
+    
+    // Cleanup - Remove test data
+    // ... cleanup code ...
+  });
+});
+```
+
 ## Getting Started
 
 1. Clone the repository:
@@ -203,3 +271,11 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 For database deployment, we're using:
 - [Neon](https://neon.tech/) - Serverless Postgres with separate dev/prod branches
+
+## Seeding Prod Database
+
+Easiest way is to run the seed command with the database URL directly via:
+`DATABASE_URL="PASTE_HERE" npx ts-node scripts/seed-prod.ts`
+
+To verify data is actually in the Prod database, run this query:
+`DATABASE_URL="PASTE_HERE" npx prisma studio`

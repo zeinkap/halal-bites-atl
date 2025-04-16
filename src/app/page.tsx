@@ -97,18 +97,11 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-start mb-8">
-          <div className="flex-1 text-left md:text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Halal Bites ATL
-            </h1>
-            <p className="text-gray-600 text-base md:text-lg">
-              Discover the best halal restaurants & muslim-owned cafes in Atlanta
-            </p>
-          </div>
+        <div className="flex justify-end mb-8">
           <button
             onClick={() => setShowAddForm(true)}
-            className="ml-4 md:ml-8 bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer"
+            data-testid="add-restaurant-button"
+            className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer"
           >
             Add Restaurant
           </button>
@@ -251,8 +244,12 @@ export default function Home() {
                 </button>
               </div>
             ) : (
-              filteredAndSortedRestaurants.map((restaurant) => (
-                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              filteredAndSortedRestaurants.map((restaurant, index) => (
+                <RestaurantCard 
+                  key={restaurant.id} 
+                  restaurant={restaurant}
+                  isPriority={index < 3} // First 3 cards will have priority loading
+                />
               ))
             )
           )}

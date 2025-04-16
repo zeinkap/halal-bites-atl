@@ -418,6 +418,222 @@ async function main() {
       hasHighChair: true,
     },
   });
+
+  await prisma.restaurant.upsert({
+    where: { id: '24' },
+    update: {},
+    create: {
+      id: '24',
+      name: 'Jerusalem Bakery & Grill',
+      cuisine: CuisineType.MIDDLE_EASTERN,
+      address: '11235 Alpharetta Hwy, Roswell, GA 30076',
+      description: 'Authentic Middle Eastern bakery and restaurant known for their fresh pita bread, manakeesh, and traditional Middle Eastern dishes. Features an extensive bakery selection with fresh pastries, bread, and groceries.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '25' },
+    update: {},
+    create: {
+      id: '25',
+      name: 'Bismillah Cafe',
+      cuisine: CuisineType.INDIAN_PAKISTANI,
+      address: '4022 Buford Hwy NE, Atlanta, GA 30345',
+      description: 'Popular spot for authentic Pakistani street food and traditional dishes. Known for their chai, paratha rolls, and authentic South Asian breakfast items.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '26' },
+    update: {},
+    create: {
+      id: '26',
+      name: 'Merhaba Shawarma',
+      cuisine: CuisineType.MEDITERRANEAN,
+      address: '4188 E Ponce de Leon Ave, Clarkston, GA 30021',
+      description: 'Pitas & platters filled with meats, falafel & other Mediterranean staples in a casual setting.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '29' },
+    update: {},
+    create: {
+      id: '29',
+      name: 'Delbar - Old Milton',
+      cuisine: CuisineType.MIDDLE_EASTERN,
+      address: '4120 Old Milton Pkwy, Alpharetta, GA 30005',
+      description: 'Modern Middle Eastern restaurant offering a fresh take on traditional dishes. Features family-style dining with an emphasis on Persian and Mediterranean flavors.',
+      priceRange: PriceRange.HIGH,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '30' },
+    update: {},
+    create: {
+      id: '30',
+      name: 'Sufi\'s Kitchen',
+      cuisine: CuisineType.PERSIAN,
+      address: '1814 Peachtree St NE, Atlanta, GA 30309',
+      description: 'Family-owned Persian restaurant specializing in authentic Iranian cuisine. Known for their kabobs, rice dishes, and traditional stews.',
+      priceRange: PriceRange.MEDIUM,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '31' },
+    update: {},
+    create: {
+      id: '31',
+      name: 'Sabri Kabab House',
+      cuisine: CuisineType.INDIAN_PAKISTANI,
+      address: '6075 Singleton Rd, Norcross, GA 30093',
+      description: 'Traditional Indian fare & sweets in a counter-serve setup with vibrant orange walls & blue booths.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '32' },
+    update: {},
+    create: {
+      id: '32',
+      name: 'Al-Amin Supermarket & Restaurant',
+      cuisine: CuisineType.INDIAN_PAKISTANI,
+      address: '5466 Buford Hwy NE, Doraville, GA 30340',
+      description: 'Family-owned Bangladeshi and Indian restaurant serving authentic dishes. Known for their biryani, curries, and fresh tandoor items.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '35' },
+    update: {},
+    create: {
+      id: '35',
+      name: 'Cafe Bombay',
+      cuisine: CuisineType.INDIAN_PAKISTANI,
+      address: '2615 Briarcliff Rd NE, Atlanta, GA 30329',
+      description: 'Indian restaurant serving both vegetarian and halal meat dishes. Known for their extensive menu, lunch buffet, and catering services.',
+      priceRange: PriceRange.MEDIUM,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '36' },
+    update: {},
+    create: {
+      id: '36',
+      name: 'ZamZam Halal Supermarket & Restaurant',
+      cuisine: CuisineType.INDIAN_PAKISTANI,
+      address: '5432 Buford Hwy NE, Doraville, GA 30340',
+      description: 'Authentic Pakistani and Indian cuisine serving traditional dishes. Known for their biryani, kebabs, and fresh naan bread.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '37' },
+    update: {},
+    create: {
+      id: '37',
+      name: 'Kabul Kabob',
+      cuisine: CuisineType.AFGHAN,
+      address: '1475 Holcomb Bridge Rd, Roswell, GA 30076',
+      description: 'Afghan restaurant specializing in authentic kabobs, rice dishes, and traditional Afghan cuisine. Features fresh-baked Afghan bread.',
+      priceRange: PriceRange.MEDIUM,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '38' },
+    update: {},
+    create: {
+      id: '38',
+      name: 'Al Madina Grocery & Restaurant',
+      cuisine: CuisineType.MIDDLE_EASTERN,
+      address: '5345 Jimmy Carter Blvd suite c, Norcross, GA 30093',
+      description: 'Middle Eastern restaurant and grocery store serving fresh shawarma, falafel, and grilled items. Features an in-house bakery and grocery section.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+    },
+  });
+
+  await prisma.restaurant.upsert({
+    where: { id: '40' },
+    update: {},
+    create: {
+      id: '40',
+      name: 'Chinese Dhaba',
+      cuisine: CuisineType.OTHER,
+      address: '5675 Jimmy Carter Blvd, Norcross, GA 30071',
+      description: 'Chinese halal restaurant serving authentic Chinese cuisine made with halal ingredients. Known for their hand-pulled noodles and lamb dishes.',
+      priceRange: PriceRange.LOW,
+      imageUrl: 'https://placehold.co/800x600/orange/white?text=Restaurant+Image',
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+    },
+  });
 }
 
 main()

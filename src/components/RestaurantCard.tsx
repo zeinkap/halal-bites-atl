@@ -6,6 +6,7 @@ import CommentModal from './CommentModal';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
+  isPriority?: boolean;
 }
 
 const formatCuisine = (cuisine: string) => {
@@ -21,7 +22,7 @@ const formatPriceRange = (priceRange: string) => {
   }
 };
 
-export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant, isPriority = false }: RestaurantCardProps) {
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
   return (
@@ -36,6 +37,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-110"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={isPriority}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             
@@ -46,10 +48,14 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
             {/* Restaurant Name and Cuisine - Overlaid on image */}
             <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-              <h3 className="text-xl font-bold mb-1 drop-shadow-lg" data-testid={`restaurant-name-${restaurant.id}`}>
+              <h3 
+                className="text-xl font-bold mb-1 drop-shadow-lg" 
+                data-testid={`restaurant-name-${restaurant.name}`}
+                data-restaurant-id={restaurant.id}
+              >
                 {restaurant.name}
               </h3>
-              <p className="text-sm text-white/90 font-medium drop-shadow-lg">
+              <p className="text-sm text-white/90 font-medium drop-shadow-lg" data-testid={`restaurant-cuisine-${restaurant.id}`}>
                 {formatCuisine(restaurant.cuisine)}
               </p>
             </div>
@@ -61,7 +67,9 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             <div className="space-y-2 mb-4">
               <div className="flex items-start gap-2">
                 <MapPinIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-600 line-clamp-2">{restaurant.address}</p>
+                <p className="text-sm text-gray-600 line-clamp-2" data-testid={`restaurant-address-${restaurant.id}`}>
+                  {restaurant.address}
+                </p>
               </div>
               
               {/* New Features Section */}
@@ -69,7 +77,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 {/* Prayer Room */}
                 <div className="flex items-center gap-2">
                   <HomeModernIcon className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600" data-testid={`restaurant-prayer-room-${restaurant.id}`}>
                     {restaurant.hasPrayerRoom ? 'Prayer Room ✓' : 'No Prayer Room'}
                   </span>
                 </div>
@@ -77,7 +85,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 {/* Outdoor Seating */}
                 <div className="flex items-center gap-2">
                   <SunIcon className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600" data-testid={`restaurant-outdoor-seating-${restaurant.id}`}>
                     {restaurant.hasOutdoorSeating ? 'Outdoor Seating ✓' : 'Indoor Only'}
                   </span>
                 </div>
@@ -85,7 +93,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 {/* Zabiha Status */}
                 <div className="flex items-center gap-2">
                   <HeartIcon className="h-4 w-4 text-red-600" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600" data-testid={`restaurant-zabiha-${restaurant.id}`}>
                     {restaurant.isZabiha ? 'Zabiha ✓' : 'Non-Zabiha'}
                   </span>
                 </div>
@@ -93,7 +101,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 {/* High Chair */}
                 <div className="flex items-center gap-2">
                   <UserGroupIcon className="h-4 w-4 text-purple-600" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600" data-testid={`restaurant-high-chair-${restaurant.id}`}>
                     {restaurant.hasHighChair ? 'High Chairs ✓' : 'No High Chairs'}
                   </span>
                 </div>

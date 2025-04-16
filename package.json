@@ -9,7 +9,8 @@
     "lint": "next lint",
     "seed": "ts-node prisma/seed.ts",
     "seed:prod": "ts-node scripts/seed-prod.ts",
-    "test:e2e": "playwright test"
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

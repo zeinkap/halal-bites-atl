@@ -1,4 +1,46 @@
 import { defineConfig, devices } from '@playwright/test';
+import http from 'http';
+
+// Function to check if server is already running
+const isServerRunning = async (url: string): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const [hostname, port] = url.replace('http://', '').split(':');
+    const options = {
+      hostname,
+      port,
+      timeout: 1000, // 1 second timeout
+    };
+
+    const req = http.get(options, (res) => {
+      resolve(true);
+      res.resume();
+    });
+
+    req.on('error', () => {
+      resolve(false);
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(false);
+    });
+  });
+};
+
+// Check if server is running and set environment variable
+const checkServer = async () => {
+  const serverRunning = await isServerRunning('http://localhost:3000');
+  if (serverRunning) {
+    console.log('Server is already running on http://localhost:3000');
+    process.env.SERVER_ALREADY_RUNNING = 'true';
+  } else {
+    console.log('Starting new server instance...');
+    process.env.SERVER_ALREADY_RUNNING = 'false';
+  }
+};
+
+// Run the check before tests start
+checkServer();
 
 export default defineConfig({
   testDir: './tests',
@@ -21,8 +63,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev',
+    command: process.env.SERVER_ALREADY_RUNNING === 'true' ? 'echo "Using existing server"' : 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    timeout: 120000, // 2 minutes timeout
   },
 }); 
