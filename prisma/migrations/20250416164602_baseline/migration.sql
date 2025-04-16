@@ -12,7 +12,6 @@ CREATE TABLE "Restaurant" (
     "address" TEXT NOT NULL,
     "description" TEXT,
     "priceRange" "PriceRange" NOT NULL,
-    "website" TEXT,
     "imageUrl" TEXT,
     "hasPrayerRoom" BOOLEAN NOT NULL DEFAULT false,
     "hasOutdoorSeating" BOOLEAN NOT NULL DEFAULT false,
@@ -30,6 +29,7 @@ CREATE TABLE "Comment" (
     "content" TEXT NOT NULL,
     "rating" INTEGER NOT NULL DEFAULT 5,
     "authorName" TEXT NOT NULL,
+    "imageUrl" TEXT,
     "restaurantId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -45,3 +45,4 @@ CREATE INDEX "Comment_restaurantId_idx" ON "Comment"("restaurantId");
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
