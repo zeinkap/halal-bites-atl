@@ -28,41 +28,14 @@ export default function RestaurantCard({ restaurant, isPriority = false }: Resta
   return (
     <>
       <div className="group relative">
-        <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-          {/* Image Container */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden">
-            <Image
-              src={restaurant.imageUrl || '/images/placeholder.jpg'}
-              alt={restaurant.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-110"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              priority={isPriority}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            
-            {/* Price Range */}
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-black shadow-lg">
-              {formatPriceRange(restaurant.priceRange)}
+        <div className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+          <div className="flex flex-col h-full">
+            <div>
+              <h3 className="text-xl font-semibold mb-2">{restaurant.name}</h3>
+              <p className="text-gray-600 mb-2">{restaurant.address}</p>
+              <p className="text-gray-700 mb-4">{restaurant.description}</p>
             </div>
 
-            {/* Restaurant Name and Cuisine - Overlaid on image */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-              <h3 
-                className="text-xl font-bold mb-1 drop-shadow-lg" 
-                data-testid={`restaurant-name-${restaurant.name}`}
-                data-restaurant-id={restaurant.id}
-              >
-                {restaurant.name}
-              </h3>
-              <p className="text-sm text-white/90 font-medium drop-shadow-lg" data-testid={`restaurant-cuisine-${restaurant.id}`}>
-                {formatCuisine(restaurant.cuisineType)}
-              </p>
-            </div>
-          </div>
-
-          {/* Content Section */}
-          <div className="p-4">
             {/* Quick Info */}
             <div className="space-y-2 mb-4">
               <div className="flex items-start gap-2">
@@ -120,17 +93,22 @@ export default function RestaurantCard({ restaurant, isPriority = false }: Resta
 
             {/* Quick Actions */}
             <div className="flex gap-2">
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  `${restaurant.name} ${restaurant.address}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid={`view-maps-button-${restaurant.id}`}
-                className="flex-1 text-center px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg text-sm font-medium hover:from-teal-600 hover:to-emerald-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer"
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${restaurant.name} ${restaurant.address}`
+                    )}`,
+                    '_blank'
+                  );
+                }}
+                className="p-2 text-gray-600 hover:text-green-600 transition-colors cursor-pointer"
+                title="View on Maps"
+                data-testid={`restaurant-card-map-icon-${restaurant.id}`}
               >
-                View on Maps
-              </a>
+                <MapPinIcon className="h-5 w-5" />
+              </button>
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
                   `${restaurant.name} ${restaurant.address}`
@@ -143,12 +121,15 @@ export default function RestaurantCard({ restaurant, isPriority = false }: Resta
                 Directions
               </a>
               <button
-                onClick={() => setIsCommentModalOpen(true)}
-                data-testid={`open-comments-button-${restaurant.id}`}
-                className="px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-lg text-sm font-medium hover:from-blue-500 hover:to-blue-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer flex items-center gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsCommentModalOpen(true);
+                }}
+                className="p-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                title="Comments"
+                data-testid={`restaurant-card-comment-icon-${restaurant.id}`}
               >
-                <ChatBubbleLeftIcon className="h-4 w-4" />
-                Comments
+                <ChatBubbleLeftIcon className="h-5 w-5" />
               </button>
             </div>
           </div>

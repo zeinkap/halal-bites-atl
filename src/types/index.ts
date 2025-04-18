@@ -3,9 +3,8 @@ export interface Restaurant {
   name: string;
   cuisineType: string;
   address: string;
-  description: string;
+  description?: string;
   priceRange: string;
-  imageUrl?: string;
   hasPrayerRoom: boolean;
   hasOutdoorSeating: boolean;
   isZabiha: boolean;

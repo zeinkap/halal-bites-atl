@@ -6,6 +6,7 @@ import RestaurantCard from '@/components/RestaurantCard';
 import AddRestaurantForm from '@/components/AddRestaurantForm';
 import ScrollToTop from '@/components/ScrollToTop';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import RestaurantListItem from '@/components/RestaurantListItem';
 
 // Helper function to format cuisine names
 const formatCuisineName = (cuisine: string) => {
@@ -121,37 +122,40 @@ export default function Home() {
           </div>
         )}
 
-        <div className="flex justify-end mb-8">
-          <button
-            onClick={() => setShowAddForm(true)}
-            data-testid="add-restaurant-button"
-            className="bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer"
-          >
-            Add Restaurant
-          </button>
-        </div>
-
-        {/* Search and Filter Section */}
+        {/* Search, Filter, and Add Section */}
         <div className="mb-8">
-          <div className="flex gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
             <div className="flex-1 relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search restaurants by name, cuisine, or location..."
-                className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-900"
+                placeholder="Search by name, cuisine, or location"
+                className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-500"
                 data-testid="search-input"
               />
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center gap-2 cursor-pointer"
-            >
-              <AdjustmentsHorizontalIcon className="h-5 w-5" />
-              Filters
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center gap-2 cursor-pointer"
+              >
+                <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                <span className="hidden sm:inline">Filters</span>
+              </button>
+              <button
+                onClick={() => setShowAddForm(true)}
+                data-testid="add-restaurant-button"
+                className="flex-shrink-0 bg-gradient-to-r from-orange-400 to-orange-500 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer flex items-center gap-2"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="sm:hidden">Add Restaurant/Cafe</span>
+                <span className="hidden sm:inline">Add Restaurant/Cafe</span>
+              </button>
+            </div>
           </div>
 
           {showFilters && (
@@ -242,52 +246,45 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoading ? (
-            // Loading skeleton
-            <>
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-md overflow-hidden animate-pulse">
-                  <div className="aspect-[4/3] bg-gray-200"></div>
-                  <div className="p-4 space-y-4">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            filteredAndSortedRestaurants.length === 0 ? (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-600 mb-4">No restaurants found matching your criteria.</p>
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm"
-                >
-                  Add a Restaurant
-                </button>
+        {/* Restaurant List */}
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-full"></div>
               </div>
-            ) : (
-              filteredAndSortedRestaurants.map((restaurant, index) => (
-                <RestaurantCard 
-                  key={restaurant.id} 
-                  restaurant={restaurant}
-                  isPriority={index < 3} // First 3 cards will have priority loading
-                />
-              ))
-            )
-          )}
-        </div>
+            ))}
+          </div>
+        ) : filteredAndSortedRestaurants.length > 0 ? (
+          <div className="space-y-4">
+            {filteredAndSortedRestaurants.map((restaurant) => (
+              <RestaurantListItem
+                key={restaurant.id}
+                restaurant={restaurant}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No restaurants found matching your criteria.</p>
+          </div>
+        )}
 
-        <AddRestaurantForm
-          isOpen={showAddForm}
-          onClose={() => {
-            setShowAddForm(false);
-            fetchRestaurants(); // Refresh the list after adding
-          }}
-        />
+        <ScrollToTop />
+
+        {showAddForm && (
+          <AddRestaurantForm
+            isOpen={true}
+            onClose={() => setShowAddForm(false)}
+            onRestaurantAdded={() => {
+              setShowAddForm(false);
+              fetchRestaurants();
+            }}
+          />
+        )}
       </div>
-      <ScrollToTop />
     </main>
   );
 }

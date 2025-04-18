@@ -14,7 +14,6 @@ model Restaurant {
   address           String
   description       String?
   priceRange        PriceRange
-  imageUrl          String?
   hasPrayerRoom     Boolean     @default(false)
   hasOutdoorSeating Boolean     @default(false)
   isZabiha          Boolean     @default(false)

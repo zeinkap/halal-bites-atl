@@ -192,7 +192,6 @@ model Restaurant {
   address           String
   description       String?
   priceRange        PriceRange
-  imageUrl          String?
   hasPrayerRoom     Boolean     @default(false)
   hasOutdoorSeating Boolean     @default(false)
   isZabiha          Boolean     @default(false)
@@ -283,7 +282,7 @@ For database deployment, we're using:
 ## Seeding Prod Database
 
 Easiest way is to run the seed command with the database URL directly via:
-`DATABASE_URL="PASTE_HERE" npx ts-node scripts/seed-prod.ts`
+`DATABASE_URL="PASTE_HERE" npx ts-node scripts/seed.ts`
 
 To verify data is actually in the Prod database, run this query:
 `DATABASE_URL="PASTE_HERE" npx prisma studio`
