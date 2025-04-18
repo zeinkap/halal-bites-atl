@@ -1,28 +1,13 @@
 import { Restaurant } from '@/types';
-import Image from 'next/image';
 import { useState } from 'react';
 import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
 import CommentModal from './CommentModal';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
-  isPriority?: boolean;
 }
 
-const formatCuisine = (cuisine: string) => {
-  return cuisine.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
-};
-
-const formatPriceRange = (priceRange: string) => {
-  switch (priceRange) {
-    case 'LOW': return '$';
-    case 'MEDIUM': return '$$';
-    case 'HIGH': return '$$$';
-    default: return priceRange;
-  }
-};
-
-export default function RestaurantCard({ restaurant, isPriority = false }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
 
   return (

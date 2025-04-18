@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Restaurant } from '@/types';
-import RestaurantCard from '@/components/RestaurantCard';
 import AddRestaurantForm from '@/components/AddRestaurantForm';
 import ScrollToTop from '@/components/ScrollToTop';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
