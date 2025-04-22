@@ -11,13 +11,15 @@ model Restaurant {
   id                String      @id @default(cuid())
   name              String      @unique
   cuisineType       CuisineType
-  address           String
+  address           String      @unique
   description       String?
   priceRange        PriceRange
   hasPrayerRoom     Boolean     @default(false)
   hasOutdoorSeating Boolean     @default(false)
   isZabiha          Boolean     @default(false)
   hasHighChair      Boolean     @default(false)
+  servesAlcohol     Boolean     @default(false)
+  isFullyHalal       Boolean     @default(true)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   comments          Comment[]

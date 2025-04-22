@@ -1,6 +1,6 @@
 import { Restaurant } from '@/types';
 import { useState } from 'react';
-import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 import CommentModal from './CommentModal';
 
 interface RestaurantCardProps {
@@ -73,6 +73,22 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                     {restaurant.hasHighChair ? 'High Chairs ✓' : 'No High Chairs'}
                   </span>
                 </div>
+
+                {/* Alcohol Status */}
+                <div className="flex items-center gap-2">
+                  <BeakerIcon className="h-4 w-4 text-amber-600" />
+                  <span className="text-sm text-gray-600" data-testid={`restaurant-alcohol-${restaurant.id}`}>
+                    {restaurant.servesAlcohol ? 'Serves Alcohol' : 'No Alcohol ✓'}
+                  </span>
+                </div>
+
+                {/* Halal Menu Status */}
+                <div className="flex items-center gap-2">
+                  <CheckBadgeIcon className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-gray-600" data-testid={`restaurant-fully-halal-${restaurant.id}`}>
+                    {restaurant.isFullyHalal ? 'Fully Halal ✓' : 'Partial Halal'}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -130,4 +146,4 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
       />
     </>
   );
-} 
+}

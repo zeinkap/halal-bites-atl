@@ -14,7 +14,9 @@ const TEST_RESTAURANTS = {
       hasPrayerRoom: true,
       hasOutdoorSeating: true,
       isZabiha: true,
-      hasHighChair: true
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true
     }
   },
   DUPLICATE: {
@@ -27,7 +29,9 @@ const TEST_RESTAURANTS = {
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
       isZabiha: false,
-      hasHighChair: false
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: false
     }
   }
 } as const;
@@ -53,10 +57,10 @@ test.describe('Add Restaurant Feature', () => {
     await page.fill('[data-testid="restaurant-name-input"]', data.name);
     await page.waitForTimeout(100);
     
-    await page.selectOption('[data-testid="restaurant-cuisine-select"]', data.cuisine);
+    await page.selectOption('[data-testid="cuisine-type-select"]', data.cuisine);
     await page.waitForTimeout(100);
     
-    await page.selectOption('[data-testid="restaurant-price-select"]', data.priceRange);
+    await page.selectOption('[data-testid="price-range-select"]', data.priceRange);
     await page.waitForTimeout(100);
     
     await page.fill('[data-testid="restaurant-address-input"]', data.address);
@@ -86,6 +90,16 @@ test.describe('Add Restaurant Feature', () => {
     
     if (data.features.hasHighChair) {
       await page.click('[data-testid="restaurant-high-chair-checkbox"]');
+      await page.waitForTimeout(100);
+    }
+
+    if (data.features.servesAlcohol) {
+      await page.click('[data-testid="restaurant-alcohol-checkbox"]');
+      await page.waitForTimeout(100);
+    }
+
+    if (!data.features.isFullyHalal) { // Since default is true, we only click if we want to set it to false
+      await page.click('[data-testid="restaurant-fully-halal-checkbox"]');
       await page.waitForTimeout(100);
     }
   }
@@ -202,6 +216,8 @@ test.describe('Add Restaurant Feature', () => {
     expect(addedRestaurant.hasOutdoorSeating, 'Outdoor seating should be enabled').toBe(TEST_RESTAURANTS.BASIC.features.hasOutdoorSeating);
     expect(addedRestaurant.isZabiha, 'Zabiha should be enabled').toBe(TEST_RESTAURANTS.BASIC.features.isZabiha);
     expect(addedRestaurant.hasHighChair, 'High chair should be enabled').toBe(TEST_RESTAURANTS.BASIC.features.hasHighChair);
+    expect(addedRestaurant.servesAlcohol, 'Serves alcohol should match').toBe(TEST_RESTAURANTS.BASIC.features.servesAlcohol);
+    expect(addedRestaurant.isFullyHalal, 'Fully halal status should match').toBe(TEST_RESTAURANTS.BASIC.features.isFullyHalal);
 
     // Store ID for cleanup
     testRestaurantIds.push(addedRestaurant.id);

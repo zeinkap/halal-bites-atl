@@ -120,6 +120,118 @@ test.describe('Feature Name', () => {
 });
 ```
 
+## API Documentation
+
+The application provides the following REST API endpoints for managing restaurants:
+
+### GET /api/restaurants
+Retrieves all restaurants.
+
+**Response**
+```json
+[
+  {
+    "id": "string",
+    "name": "string",
+    "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | OTHER",
+    "address": "string",
+    "description": "string",
+    "priceRange": "LOW | MEDIUM | HIGH",
+    "hasPrayerRoom": boolean,
+    "hasOutdoorSeating": boolean,
+    "isZabiha": boolean,
+    "hasHighChair": boolean,
+    "createdAt": "datetime",
+    "updatedAt": "datetime"
+  }
+]
+```
+
+### POST /api/restaurants
+Creates a new restaurant.
+
+**Request Body**
+```json
+{
+  "name": "string (required)",
+  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | OTHER (required)",
+  "address": "string (required)",
+  "priceRange": "LOW | MEDIUM | HIGH (required)",
+  "description": "string (optional)",
+  "hasPrayerRoom": "boolean (optional)",
+  "hasOutdoorSeating": "boolean (optional)",
+  "isZabiha": "boolean (optional)",
+  "hasHighChair": "boolean (optional)",
+  "servesAlcohol": "boolean (optional)",
+  "isFullyHalal": "boolean (optional)"
+}
+```
+
+### PATCH /api/restaurants?id={restaurantId}
+Updates an existing restaurant.
+
+**Request Body**
+```json
+{
+  "name": "string (optional)",
+  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | OTHER (optional)",
+  "address": "string (optional)",
+  "priceRange": "LOW | MEDIUM | HIGH (optional)",
+  "description": "string (optional)",
+  "hasPrayerRoom": "boolean (optional)",
+  "hasOutdoorSeating": "boolean (optional)",
+  "isZabiha": "boolean (optional)",
+  "hasHighChair": "boolean (optional)",
+  "servesAlcohol": "boolean (optional)",
+  "isFullyHalal": "boolean (optional)"
+}
+```
+
+### DELETE /api/restaurants?id={restaurantId}
+Deletes a restaurant and its associated comments.
+
+**Response**
+```json
+{
+  "success": true
+}
+```
+
+### Example Usage
+
+```javascript
+// Get all restaurants
+const response = await fetch('/api/restaurants');
+const restaurants = await response.json();
+
+// Create a new restaurant
+const newRestaurant = await fetch('/api/restaurants', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: "New Restaurant",
+    cuisineType: "MIDDLE_EASTERN",
+    address: "123 Main St, Atlanta, GA",
+    priceRange: "MEDIUM"
+  })
+});
+
+// Update a restaurant
+const updatedRestaurant = await fetch('/api/restaurants?id=restaurant_id', {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    description: "Updated description",
+    isZabiha: true
+  })
+});
+
+// Delete a restaurant
+const deleteResponse = await fetch('/api/restaurants?id=restaurant_id', {
+  method: 'DELETE'
+});
+```
+
 ## Getting Started
 
 1. Clone the repository:
@@ -286,6 +398,9 @@ Easiest way is to run the seed command with the database URL directly via:
 
 To verify data is actually in the Prod database, run this query:
 `DATABASE_URL="PASTE_HERE" npx prisma studio`
+
+Run these commands to reset, migrate and seed prod database:
+`npm run reset-prod && npm run migrate-prod && npm run seed-prod`
 
 ## Contributing
 

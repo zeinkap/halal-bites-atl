@@ -127,7 +127,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
         }`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-4">
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-xl font-bold text-gray-900">

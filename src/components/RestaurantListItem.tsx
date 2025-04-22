@@ -1,5 +1,5 @@
 import { Restaurant } from '@/types';
-import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 import CommentModal from './CommentModal';
 
@@ -78,6 +78,18 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                   <div className="flex items-center gap-1">
                     <UserGroupIcon className="h-4 w-4 text-purple-600" />
                     <span className="text-xs text-gray-600">High Chairs</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  <BeakerIcon className="h-4 w-4 text-amber-600" />
+                  <span className="text-xs text-gray-600" data-testid={`restaurant-alcohol-${restaurant.id}`}>
+                    {restaurant.servesAlcohol ? 'Serves Alcohol' : 'No Alcohol ✓'}
+                  </span>
+                </div>
+                {restaurant.isFullyHalal && (
+                  <div className="flex items-center gap-1">
+                    <CheckBadgeIcon className="h-4 w-4 text-green-600" />
+                    <span className="text-xs text-gray-600">Fully Halal</span>
                   </div>
                 )}
               </div>

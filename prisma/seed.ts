@@ -1,14 +1,35 @@
-import { PrismaClient, CuisineType, PriceRange } from '@prisma/client';
+import { PrismaClient, CuisineType, PriceRange, Prisma } from '@prisma/client';
+import { createId } from '@paralleldrive/cuid2';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Add sample restaurants
-  await prisma.restaurant.upsert({
-    where: { id: '1' },
-    update: {},
-    create: {
-      id: '1',
+  try {
+    console.log('Starting database seed...');
+    let successCount = 0;
+    let errorCount = 0;
+    const errors: Array<{ id: string; error: any }> = [];
+
+    // Helper function to handle restaurant upsert
+    async function upsertRestaurant(name: string, data: any) {
+      try {
+        const id = createId();
+        await prisma.restaurant.upsert({
+          where: { name },  // Using name as the unique identifier for upsert
+          update: {},
+          create: { ...data, id },
+        });
+        successCount++;
+        console.log(`✓ Successfully upserted restaurant: ${name}`);
+      } catch (error) {
+        errorCount++;
+        errors.push({ id: name, error });
+        console.error(`✗ Failed to upsert restaurant ${name}:`, error instanceof Prisma.PrismaClientKnownRequestError ? `[${error.code}] ${error.message}` : error);
+      }
+    }
+
+    // Add sample restaurants
+    await upsertRestaurant('Shawarma Press - Johns Creek', {
       name: 'Shawarma Press - Johns Creek',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '11035 Medlock Bridge Rd #50, Johns Creek, GA 30097',
@@ -18,14 +39,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '2' },
-    update: {},
-    create: {
-      id: '2',
+    await upsertRestaurant('Kimchi Red - Alpharetta', {
       name: 'Kimchi Red - Alpharetta',
       cuisineType: CuisineType.OTHER,
       address: '3630 Old Milton Pkwy #110, Alpharetta, GA 30005',
@@ -35,14 +53,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '3' },
-    update: {},
-    create: {
-      id: '3',
+    await upsertRestaurant("Olomi's Grill", {
       name: "Olomi's Grill",
       cuisineType: CuisineType.AFGHAN,
       address: '11670 Jones Bridge Rd suite a, Johns Creek, GA 30005',
@@ -52,14 +67,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '4' },
-    update: {},
-    create: {
-      id: '4',
+    await upsertRestaurant("Aachi's Indian Restaurant and Bakery", {
       name: "Aachi's Indian Restaurant and Bakery",
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '11550 Jones Bridge Rd #14, Johns Creek, GA 30022',
@@ -69,14 +81,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '5' },
-    update: {},
-    create: {
-      id: '5',
+    await upsertRestaurant('Spices Hut Food Court', {
       name: 'Spices Hut Food Court',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '4150 Old Milton Pkwy #134, Alpharetta, GA 30005',
@@ -86,14 +95,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '6' },
-    update: {},
-    create: {
-      id: '6',
+    await upsertRestaurant('Pista House Alpharetta', {
       name: 'Pista House Alpharetta',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5530 Windward Pkwy, Alpharetta, GA 30004',
@@ -103,14 +109,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '7' },
-    update: {},
-    create: {
-      id: '7',
+    await upsertRestaurant('Namak', {
       name: 'Namak',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5220 McGinnis Ferry Rd, Alpharetta, GA 30005',
@@ -120,14 +123,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '8' },
-    update: {},
-    create: {
-      id: '8',
+    await upsertRestaurant('Biryani House Atlanta', {
       name: 'Biryani House Atlanta',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '3455 Peachtree Pkwy #201, Suwanee, GA 30024',
@@ -137,14 +137,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '9' },
-    update: {},
-    create: {
-      id: '9',
+    await upsertRestaurant('Al Zein Shawarma & Mediterranean Grill', {
       name: 'Al Zein Shawarma & Mediterranean Grill',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '11875 Jones Bridge Rd Suite F, Alpharetta, GA 30005',
@@ -154,14 +151,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '10' },
-    update: {},
-    create: {
-      id: '10',
+    await upsertRestaurant('Kimchi Red - Johns Creek', {
       name: 'Kimchi Red - Johns Creek',
       cuisineType: CuisineType.OTHER,
       address: '3651 Peachtree Pkwy Suite D, Suwanee, GA 30024',
@@ -171,14 +165,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '11' },
-    update: {},
-    create: {
-      id: '11',
+    await upsertRestaurant('Cafe Efendi Mediterranean Restaurant', {
       name: 'Cafe Efendi Mediterranean Restaurant',
       cuisineType: CuisineType.MEDITERRANEAN,
       address: '488 N Main St, Alpharetta, GA 30009',
@@ -188,14 +179,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '12' },
-    update: {},
-    create: {
-      id: '12',
+    await upsertRestaurant('Karachi Broast & Grill', {
       name: 'Karachi Broast & Grill',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '11235 Alpharetta Hwy #140, Roswell, GA 30076',
@@ -205,14 +193,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '13' },
-    update: {},
-    create: {
-      id: '13',
+    await upsertRestaurant('Zyka: The Taste | Indian Restaurant | Decatur', {
       name: 'Zyka: The Taste | Indian Restaurant | Decatur',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '1677 Scott Blvd, Decatur, GA 30033',
@@ -222,14 +207,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '14' },
-    update: {},
-    create: {
-      id: '14',
+    await upsertRestaurant('The Halal Guys', {
       name: 'The Halal Guys',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '4929 Buford Hwy NE, Chamblee, GA 30341',
@@ -239,14 +221,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '15' },
-    update: {},
-    create: {
-      id: '15',
+    await upsertRestaurant("Khan's Kitchen", {
       name: "Khan's Kitchen",
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5310 Windward Pkwy suite d, Alpharetta, GA 30004',
@@ -256,15 +235,12 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  // Now adding the cafes...
-  await prisma.restaurant.upsert({
-    where: { id: '16' },
-    update: {},
-    create: {
-      id: '16',
+    // Now adding the cafes...
+    await upsertRestaurant('Shibam Coffee', {
       name: 'Shibam Coffee',
       cuisineType: CuisineType.CAFE,
       address: '4000 North Point Pkwy Suite #900, Alpharetta, GA 30022',
@@ -274,14 +250,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '17' },
-    update: {},
-    create: {
-      id: '17',
+    await upsertRestaurant('MOTW Coffee and Pastries', {
       name: 'MOTW Coffee and Pastries',
       cuisineType: CuisineType.CAFE,
       address: '5202 McGinnis Ferry Rd, Alpharetta, GA 30005',
@@ -291,14 +264,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '18' },
-    update: {},
-    create: {
-      id: '18',
+    await upsertRestaurant('967 Coffee Co', {
       name: '967 Coffee Co',
       cuisineType: CuisineType.CAFE,
       address: '11235 Alpharetta Hwy Suite 136, Roswell, GA 30076',
@@ -308,14 +278,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '19' },
-    update: {},
-    create: {
-      id: '19',
+    await upsertRestaurant('Baladi Coffee', {
       name: 'Baladi Coffee',
       cuisineType: CuisineType.CAFE,
       address: '3061 George Busbee Pkwy NW suite 2000, Kennesaw, GA 30144',
@@ -325,14 +292,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '20' },
-    update: {},
-    create: {
-      id: '20',
+    await upsertRestaurant('Mukja Korean Fried Chicken', {
       name: 'Mukja Korean Fried Chicken',
       cuisineType: CuisineType.OTHER,
       address: '933 Peachtree St NE, Atlanta, GA 30309',
@@ -342,14 +306,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '21' },
-    update: {},
-    create: {
-      id: '21',
+    await upsertRestaurant('Baraka Shawarma Atlanta', {
       name: 'Baraka Shawarma Atlanta',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '68 Walton St NW, Atlanta, GA 30303',
@@ -359,14 +320,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '22' },
-    update: {},
-    create: {
-      id: '22',
+    await upsertRestaurant('Botiwalla by Chai Pani', {
       name: 'Botiwalla by Chai Pani',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: 'Ponce City Market, 675 Ponce De Leon Ave NE n134, Atlanta, GA 30308',
@@ -376,14 +334,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '23' },
-    update: {},
-    create: {
-      id: '23',
+    await upsertRestaurant('Dantanna\'s', {
       name: 'Dantanna\'s',
       cuisineType: CuisineType.OTHER,
       address: '3400 Around Lenox Rd NE #304, Atlanta, GA 30326',
@@ -393,14 +348,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '24' },
-    update: {},
-    create: {
-      id: '24',
+    await upsertRestaurant('Jerusalem Bakery & Grill', {
       name: 'Jerusalem Bakery & Grill',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '11235 Alpharetta Hwy, Roswell, GA 30076',
@@ -410,14 +362,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '25' },
-    update: {},
-    create: {
-      id: '25',
+    await upsertRestaurant('Bismillah Cafe', {
       name: 'Bismillah Cafe',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '4022 Buford Hwy NE, Atlanta, GA 30345',
@@ -427,31 +376,25 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '26' },
-    update: {},
-    create: {
-      id: '26',
+    await upsertRestaurant('Merhaba Shawarma', {
       name: 'Merhaba Shawarma',
-      address: '2126 Pleasant Hill Rd #108, Duluth, GA 30096',
       cuisineType: CuisineType.MEDITERRANEAN,
+      address: '4188 E Ponce de Leon Ave, Clarkston, GA 30021',
       description: 'Authentic Mediterranean shawarma and kebab restaurant offering fresh, halal meats and homemade sauces.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: true,
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '27' },
-    update: {},
-    create: {
-      id: '27',
+    await upsertRestaurant('Delbar - Old Milton', {
       name: 'Delbar - Old Milton',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '4120 Old Milton Pkwy, Alpharetta, GA 30005',
@@ -461,14 +404,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '28' },
-    update: {},
-    create: {
-      id: '28',
+    await upsertRestaurant('Sufi\'s Kitchen', {
       name: 'Sufi\'s Kitchen',
       cuisineType: CuisineType.PERSIAN,
       address: '1814 Peachtree St NE, Atlanta, GA 30309',
@@ -478,14 +418,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '29' },
-    update: {},
-    create: {
-      id: '29',
+    await upsertRestaurant('Sabri Kabab House', {
       name: 'Sabri Kabab House',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '6075 Singleton Rd, Norcross, GA 30093',
@@ -495,14 +432,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '30' },
-    update: {},
-    create: {
-      id: '30',
+    await upsertRestaurant('Al-Amin Supermarket & Restaurant', {
       name: 'Al-Amin Supermarket & Restaurant',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5466 Buford Hwy NE, Doraville, GA 30340',
@@ -512,14 +446,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '31' },
-    update: {},
-    create: {
-      id: '31',
+    await upsertRestaurant('Cafe Bombay', {
       name: 'Cafe Bombay',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '2615 Briarcliff Rd NE, Atlanta, GA 30329',
@@ -529,14 +460,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '32' },
-    update: {},
-    create: {
-      id: '32',
+    await upsertRestaurant('ZamZam Halal Supermarket & Restaurant', {
       name: 'ZamZam Halal Supermarket & Restaurant',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5432 Buford Hwy NE, Doraville, GA 30340',
@@ -546,14 +474,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '33' },
-    update: {},
-    create: {
-      id: '33',
+    await upsertRestaurant('Kabul Kabob', {
       name: 'Kabul Kabob',
       cuisineType: CuisineType.AFGHAN,
       address: '1475 Holcomb Bridge Rd, Roswell, GA 30076',
@@ -563,14 +488,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '34' },
-    update: {},
-    create: {
-      id: '34',
+    await upsertRestaurant('Al Madina Grocery & Restaurant', {
       name: 'Al Madina Grocery & Restaurant',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '5345 Jimmy Carter Blvd suite c, Norcross, GA 30093',
@@ -580,14 +502,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: false,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '35' },
-    update: {},
-    create: {
-      id: '35',
+    await upsertRestaurant('Chinese Dhaba', {
       name: 'Chinese Dhaba',
       cuisineType: CuisineType.OTHER,
       address: '5675 Jimmy Carter Blvd, Norcross, GA 30071',
@@ -597,14 +516,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '36' },
-    update: {},
-    create: {
-      id: '36',
+    await upsertRestaurant('Star Pizza', {
       name: 'Star Pizza',
       cuisineType: CuisineType.OTHER,
       address: '11490 Alpharetta Highway, Roswell, GA',
@@ -614,14 +530,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '37' },
-    update: {},
-    create: {
-      id: '37',
+    await upsertRestaurant('PONKO Chicken - Alpharetta', {
       name: 'PONKO Chicken - Alpharetta',
       cuisineType: CuisineType.OTHER,
       address: '220 South Main Street, Alpharetta, GA',
@@ -629,16 +542,13 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
+      isZabiha: false,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '38' },
-    update: {},
-    create: {
-      id: '38',
+    await upsertRestaurant('Express Burger & Grill', {
       name: 'Express Burger & Grill',
       cuisineType: CuisineType.MEDITERRANEAN,
       address: '7291 North Point Parkway, Alpharetta, GA',
@@ -648,14 +558,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '39' },
-    update: {},
-    create: {
-      id: '39',
+    await upsertRestaurant('Bombay Flames', {
       name: 'Bombay Flames',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '3050 Mansell Road, Alpharetta, GA',
@@ -665,14 +572,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '40' },
-    update: {},
-    create: {
-      id: '40',
+    await upsertRestaurant('Jerusalem Chef', {
       name: 'Jerusalem Chef',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '10684 Alpharetta Highway, Roswell, GA',
@@ -682,14 +586,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '41' },
-    update: {},
-    create: {
-      id: '41',
+    await upsertRestaurant('Gyro Café', {
       name: 'Gyro Café',
       cuisineType: CuisineType.MEDITERRANEAN,
       address: '869 North Main Street, Alpharetta, GA',
@@ -699,14 +600,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '42' },
-    update: {},
-    create: {
-      id: '42',
+    await upsertRestaurant('India Chef', {
       name: 'India Chef',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '720 Holcomb Bridge Road, Roswell, GA',
@@ -716,14 +614,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '43' },
-    update: {},
-    create: {
-      id: '43',
+    await upsertRestaurant('Desi Tadka', {
       name: 'Desi Tadka',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5250 Windward Parkway, Alpharetta, GA',
@@ -733,14 +628,11 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '44' },
-    update: {},
-    create: {
-      id: '44',
+    await upsertRestaurant('Loqoum Lounge', {
       name: 'Loqoum Lounge',
       cuisineType: CuisineType.MEDITERRANEAN,
       address: '915 Holcomb Bridge Road, Roswell, GA',
@@ -750,14 +642,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '45' },
-    update: {},
-    create: {
-      id: '45',
+    await upsertRestaurant('Moctezuma Mexican Grill', {
       name: 'Moctezuma Mexican Grill',
       cuisineType: CuisineType.OTHER,
       address: '13020 Morris Road, Alpharetta, GA',
@@ -767,14 +656,11 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: true,
-    },
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '46' },
-    update: {},
-    create: {
-      id: '46',
+    await upsertRestaurant('Adana Mediterranean Grill', {
       name: 'Adana Mediterranean Grill',
       cuisineType: CuisineType.MEDITERRANEAN,
       address: '585 Franklin Gateway Southeast, unit B-3, Marietta, GA 30067',
@@ -784,14 +670,11 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: true,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '47' },
-    update: {},
-    create: {
-      id: '47',
+    await upsertRestaurant('Dil Bahar Cafe & Market', {
       name: 'Dil Bahar Cafe & Market',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5825 Glenridge Drive Northeast, Sandy Springs, GA 30328',
@@ -801,14 +684,11 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: true,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '48' },
-    update: {},
-    create: {
-      id: '48',
+    await upsertRestaurant('Briskfire BBQ', {
       name: 'Briskfire BBQ',
       cuisineType: CuisineType.OTHER,
       address: '900 Indian Trail Lilburn Road Northwest, Lilburn, GA 30047',
@@ -818,14 +698,11 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: false,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '49' },
-    update: {},
-    create: {
-      id: '49',
+    await upsertRestaurant('Stone Creek Halal Pizza', {
       name: 'Stone Creek Halal Pizza',
       cuisineType: CuisineType.OTHER,
       address: '5330 Lilburn Stone Mountain Rd #108, Lilburn, GA 30047',
@@ -835,14 +712,11 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: false,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '50' },
-    update: {},
-    create: {
-      id: '50',
+    await upsertRestaurant('Salsa Taqueria & Wings', {
       name: 'Salsa Taqueria & Wings',
       cuisineType: CuisineType.OTHER,
       address: '3799 Buford Hwy NE, Brookhaven, GA 30329',
@@ -852,31 +726,25 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: false,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '51' },
-    update: {},
-    create: {
-      id: '51',
+    await upsertRestaurant('Bibi Persian Eatery', {
       name: 'Bibi Persian Eatery',
-      address: '675 Ponce, Atlanta, GA 30308',
       cuisineType: CuisineType.PERSIAN,
+      address: '675 Ponce, Atlanta, GA 30308',
       description: 'A 100% halal Persian eatery offering sandwiches and kebabs served with rice, grilled tomato, and torshi pickles. Features unique halal beverages including doogh (yogurt soda) and sharbat (homemade soda).',
       priceRange: PriceRange.MEDIUM,
       hasOutdoorSeating: true,
       isZabiha: true,
       hasPrayerRoom: true,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '52' },
-    update: {},
-    create: {
-      id: '52',
+    await upsertRestaurant('Auntie Vees Kitchen', {
       name: 'Auntie Vees Kitchen',
       cuisineType: CuisineType.OTHER,
       address: '209 Edgewood Avenue Northeast, Atlanta, GA 30303',
@@ -886,14 +754,11 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: false,
       hasHighChair: true,
-    }
-  });
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
 
-  await prisma.restaurant.upsert({
-    where: { id: '53' },
-    update: {},
-    create: {
-      id: '53',
+    await upsertRestaurant('Springreens at Community Cafe', {
       name: 'Springreens at Community Cafe',
       cuisineType: CuisineType.CAFE,
       address: '566 Fayetteville Rd SE, Atlanta, GA 30316',
@@ -903,15 +768,49 @@ async function main() {
       isZabiha: true,
       hasPrayerRoom: false,
       hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
+
+    // ============================================
+    // UI-Added Restaurants - Add new entries here
+    // Note: All new restaurants will automatically get CUIDs when added through the UI
+    
+    // Log summary
+    console.log('\nSeed Summary:');
+    console.log(`Total restaurants processed: ${successCount + errorCount}`);
+    console.log(`✓ Successful: ${successCount}`);
+    if (errorCount > 0) {
+      console.error(`✗ Failed: ${errorCount}`);
+      console.error('\nDetailed Errors:');
+      errors.forEach(({ id, error }) => {
+        console.error(`Restaurant ${id}:`, error instanceof Prisma.PrismaClientKnownRequestError ? `[${error.code}] ${error.message}` : error);
+      });
     }
-  });
+  } catch (e) {
+    console.error('\nCritical Error during seed:');
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      console.error(`[${e.code}] ${e.message}`);
+      console.error('Details:', e.meta);
+    } else if (e instanceof Error) {
+      console.error(e.message);
+      console.error('Stack:', e.stack);
+    } else {
+      console.error(e);
+    }
+    throw e;
+  }
 }
 
 main()
   .catch((e) => {
+    console.error('\nFatal Error:');
+    console.error('Failed to complete database seed');
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
+    console.log('\nClosing database connection...');
     await prisma.$disconnect();
+    console.log('Seed script completed.');
   }); 

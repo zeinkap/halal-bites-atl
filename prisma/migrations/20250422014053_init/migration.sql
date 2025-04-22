@@ -16,6 +16,8 @@ CREATE TABLE "Restaurant" (
     "hasOutdoorSeating" BOOLEAN NOT NULL DEFAULT false,
     "isZabiha" BOOLEAN NOT NULL DEFAULT false,
     "hasHighChair" BOOLEAN NOT NULL DEFAULT false,
+    "servesAlcohol" BOOLEAN NOT NULL DEFAULT false,
+    "isFullyHalal" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -38,6 +40,9 @@ CREATE TABLE "Comment" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Restaurant_name_key" ON "Restaurant"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Restaurant_address_key" ON "Restaurant"("address");
 
 -- CreateIndex
 CREATE INDEX "Comment_restaurantId_idx" ON "Comment"("restaurantId");

@@ -12,7 +12,9 @@ const TEST_RESTAURANT = {
     hasPrayerRoom: true,
     hasOutdoorSeating: true,
     isZabiha: true,
-    hasHighChair: true
+    hasHighChair: true,
+    servesAlcohol: false,
+    isFullyHalal: true
   }
 } as const;
 
@@ -117,7 +119,12 @@ test.describe('Comments Feature', () => {
         cuisine: TEST_RESTAURANT.cuisine,
         priceRange: TEST_RESTAURANT.priceRange,
         address: TEST_RESTAURANT.address,
-        ...TEST_RESTAURANT.features
+        hasPrayerRoom: TEST_RESTAURANT.features.hasPrayerRoom,
+        hasOutdoorSeating: TEST_RESTAURANT.features.hasOutdoorSeating,
+        isZabiha: TEST_RESTAURANT.features.isZabiha,
+        hasHighChair: TEST_RESTAURANT.features.hasHighChair,
+        servesAlcohol: TEST_RESTAURANT.features.servesAlcohol,
+        isFullyHalal: TEST_RESTAURANT.features.isFullyHalal
       }
     });
     
