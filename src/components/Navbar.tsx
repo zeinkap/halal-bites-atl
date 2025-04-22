@@ -1,10 +1,11 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Navbar() {
   return (
     <nav className="bg-white shadow-sm">
       <div className="container mx-auto px-4 py-3">
-        <a 
+        <Link 
           href="/" 
           className="flex items-center gap-2 w-fit hover:opacity-80 transition-opacity"
           data-testid="logo-home-link"
@@ -27,7 +28,7 @@ export default function Navbar() {
               Discover the best halal restaurants & muslim-owned cafes in Atlanta
             </p>
           </div>
-        </a>
+        </Link>
       </div>
     </nav>
   );

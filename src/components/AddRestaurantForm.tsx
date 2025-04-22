@@ -6,22 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { formatPriceRange } from '@/utils/formatPriceRange';
 
-// Convert enum to array of options
-const cuisineTypes = Object.values(CuisineType).map(cuisine => ({
-  value: cuisine,
-  label: cuisine.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ')
-}));
-
-// Convert enum to array of display values
-const priceRanges = Object.values(PriceRange).map(range => {
-  switch (range) {
-    case 'LOW': return '$';
-    case 'MEDIUM': return '$$';
-    case 'HIGH': return '$$$';
-    default: return range;
-  }
-});
-
 interface AddRestaurantFormProps {
   isOpen: boolean;
   onClose: () => void;
