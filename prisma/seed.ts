@@ -1,17 +1,32 @@
-import { PrismaClient, CuisineType, PriceRange, Prisma } from '@prisma/client';
+import { PrismaClient, CuisineType, PriceRange, Prisma, Restaurant } from '@prisma/client';
 import { createId } from '@paralleldrive/cuid2';
 
 const prisma = new PrismaClient();
+
+// Helper function to identify test restaurants
+function isTestRestaurant(name: string): boolean {
+  // Test restaurants have timestamps and UUIDs in their names
+  // Pattern: "Test Restaurant {timestamp}-{uuid}" or "Duplicate Restaurant {timestamp}-{uuid}"
+  return /^(Test|Duplicate) Restaurant \d+-[\w-]+$/.test(name);
+}
 
 async function main() {
   try {
     console.log('Starting database seed...');
     let successCount = 0;
     let errorCount = 0;
-    const errors: Array<{ id: string; error: any }> = [];
+    let skippedCount = 0;
+    const errors: Array<{ id: string; error: Error | Prisma.PrismaClientKnownRequestError }> = [];
 
     // Helper function to handle restaurant upsert
-    async function upsertRestaurant(name: string, data: any) {
+    async function upsertRestaurant(name: string, data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
+      // Skip test restaurants
+      if (isTestRestaurant(name)) {
+        console.log(`⚠ Skipping test restaurant: ${name}`);
+        skippedCount++;
+        return;
+      }
+
       try {
         const id = createId();
         await prisma.restaurant.upsert({
@@ -23,7 +38,7 @@ async function main() {
         console.log(`✓ Successfully upserted restaurant: ${name}`);
       } catch (error) {
         errorCount++;
-        errors.push({ id: name, error });
+        errors.push({ id: name, error: error as Error | Prisma.PrismaClientKnownRequestError });
         console.error(`✗ Failed to upsert restaurant ${name}:`, error instanceof Prisma.PrismaClientKnownRequestError ? `[${error.code}] ${error.message}` : error);
       }
     }
@@ -50,10 +65,10 @@ async function main() {
       description: 'Authentic Korean halal restaurant serving a variety of Korean dishes including bulgogi, bibimbap, and their signature kimchi dishes.',
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
-      hasOutdoorSeating: true,
+      hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: false,
+      servesAlcohol: true,
       isFullyHalal: false,
     });
 
@@ -65,24 +80,10 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
+      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-    });
-
-    await upsertRestaurant("Aachi's Indian Restaurant and Bakery", {
-      name: "Aachi's Indian Restaurant and Bakery",
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '11550 Jones Bridge Rd #14, Johns Creek, GA 30022',
-      description: 'Authentic Indian cuisine and fresh bakery items. Famous for their biryanis, curries, and freshly baked bread. Also offers a variety of Indian sweets and snacks.',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: false,
-      servesAlcohol: false,
-      isFullyHalal: false,
     });
 
     await upsertRestaurant('Spices Hut Food Court', {
@@ -152,7 +153,7 @@ async function main() {
       isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
-      isFullyHalal: false,
+      isFullyHalal: true,
     });
 
     await upsertRestaurant('Kimchi Red - Johns Creek', {
@@ -165,7 +166,7 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: false,
+      servesAlcohol: true,
       isFullyHalal: false,
     });
 
@@ -179,7 +180,7 @@ async function main() {
       hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: false,
+      servesAlcohol: true,
       isFullyHalal: false,
     });
 
@@ -222,7 +223,7 @@ async function main() {
       isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
-      isFullyHalal: false,
+      isFullyHalal: true,
     });
 
     await upsertRestaurant("Khan's Kitchen", {
@@ -251,7 +252,7 @@ async function main() {
       isZabiha: false,
       hasHighChair: false,
       servesAlcohol: false,
-      isFullyHalal: false,
+      isFullyHalal: true,
     });
 
     await upsertRestaurant('MOTW Coffee and Pastries', {
@@ -279,7 +280,7 @@ async function main() {
       isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
-      isFullyHalal: false,
+      isFullyHalal: true,
     });
 
     await upsertRestaurant('Baladi Coffee', {
@@ -291,9 +292,9 @@ async function main() {
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
       isZabiha: false,
-      hasHighChair: false,
+      hasHighChair: true,
       servesAlcohol: false,
-      isFullyHalal: false,
+      isFullyHalal: true,
     });
 
     await upsertRestaurant('Mukja Korean Fried Chicken', {
@@ -321,7 +322,7 @@ async function main() {
       isZabiha: false,
       hasHighChair: false,
       servesAlcohol: false,
-      isFullyHalal: false,
+      isFullyHalal: true,
     });
 
     await upsertRestaurant('Botiwalla by Chai Pani', {
@@ -334,7 +335,7 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: false,
+      servesAlcohol: true,
       isFullyHalal: false,
     });
 
@@ -387,7 +388,7 @@ async function main() {
       description: 'Authentic Mediterranean shawarma and kebab restaurant offering fresh, halal meats and homemade sauces.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: true,
-      hasOutdoorSeating: false,
+      hasOutdoorSeating: true,
       isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
@@ -402,20 +403,6 @@ async function main() {
       priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: false,
-    });
-
-    await upsertRestaurant('Sufi\'s Kitchen', {
-      name: 'Sufi\'s Kitchen',
-      cuisineType: CuisineType.PERSIAN,
-      address: '1814 Peachtree St NE, Atlanta, GA 30309',
-      description: 'Family-owned Persian restaurant specializing in authentic Iranian cuisine. Known for their kabobs, rice dishes, and traditional stews.',
-      priceRange: PriceRange.MEDIUM,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
       isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
@@ -442,20 +429,6 @@ async function main() {
       address: '5466 Buford Hwy NE, Doraville, GA 30340',
       description: 'Family-owned Bangladeshi and Indian restaurant serving authentic dishes. Known for their biryani, curries, and fresh tandoor items.',
       priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: false,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
-    await upsertRestaurant('Cafe Bombay', {
-      name: 'Cafe Bombay',
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '2615 Briarcliff Rd NE, Atlanta, GA 30329',
-      description: 'Indian restaurant serving both vegetarian and halal meat dishes. Known for their extensive menu, lunch buffet, and catering services.',
-      priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
       isZabiha: true,
@@ -529,7 +502,7 @@ async function main() {
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
       isZabiha: true,
-      hasHighChair: true,
+      hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
     });
@@ -544,7 +517,7 @@ async function main() {
       hasOutdoorSeating: true,
       isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: false,
+      servesAlcohol: true,
       isFullyHalal: false,
     });
 
@@ -576,62 +549,6 @@ async function main() {
       isFullyHalal: true,
     });
 
-    await upsertRestaurant('Jerusalem Chef', {
-      name: 'Jerusalem Chef',
-      cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '10684 Alpharetta Highway, Roswell, GA',
-      description: 'Authentic Middle Eastern cuisine featuring traditional dishes, fresh-baked bread, and grilled specialties. Known for their shawarma, falafel, and homemade hummus.',
-      priceRange: PriceRange.MEDIUM,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: true,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
-    await upsertRestaurant('Gyro Café', {
-      name: 'Gyro Café',
-      cuisineType: CuisineType.MEDITERRANEAN,
-      address: '869 North Main Street, Alpharetta, GA',
-      description: 'Mediterranean restaurant specializing in gyros and Greek specialties. Offers a variety of halal meat options and traditional Mediterranean dishes.',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: true,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
-    await upsertRestaurant('India Chef', {
-      name: 'India Chef',
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '720 Holcomb Bridge Road, Roswell, GA',
-      description: 'Traditional Indian restaurant offering a wide range of North and South Indian dishes. Known for their authentic flavors and extensive menu options.',
-      priceRange: PriceRange.MEDIUM,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
-    await upsertRestaurant('Desi Tadka', {
-      name: 'Desi Tadka',
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '5250 Windward Parkway, Alpharetta, GA',
-      description: 'Casual Indian eatery serving authentic desi cuisine. Features a variety of street food, curries, and Indo-Chinese fusion dishes.',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
     await upsertRestaurant('Loqoum Lounge', {
       name: 'Loqoum Lounge',
       cuisineType: CuisineType.MEDITERRANEAN,
@@ -653,11 +570,11 @@ async function main() {
       description: 'Mexican restaurant offering halal options. Features authentic Mexican dishes and specialties made with halal meats.',
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
-      hasOutdoorSeating: true,
+      hasOutdoorSeating: false,
       isZabiha: true,
       hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
     });
 
     await upsertRestaurant('Adana Mediterranean Grill', {
@@ -730,20 +647,6 @@ async function main() {
       isFullyHalal: true,
     });
 
-    await upsertRestaurant('Bibi Persian Eatery', {
-      name: 'Bibi Persian Eatery',
-      cuisineType: CuisineType.PERSIAN,
-      address: '675 Ponce, Atlanta, GA 30308',
-      description: 'A 100% halal Persian eatery offering sandwiches and kebabs served with rice, grilled tomato, and torshi pickles. Features unique halal beverages including doogh (yogurt soda) and sharbat (homemade soda).',
-      priceRange: PriceRange.MEDIUM,
-      hasOutdoorSeating: true,
-      isZabiha: true,
-      hasPrayerRoom: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
     await upsertRestaurant('Auntie Vees Kitchen', {
       name: 'Auntie Vees Kitchen',
       cuisineType: CuisineType.OTHER,
@@ -771,15 +674,12 @@ async function main() {
       servesAlcohol: false,
       isFullyHalal: true,
     });
-
-    // ============================================
-    // UI-Added Restaurants - Add new entries here
-    // Note: All new restaurants will automatically get CUIDs when added through the UI
     
     // Log summary
     console.log('\nSeed Summary:');
-    console.log(`Total restaurants processed: ${successCount + errorCount}`);
+    console.log(`Total restaurants processed: ${successCount + errorCount + skippedCount}`);
     console.log(`✓ Successful: ${successCount}`);
+    console.log(`⚠ Skipped test restaurants: ${skippedCount}`);
     if (errorCount > 0) {
       console.error(`✗ Failed: ${errorCount}`);
       console.error('\nDetailed Errors:');
