@@ -35,6 +35,8 @@ yarn-error.log*
 .env
 .env*.local
 .env.production
+.env.development
+.env.test
 
 # vercel
 .vercel
@@ -46,6 +48,36 @@ next-env.d.ts
 # playwright
 playwright-report
 test-results
+/test-results/
+/playwright/.cache/
+/playwright/.auth/
 
 # prisma
 prisma/dev.db
+*.db
+*.db-journal
+.prisma/client/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Coverage directories
+coverage/
+.nyc_output/
+
+# Cloudinary uploads temp directory (if any)
+/uploads/
+
+# Cache directories
+.cache/
+.next/cache/

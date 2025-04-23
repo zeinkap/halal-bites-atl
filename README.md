@@ -2,6 +2,8 @@
 
 A modern web application to discover halal restaurants and Muslim-owned cafes in Atlanta. Built with Next.js, Prisma, and PostgreSQL.
 
+🌐 **Live Site**: [https://halalbitesatl.org](https://halalbitesatl.org)
+
 ## Features
 
 - 🍽️ Browse halal restaurants and cafes in the Atlanta area
@@ -387,6 +389,8 @@ To learn more about the technologies used in this project:
 ## Deploy
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new) from the creators of Next.js.
+
+The production site is live at [https://halalbitesatl.org](https://halalbitesatl.org)
 
 For database deployment, we're using:
 - [Neon](https://neon.tech/) - Serverless Postgres with separate dev/prod branches

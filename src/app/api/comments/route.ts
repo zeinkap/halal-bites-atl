@@ -33,48 +33,56 @@ export async function GET(request: Request) {
 // Add a new comment
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    
-    // Log the received form data
-    console.log('Received form data:', {
-      content: formData.get('content'),
-      authorName: formData.get('authorName'),
-      restaurantId: formData.get('restaurantId'),
-      rating: formData.get('rating'),
-      hasImage: formData.has('image'),
-    });
+    let content: string;
+    let authorName: string;
+    let restaurantId: string;
+    let rating: number;
+    let imageUrl: string | undefined;
 
-    const content = formData.get('content') as string;
-    const authorName = formData.get('authorName') as string;
-    const restaurantId = formData.get('restaurantId') as string;
-    const rating = parseInt(formData.get('rating') as string) || 5;
-    const image = formData.get('image') as File | null;
+    // Check if the request is JSON or form data
+    const contentType = request.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+      // Handle JSON request
+      const jsonData = await request.json();
+      content = jsonData.content;
+      authorName = jsonData.authorName;
+      restaurantId = jsonData.restaurantId;
+      rating = parseInt(jsonData.rating.toString()) || 5;
+      imageUrl = jsonData.imageUrl;
+    } else {
+      // Handle form data request
+      const formData = await request.formData();
+      content = formData.get('content') as string;
+      authorName = formData.get('authorName') as string;
+      restaurantId = formData.get('restaurantId') as string;
+      rating = parseInt(formData.get('rating') as string) || 5;
+      const image = formData.get('image') as File | null;
+
+      if (image) {
+        try {
+          console.log('Image details:', {
+            type: image.type,
+            size: image.size,
+            name: image.name
+          });
+          
+          const buffer = Buffer.from(await image.arrayBuffer());
+          console.log('Successfully created buffer, size:', buffer.length);
+          
+          imageUrl = await uploadImage(buffer, image.type);
+          console.log('Successfully uploaded image:', imageUrl);
+        } catch (uploadError) {
+          console.error('Error during image upload:', uploadError);
+          throw uploadError;
+        }
+      }
+    }
 
     if (!content || !authorName || !restaurantId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
-    }
-
-    let imageUrl: string | undefined;
-    if (image) {
-      try {
-        console.log('Image details:', {
-          type: image.type,
-          size: image.size,
-          name: image.name
-        });
-        
-        const buffer = Buffer.from(await image.arrayBuffer());
-        console.log('Successfully created buffer, size:', buffer.length);
-        
-        imageUrl = await uploadImage(buffer, image.type);
-        console.log('Successfully uploaded image:', imageUrl);
-      } catch (uploadError) {
-        console.error('Error during image upload:', uploadError);
-        throw uploadError;
-      }
     }
 
     const comment = await prisma.comment.create({

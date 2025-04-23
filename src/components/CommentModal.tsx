@@ -21,9 +21,10 @@ interface CommentModalProps {
 
 export default function CommentModal({ isOpen, onClose, restaurantId, restaurantName }: CommentModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState({ content: '', authorName: '', rating: 5 });
+  const [newComment, setNewComment] = useState({ content: '', authorName: '', rating: 0 });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +36,11 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
       const response = await fetch(`/api/comments?restaurantId=${restaurantId}`);
       if (!response.ok) throw new Error('Failed to fetch comments');
       const data = await response.json();
-      setComments(data);
+      // Sort comments by createdAt in descending order (newest first)
+      const sortedComments = [...data].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setComments(sortedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast.error('Failed to load comments');
@@ -61,8 +66,23 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageError(null);
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error('Image size must be less than 5MB');
+        setImageError('Image size must be less than 5MB');
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setImageError('Invalid file type. Please upload an image.');
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
         return;
       }
       setSelectedImage(file);
@@ -97,7 +117,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
       
       const newCommentData = await response.json();
       setComments(prevComments => [newCommentData, ...prevComments]);
-      setNewComment({ content: '', authorName: '', rating: 5 });
+      setNewComment({ content: '', authorName: '', rating: 0 });
       setSelectedImage(null);
       setImagePreview(null);
       if (fileInputRef.current) {
@@ -149,7 +169,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
 
         <div className="p-4 space-y-6">
           {/* Add Comment Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 bg-gray-50 p-4 rounded-lg">
+          <form onSubmit={handleSubmit} className="space-y-4 bg-gray-50 p-4 rounded-lg" data-testid="comment-form">
             <div>
               <label htmlFor="authorName" className="block text-sm font-medium text-gray-700">
                 Your Name
@@ -184,6 +204,11 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   </button>
                 ))}
               </div>
+              {!newComment.rating && (
+                <p className="mt-1 text-sm text-red-500" data-testid="rating-error">
+                  Please select a rating
+                </p>
+              )}
             </div>
 
             <div>
@@ -219,6 +244,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center gap-2"
+                  data-testid="image-upload-button"
                 >
                   <PhotoIcon className="h-5 w-5" />
                   Choose Image
@@ -228,6 +254,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                     <Image
                       src={imagePreview}
                       alt="Preview"
+                      data-testid="image-preview"
                       fill
                       className="object-cover rounded-lg"
                     />
@@ -236,20 +263,27 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                       onClick={() => {
                         setSelectedImage(null);
                         setImagePreview(null);
+                        setImageError(null);
                         if (fileInputRef.current) {
                           fileInputRef.current.value = '';
                         }
                       }}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      data-testid="remove-image-button"
                     >
                       <XMarkIcon className="h-4 w-4" />
                     </button>
                   </div>
                 )}
               </div>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500" data-testid="image-upload-help">
                 Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
               </p>
+              {imageError && (
+                <p className="mt-1 text-sm text-red-500" data-testid="image-error">
+                  {imageError}
+                </p>
+              )}
             </div>
 
             <button
@@ -270,33 +304,18 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
           </form>
 
           {/* Comments List */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-testid="comments-list">
             {isLoading ? (
-              <p className="text-center text-gray-500">Loading comments...</p>
+              <p className="text-center text-gray-500" data-testid="comments-loading">Loading comments...</p>
             ) : comments.length === 0 ? (
-              <p className="text-center text-gray-500">No comments yet. Be the first to comment!</p>
+              <p className="text-center text-gray-500" data-testid="no-comments-message">No comments yet. Be the first to comment!</p>
             ) : (
               comments.map((comment) => (
                 <div 
                   key={comment.id} 
                   data-testid={`comment-container-${comment.id}`}
                   className="bg-gray-50 p-4 rounded-lg transform transition-all duration-300 ease-in-out opacity-100 translate-y-0"
-                  style={{
-                    animation: 'fadeSlideIn 0.3s ease-out'
-                  }}
                 >
-                  <style jsx>{`
-                    @keyframes fadeSlideIn {
-                      from {
-                        opacity: 0;
-                        transform: translateY(10px);
-                      }
-                      to {
-                        opacity: 1;
-                        transform: translateY(0);
-                      }
-                    }
-                  `}</style>
                   <div className="flex items-center justify-between">
                     <h4 
                       className="font-medium text-gray-900"
@@ -326,12 +345,19 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                     {comment.content}
                   </p>
                   {comment.imageUrl && (
-                    <div className="mt-3 relative w-full aspect-video">
+                    <div 
+                      className="mt-3 relative w-full aspect-video" 
+                      data-testid={`comment-image-container-${comment.id}`}
+                      style={{ minHeight: '200px' }}
+                    >
                       <Image
                         src={comment.imageUrl}
                         alt={`Image from ${comment.authorName}`}
+                        data-testid={`comment-image-${comment.id}`}
                         fill
                         className="object-cover rounded-lg"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        priority
                       />
                     </div>
                   )}

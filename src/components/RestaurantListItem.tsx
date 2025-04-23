@@ -35,21 +35,21 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900" data-testid={`restaurant-name-${restaurant.id}`}>
                   {restaurant.name}
                 </h3>
-                <span className="text-sm font-medium text-gray-600">
+                <span className="text-sm font-medium text-gray-600" data-testid={`restaurant-price-${restaurant.id}`}>
                   {formatPriceRange(restaurant.priceRange)}
                 </span>
               </div>
               
-              <div className="text-sm text-gray-600 mt-1">
+              <div className="text-sm text-gray-600 mt-1" data-testid={`restaurant-cuisine-${restaurant.id}`}>
                 {formatCuisine(restaurant.cuisineType)}
               </div>
 
               <div className="flex items-start gap-2 mt-2">
                 <MapPinIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-600 line-clamp-1">
+                <p className="text-sm text-gray-600 line-clamp-1" data-testid={`restaurant-address-${restaurant.id}`}>
                   {restaurant.address}
                 </p>
               </div>

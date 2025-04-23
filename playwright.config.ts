@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import http from 'http';
+import dotenv from 'dotenv';
+
+// Load test environment variables
+dotenv.config({ path: '.env.test' });
 
 // Function to check if server is already running
 const isServerRunning = async (url: string): Promise<boolean> => {
@@ -63,7 +67,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: process.env.SERVER_ALREADY_RUNNING === 'true' ? 'echo "Using existing server"' : 'npm run dev',
+    command: process.env.SERVER_ALREADY_RUNNING === 'true' 
+      ? 'echo "Using existing server"' 
+      : 'dotenv -e .env.test -- npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000, // 2 minutes timeout
