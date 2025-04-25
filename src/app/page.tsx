@@ -6,6 +6,7 @@ import AddRestaurantForm from '@/components/AddRestaurantForm';
 import ScrollToTop from '@/components/ScrollToTop';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import RestaurantListItem from '@/components/RestaurantListItem';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 // Helper function to format cuisine names
 const formatCuisineName = (cuisine: string) => {
@@ -30,6 +31,8 @@ const formatPriceRange = (price: string) => {
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc';
 
 export default function Home() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,9 +64,24 @@ export default function Home() {
     }
   };
 
+  const resetFilters = () => {
+    setSearchQuery('');
+    setSelectedCuisine('all');
+    setSelectedPriceRange('all');
+    setSortBy('name-asc');
+    setShowFilters(false);
+  };
+
   useEffect(() => {
     fetchRestaurants();
   }, []);
+
+  // Reset filters when navigating to home page
+  useEffect(() => {
+    if (pathname === '/') {
+      resetFilters();
+    }
+  }, [pathname, searchParams]);
 
   // Extract unique cuisines
   const cuisines = useMemo(() => {
@@ -219,12 +237,7 @@ export default function Home() {
 
               {/* Clear Filters */}
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedCuisine('all');
-                  setSelectedPriceRange('all');
-                  setSortBy('name-asc');
-                }}
+                onClick={resetFilters}
                 className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 cursor-pointer"
               >
                 Clear Filters

@@ -17,7 +17,7 @@ CREATE TABLE "Restaurant" (
     "isZabiha" BOOLEAN NOT NULL DEFAULT false,
     "hasHighChair" BOOLEAN NOT NULL DEFAULT false,
     "servesAlcohol" BOOLEAN NOT NULL DEFAULT false,
-    "isFullyHalal" BOOLEAN NOT NULL DEFAULT true,
+    "isFullyHalal" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

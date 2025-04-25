@@ -493,4 +493,42 @@ export async function openCommentsModalAndWait(page: Page, restaurantId: string)
   await expect(page.locator('[data-testid="comment-form"]')).toBeVisible();
   await expect(page.locator('[data-testid="comments-list"]')).toBeVisible();
   await expect(page.locator('[data-testid="comments-loading"]')).not.toBeVisible();
+}
+
+/**
+ * Verifies that the confirmation dialog is visible with all its elements
+ * Used for testing unsaved changes warnings
+ * 
+ * @param page - Playwright's page object
+ */
+export async function verifyConfirmationDialog(page: Page) {
+  const confirmDialog = page.locator('[data-testid="confirm-dialog"]');
+  await expect(confirmDialog).toBeVisible();
+  await expect(page.locator('[data-testid="confirm-dialog-title"]')).toBeVisible();
+  await expect(page.locator('[data-testid="confirm-dialog-message"]')).toBeVisible();
+  await expect(page.locator('[data-testid="confirm-dialog-keep-editing"]')).toBeVisible();
+  await expect(page.locator('[data-testid="confirm-dialog-discard"]')).toBeVisible();
+}
+
+/**
+ * Opens the comment modal using the comment icon and verifies it's visible
+ * Used for testing comment-related functionality
+ * 
+ * @param page - Playwright's page object
+ */
+export async function openCommentModalDirect(page: Page) {
+  await page.click('[data-testid="restaurant-comment-icon-lkv202qcqz4b34wxnfy245sx"]');
+  await expect(page.locator('[data-testid="comment-form"]')).toBeVisible();
+}
+
+/**
+ * Fills the comment form with standard test data
+ * Used for testing unsaved changes in the comment form
+ * 
+ * @param page - Playwright's page object
+ */
+export async function fillCommentFormWithTestData(page: Page) {
+  await page.fill('[data-testid="comment-author-input"]', "Test Author");
+  await page.fill('[data-testid="comment-content-input"]', "Test Comment");
+  await page.click('[data-testid="rating-star-4-button"]');
 } 

@@ -1,36 +1,91 @@
 import { PrismaClient, CuisineType, PriceRange, Prisma, Restaurant } from '@prisma/client';
 import { createId } from '@paralleldrive/cuid2';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
-// Helper function to identify test restaurants
-function isTestRestaurant(name: string): boolean {
-  // Test restaurants have timestamps and UUIDs in their names
-  // Pattern: "Test Restaurant {timestamp}-{uuid}" or "Duplicate Restaurant {timestamp}-{uuid}"
-  return /^(Test|Duplicate) Restaurant \d+-[\w-]+$/.test(name);
+// Track restaurants added through production
+const PROD_ADDED_RESTAURANTS: Array<{
+  name: string;
+  data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>;
+}> = [];
+
+// Function to add a restaurant to production seed
+export async function addToProdSeed(restaurant: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
+  // Only add restaurants in production environment
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Skipping seed addition - not in production environment');
+    return;
+  }
+
+  try {
+    // Check if restaurant already exists in PROD_ADDED_RESTAURANTS
+    const exists = PROD_ADDED_RESTAURANTS.some(r => r.name === restaurant.name);
+    if (exists) {
+      console.log(`Restaurant ${restaurant.name} already exists in production seed`);
+      return;
+    }
+
+    // Add to tracking array
+    PROD_ADDED_RESTAURANTS.push({
+      name: restaurant.name,
+      data: restaurant
+    });
+
+    // Update this file with the new restaurant
+    const filePath = path.join(process.cwd(), 'prisma', 'seed.prod.ts');
+    let content = await fs.readFile(filePath, 'utf8');
+
+    // Find the position before the summary logging
+    const summaryPosition = content.indexOf('// Log summary');
+    if (summaryPosition === -1) {
+      throw new Error('Could not find position to insert new restaurant');
+    }
+
+    // Create the new restaurant entry
+    const newEntry = `
+    await upsertRestaurant('${restaurant.name}', {
+      name: '${restaurant.name}',
+      cuisineType: CuisineType.${restaurant.cuisineType},
+      address: '${restaurant.address}',
+      description: '${(restaurant.description || '').replace(/'/g, "\\'")}',
+      priceRange: PriceRange.${restaurant.priceRange},
+      hasPrayerRoom: ${restaurant.hasPrayerRoom},
+      hasOutdoorSeating: ${restaurant.hasOutdoorSeating},
+      isZabiha: ${restaurant.isZabiha},
+      hasHighChair: ${restaurant.hasHighChair},
+      servesAlcohol: ${restaurant.servesAlcohol},
+      isFullyHalal: ${restaurant.isFullyHalal},
+    });
+`;
+
+    // Insert the new entry before the summary
+    content = content.slice(0, summaryPosition) + newEntry + content.slice(summaryPosition);
+
+    // Write back to file
+    await fs.writeFile(filePath, content, 'utf8');
+    console.log(`✓ Added ${restaurant.name} to production seed file`);
+
+  } catch (error) {
+    console.error(`Failed to add ${restaurant.name} to production seed:`, error);
+    throw error;
+  }
 }
 
 async function main() {
   try {
-    console.log('Starting database seed...');
+    console.log('Starting production database seed...');
     let successCount = 0;
     let errorCount = 0;
-    let skippedCount = 0;
     const errors: Array<{ id: string; error: Error | Prisma.PrismaClientKnownRequestError }> = [];
 
-    // Helper function to handle restaurant upsert
+    // Helper function to handle restaurant upsert with production logging
     async function upsertRestaurant(name: string, data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
-      // Skip test restaurants
-      if (isTestRestaurant(name)) {
-        console.log(`⚠ Skipping test restaurant: ${name}`);
-        skippedCount++;
-        return;
-      }
-
       try {
         const id = createId();
         await prisma.restaurant.upsert({
-          where: { name },  // Using name as the unique identifier for upsert
+          where: { name },
           update: {},
           create: { ...data, id },
         });
@@ -43,7 +98,7 @@ async function main() {
       }
     }
 
-    // Add sample restaurants
+    // Production-verified restaurants
     await upsertRestaurant('Shawarma Press - Johns Creek', {
       name: 'Shawarma Press - Johns Creek',
       cuisineType: CuisineType.MIDDLE_EASTERN,
@@ -240,7 +295,6 @@ async function main() {
       isFullyHalal: true,
     });
 
-    // Now adding the cafes...
     await upsertRestaurant('Shibam Coffee', {
       name: 'Shibam Coffee',
       cuisineType: CuisineType.CAFE,
@@ -295,62 +349,6 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-    });
-
-    await upsertRestaurant('Mukja Korean Fried Chicken', {
-      name: 'Mukja Korean Fried Chicken',
-      cuisineType: CuisineType.OTHER,
-      address: '933 Peachtree St NE, Atlanta, GA 30309',
-      description: '',
-      priceRange: PriceRange.MEDIUM,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: false,
-    });
-
-    await upsertRestaurant('Baraka Shawarma Atlanta', {
-      name: 'Baraka Shawarma Atlanta',
-      cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '68 Walton St NW, Atlanta, GA 30303',
-      description: '',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: false,
-      servesAlcohol: false,
-      isFullyHalal: true,
-    });
-
-    await upsertRestaurant('Botiwalla by Chai Pani', {
-      name: 'Botiwalla by Chai Pani',
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: 'Ponce City Market, 675 Ponce De Leon Ave NE n134, Atlanta, GA 30308',
-      description: '',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: true,
-      isZabiha: false,
-      hasHighChair: true,
-      servesAlcohol: true,
-      isFullyHalal: false,
-    });
-
-    await upsertRestaurant('Dantanna\'s', {
-      name: 'Dantanna\'s',
-      cuisineType: CuisineType.OTHER,
-      address: '3400 Around Lenox Rd NE #304, Atlanta, GA 30326',
-      description: '',
-      priceRange: PriceRange.HIGH,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: true,
-      isFullyHalal: false,
     });
 
     await upsertRestaurant('Jerusalem Bakery & Grill', {
@@ -646,21 +644,91 @@ async function main() {
       servesAlcohol: false,
       isFullyHalal: true,
     });
-    
-    // Log summary
-    console.log('\nSeed Summary:');
-    console.log(`Total restaurants processed: ${successCount + errorCount + skippedCount}`);
-    console.log(`✓ Successful: ${successCount}`);
-    console.log(`⚠ Skipped test restaurants: ${skippedCount}`);
+
+    await upsertRestaurant('Mukja Korean Fried Chicken', {
+      name: 'Mukja Korean Fried Chicken',
+      cuisineType: CuisineType.OTHER,
+      address: '933 Peachtree St NE, Atlanta, GA 30309',
+      description: 'Modern Korean restaurant specializing in Korean-style fried chicken with halal options. Known for their crispy double-fried chicken with various sauce options including soy garlic, sweet spicy, and honey butter. Also serves Korean fusion dishes and traditional sides.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: false,
+    });
+
+    await upsertRestaurant('Baraka Shawarma Atlanta', {
+      name: 'Baraka Shawarma Atlanta',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '68 Walton St NW, Atlanta, GA 30303',
+      description: 'Downtown Atlanta\'s premier halal shawarma spot, offering authentic Middle Eastern street food. Famous for their freshly carved shawarma wraps, platters, and homemade sauces. Features a selection of falafel, hummus, and traditional Middle Eastern sides.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
+
+    await upsertRestaurant('Botiwalla by Chai Pani', {
+      name: 'Botiwalla by Chai Pani',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: 'Ponce City Market, 675 Ponce De Leon Ave NE n134, Atlanta, GA 30308',
+      description: 'Modern Indian street food restaurant in Ponce City Market. Specializes in grilled kababs, rolls, and chaat with halal meat options. Features a creative menu inspired by Indian street food vendors and tea houses, known for their SPDP (Sev Potato Dahi Puri) and chicken tikka roll.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+    });
+
+    await upsertRestaurant('Dantanna\'s', {
+      name: 'Dantanna\'s',
+      cuisineType: CuisineType.OTHER,
+      address: '3400 Around Lenox Rd NE #304, Atlanta, GA 30326',
+      description: 'Upscale sports restaurant offering halal steaks and seafood. Known for their premium cuts of halal beef, fresh seafood selections, and sophisticated atmosphere. Features a diverse menu including gourmet burgers, fresh salads, and signature dishes.',
+      priceRange: PriceRange.HIGH,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+    });
+
+    await upsertRestaurant('Jaffa Restaurant Atl (Halal)', {
+      name: 'Jaffa Restaurant Atl (Halal)',
+      cuisineType: CuisineType.MEDITERRANEAN,
+      address: '10684 Alpharetta Hwy #500, Roswell, GA 30076',
+      description: 'The Jaffa Restaurant may be a new spot but is backed by veteran restaurateurs behind Atlanta\'s Mediterranean and Middle Eastern food scene. It is a family-owned and operated restaurant aiming to bring nothing but the best to the table.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+    });
+
+    // Log summary with production-specific details
+    console.log('\nProduction Seed Summary:');
+    console.log(`Total restaurants processed: ${successCount + errorCount}`);
+    console.log(`✓ Successfully seeded: ${successCount}`);
     if (errorCount > 0) {
       console.error(`✗ Failed: ${errorCount}`);
       console.error('\nDetailed Errors:');
       errors.forEach(({ id, error }) => {
         console.error(`Restaurant ${id}:`, error instanceof Prisma.PrismaClientKnownRequestError ? `[${error.code}] ${error.message}` : error);
       });
+      throw new Error('Production seed encountered errors. Please review the error log.');
     }
   } catch (e) {
-    console.error('\nCritical Error during seed:');
+    console.error('\nCritical Error during production seed:');
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       console.error(`[${e.code}] ${e.message}`);
       console.error('Details:', e.meta);
@@ -677,12 +745,12 @@ async function main() {
 main()
   .catch((e) => {
     console.error('\nFatal Error:');
-    console.error('Failed to complete database seed');
+    console.error('Failed to complete production database seed');
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     console.log('\nClosing database connection...');
     await prisma.$disconnect();
-    console.log('Seed script completed.');
+    console.log('Production seed script completed.');
   }); 

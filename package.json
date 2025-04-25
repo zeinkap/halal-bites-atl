@@ -19,13 +19,18 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",
+    "@headlessui/react": "^2.2.2",
     "@heroicons/react": "^2.2.0",
     "@paralleldrive/cuid2": "^2.2.2",
+    "@types/nodemailer": "^6.4.17",
     "cloudinary": "^2.6.0",
     "dotenv": "^16.5.0",
     "next": "^15.3.1",
+    "nodemailer": "^6.10.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.1",
+    "react-hot-toast": "^2.5.2",
     "react-toastify": "^11.0.5",
     "uuid": "^11.1.0"
   },

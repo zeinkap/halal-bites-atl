@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CuisineType, PriceRange } from '@prisma/client';
 import { appendRestaurantToSeed } from '@/utils/updateSeedFile';
+import { appendToProdSeed } from '@/utils/updateProdSeedFile';
 
 // Get all restaurants
 export async function GET() {
@@ -76,24 +77,22 @@ export async function POST(request: Request) {
         isZabiha: isZabiha || false,
         hasHighChair: hasHighChair || false,
         servesAlcohol: servesAlcohol || false,
-        isFullyHalal: isFullyHalal !== false,
+        isFullyHalal: isFullyHalal || false,
       },
     });
 
-    // Append the new restaurant to the seed file
-    await appendRestaurantToSeed(restaurant);
+    // Append to appropriate seed file based on environment
+    if (process.env.NODE_ENV === 'production') {
+      await appendToProdSeed(restaurant);
+    } else {
+      await appendRestaurantToSeed(restaurant);
+    }
 
     return NextResponse.json(restaurant);
   } catch (error) {
     console.error('Error creating restaurant:', error);
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Error creating restaurant: ${error.message}` },
-        { status: 500 }
-      );
-    }
     return NextResponse.json(
-      { error: 'Error creating restaurant' },
+      { error: 'Failed to create restaurant' },
       { status: 500 }
     );
   }

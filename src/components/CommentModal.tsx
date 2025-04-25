@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { StarIcon, XMarkIcon, PhotoIcon } from '@heroicons/react/24/solid';
+import { StarIcon, XMarkIcon, PhotoIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 
@@ -19,9 +19,15 @@ interface CommentModalProps {
   restaurantName: string;
 }
 
+const initialCommentState = {
+  content: '',
+  authorName: '',
+  rating: 0
+};
+
 export default function CommentModal({ isOpen, onClose, restaurantId, restaurantName }: CommentModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState({ content: '', authorName: '', rating: 0 });
+  const [newComment, setNewComment] = useState(initialCommentState);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -29,6 +35,19 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Track form changes
+  useEffect(() => {
+    const hasFormChanges = 
+      newComment.content !== initialCommentState.content ||
+      newComment.authorName !== initialCommentState.authorName ||
+      newComment.rating !== initialCommentState.rating ||
+      selectedImage !== null;
+
+    setHasChanges(hasFormChanges);
+  }, [newComment, selectedImage]);
 
   const fetchComments = useCallback(async () => {
     setIsLoading(true);
@@ -53,14 +72,39 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
     if (isOpen) {
       setIsVisible(true);
       fetchComments();
+      setHasChanges(false); // Reset changes flag when modal opens
     } else {
       setIsVisible(false);
     }
   }, [isOpen, restaurantId, fetchComments]);
 
   const handleClose = () => {
+    if (hasChanges) {
+      setShowConfirmDialog(true);
+    } else {
+      closeModal();
+    }
+  };
+
+  const closeModal = () => {
     setIsVisible(false);
+    setNewComment(initialCommentState);
+    setSelectedImage(null);
+    setImagePreview(null);
+    setImageError(null);
+    setShowConfirmDialog(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setTimeout(onClose, 300); // Wait for animation to complete
+  };
+
+  const handleConfirmClose = () => {
+    closeModal();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,6 +185,58 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
       }`}
       onClick={handleClose}
     >
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+          onClick={(e) => e.stopPropagation()}
+          data-testid="confirm-dialog-backdrop"
+        >
+          <div 
+            className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 transform transition-all"
+            data-testid="confirm-dialog"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <h3 
+                  className="text-lg font-semibold text-gray-900"
+                  data-testid="confirm-dialog-title"
+                >
+                  Discard Changes?
+                </h3>
+                <p 
+                  className="mt-2 text-sm text-gray-600"
+                  data-testid="confirm-dialog-message"
+                >
+                  You have unsaved changes. Are you sure you want to close this form? Your changes will be lost.
+                </p>
+                <div className="mt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCancelClose}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 cursor-pointer"
+                    data-testid="confirm-dialog-keep-editing"
+                  >
+                    No, Keep Editing
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmClose}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
+                    data-testid="confirm-dialog-discard"
+                  >
+                    Yes, Discard
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div 
         className={`bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'

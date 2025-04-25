@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CuisineType, PriceRange } from '@prisma/client';
 import { toast, ToastContainer } from 'react-toastify';
-import { XMarkIcon, BuildingStorefrontIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon, BuildingStorefrontIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import 'react-toastify/dist/ReactToastify.css';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { formatPriceRange } from '@/utils/formatPriceRange';
@@ -12,36 +12,68 @@ interface AddRestaurantFormProps {
   onRestaurantAdded?: () => void;
 }
 
+const initialFormState = {
+  name: '',
+  cuisineType: '',
+  address: '',
+  priceRange: '',
+  description: '',
+  hasPrayerRoom: false,
+  hasOutdoorSeating: false,
+  isZabiha: false,
+  hasHighChair: false,
+  servesAlcohol: false,
+  isFullyHalal: false
+};
+
 export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }: AddRestaurantFormProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    cuisineType: '',
-    address: '',
-    priceRange: '',
-    description: '',
-    hasPrayerRoom: false,
-    hasOutdoorSeating: false,
-    isZabiha: false,
-    hasHighChair: false,
-    servesAlcohol: false,
-    isFullyHalal: false
-  });
+  const [formData, setFormData] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [halalVerificationConsent, setHalalVerificationConsent] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
-    } else {
-      setIsVisible(false);
+      setHasChanges(false); // Reset changes flag when form opens
     }
   }, [isOpen]);
 
+  // Track form changes
+  useEffect(() => {
+    const hasFormChanges = Object.entries(formData).some(([key, value]) => {
+      return value !== initialFormState[key as keyof typeof initialFormState];
+    }) || halalVerificationConsent;
+
+    setHasChanges(hasFormChanges);
+  }, [formData, halalVerificationConsent]);
+
   const handleClose = () => {
+    if (hasChanges) {
+      setShowConfirmDialog(true);
+    } else {
+      closeForm();
+    }
+  };
+
+  const closeForm = () => {
     setIsVisible(false);
+    setFormData(initialFormState);
+    setHalalVerificationConsent(false);
+    setError('');
+    setShowConfirmDialog(false);
     setTimeout(onClose, 300); // Wait for animation to complete
+  };
+
+  const handleConfirmClose = () => {
+    closeForm();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,17 +83,20 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
     // Validate address format
     const addressParts = formData.address.split(',').map(part => part.trim());
-    if (addressParts.length !== 3) {
-      setError('Please separate address parts with commas: Street Address, City, State ZIP. Example: 1000 Main St, Atlanta, GA 30005');
+    if (addressParts.length < 3) {
+      setError('Please include city, state, and ZIP code in the address. Example: 1000 Main St, Atlanta, GA 30005');
       setIsSubmitting(false);
       document.getElementById('address')?.focus();
       return;
     }
 
+    // Get the last part which should be State ZIP
+    const stateZipPart = addressParts[addressParts.length - 1].trim();
+
     // Validate state and ZIP format
     const stateZipRegex = /^[A-Z]{2}\s*\d{5}(?:-\d{4})?$/;
-    if (!stateZipRegex.test(addressParts[2])) {
-      setError('Please use the two-letter state code (e.g., GA instead of Georgia) followed by ZIP code. Example: GA 30005');
+    if (!stateZipRegex.test(stateZipPart)) {
+      setError('The address should end with a two-letter state code and ZIP code. Example: GA 30005');
       setIsSubmitting(false);
       document.getElementById('address')?.focus();
       return;
@@ -105,19 +140,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
       });
 
       // Reset form data
-      setFormData({
-        name: '',
-        cuisineType: '',
-        address: '',
-        priceRange: '',
-        description: '',
-        hasPrayerRoom: false,
-        hasOutdoorSeating: false,
-        isZabiha: false,
-        hasHighChair: false,
-        servesAlcohol: false,
-        isFullyHalal: false
-      });
+      setFormData(initialFormState);
       setHalalVerificationConsent(false);
 
       // Start closing animation
@@ -171,6 +194,58 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
         }`}
         onClick={handleClose}
       >
+        {/* Confirmation Dialog */}
+        {showConfirmDialog && (
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
+            onClick={(e) => e.stopPropagation()}
+            data-testid="confirm-dialog-backdrop"
+          >
+            <div 
+              className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 transform transition-all"
+              data-testid="confirm-dialog"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                  <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 
+                    className="text-lg font-semibold text-gray-900"
+                    data-testid="confirm-dialog-title"
+                  >
+                    Discard Changes?
+                  </h3>
+                  <p 
+                    className="mt-2 text-sm text-gray-600"
+                    data-testid="confirm-dialog-message"
+                  >
+                    You have unsaved changes. Are you sure you want to close this form? Your changes will be lost.
+                  </p>
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleConfirmClose}
+                      className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
+                      data-testid="confirm-dialog-discard"
+                    >
+                      Yes, Discard
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelClose}
+                      className="flex-1 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 cursor-pointer"
+                      data-testid="confirm-dialog-keep-editing"
+                    >
+                      No, Keep Editing
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div 
           className={`bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-in-out ${
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -206,10 +281,10 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
             <form id="restaurant-form" onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information Section */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-sm font-medium text-gray-900 px-1">Basic Information</h3>
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Basic Information</h3>
                 
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 px-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5 px-1">
                     Restaurant Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -298,11 +373,11 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="e.g. 3630 Old Milton Pkwy #110, Alpharetta, GA 30005"
+                    placeholder="e.g. Suite A, 5215 Windward Pkwy, Alpharetta, GA 30004"
                     required
                   />
                   <p className="mt-1 text-xs text-gray-500 px-1">
-                    Use commas to separate: Street Address, City, State ZIP
+                    Make sure to include the city, state (2 letters), and ZIP code at the end
                   </p>
                   {error && (error.toLowerCase().includes('state') || error.toLowerCase().includes('address')) && (
                     <p className="mt-1 text-xs text-red-600 px-1" data-testid="address-error">
@@ -314,7 +389,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
               {/* Restaurant Features Section */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-sm font-medium text-gray-900 px-1">Restaurant Features</h3>
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Restaurant Features</h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Prayer Room */}
@@ -331,8 +406,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-medium text-gray-900">Prayer Room</span>
-                      <p className="text-xs text-gray-500">Dedicated prayer space available</p>
+                      <span className="text-sm font-semibold text-gray-900">Prayer Room</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Dedicated prayer space available</p>
                     </div>
                   </label>
 
@@ -350,8 +425,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-medium text-gray-900">Outdoor Seating</span>
-                      <p className="text-xs text-gray-500">Outdoor dining area available</p>
+                      <span className="text-sm font-semibold text-gray-900">Outdoor Seating</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Outdoor dining area available</p>
                     </div>
                   </label>
 
@@ -369,8 +444,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-medium text-gray-900">Zabiha Certified</span>
-                      <p className="text-xs text-gray-500">Serves certified zabiha meat</p>
+                      <span className="text-sm font-semibold text-gray-900">Zabiha Certified</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Serves certified zabiha meat</p>
                     </div>
                   </label>
 
@@ -388,8 +463,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-medium text-gray-900">High Chairs</span>
-                      <p className="text-xs text-gray-500">Child seating available</p>
+                      <span className="text-sm font-semibold text-gray-900">High Chairs</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Child seating available</p>
                     </div>
                   </label>
 
@@ -407,8 +482,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-medium text-gray-900">Serves Alcohol</span>
-                      <p className="text-xs text-gray-500">Restaurant serves alcoholic beverages</p>
+                      <span className="text-sm font-semibold text-gray-900">Serves Alcohol</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Restaurant serves alcoholic beverages</p>
                     </div>
                   </label>
 
@@ -426,8 +501,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-medium text-gray-900">Fully Halal Menu</span>
-                      <p className="text-xs text-gray-500">All menu items are halal</p>
+                      <span className="text-sm font-semibold text-gray-900">Fully Halal Menu</span>
+                      <p className="text-xs text-gray-500 mt-0.5">All menu items are halal</p>
                     </div>
                   </label>
                 </div>
@@ -435,10 +510,10 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
               {/* Description Section */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-sm font-medium text-gray-900 px-1">Additional Information</h3>
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Additional Information</h3>
                 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1 px-1">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5 px-1">
                     Description
                   </label>
                   <textarea
@@ -472,13 +547,13 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     />
                   </div>
                   <div className="ml-3">
-                    <span className="text-sm text-gray-900 font-medium">
+                    <span className="text-sm font-semibold text-gray-900">
                       Halal Verification <span className="text-red-500">*</span>
                     </span>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">
                       I confirm that I have personally verified this restaurant serves halal meat and I am adding it in good faith to help the community.
                     </p>
-                    <p className="text-xs text-orange-600 mt-2">
+                    <p className="text-xs text-orange-600 mt-2 font-medium">
                       Please check this box to confirm and continue with submission
                     </p>
                   </div>
