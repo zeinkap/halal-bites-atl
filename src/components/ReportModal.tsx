@@ -64,7 +64,7 @@ export default function ReportModal({
         throw new Error('Failed to submit report');
       }
 
-      toast.success('Report submitted successfully');
+      toast.success(`Report for ${restaurantName} submitted successfully. We will look into it, thanks!`);
       closeModal();
     } catch (error) {
       console.error('Error submitting report:', error);
@@ -106,10 +106,10 @@ export default function ReportModal({
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center"
                   >
-                    Report Incorrect Information
+                    Report Incorrect Information for {restaurantName}
                     <button
                       type="button"
-                      className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                      className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none cursor-pointer"
                       onClick={handleClose}
                     >
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -130,14 +130,18 @@ export default function ReportModal({
                             {...register('reportDetails', {
                               required: 'Please provide details about the incorrect information',
                               minLength: {
-                                value: 10,
-                                message: 'Please provide more details',
+                                value: 30,
+                                message: 'Please provide at least 30 characters of details',
                               },
+                              maxLength: {
+                                value: 500,
+                                message: 'Please keep your report under 500 characters',
+                              }
                             })}
                             id="reportDetails"
                             rows={4}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm text-gray-900 placeholder-gray-500"
-                            placeholder="Please describe what information needs to be corrected (e.g., incorrect address, outdated menu items, wrong opening hours)..."
+                            placeholder="Please describe what information needs to be corrected (e.g., incorrect address, wrong restaurant features, not in atlanta, etc.). Minimum 30 characters required."
                           />
                           {errors.reportDetails && (
                             <p className="mt-1 text-sm text-red-600">
@@ -151,14 +155,14 @@ export default function ReportModal({
                         <button
                           type="button"
                           onClick={handleClose}
-                          className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px]"
+                          className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px] cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px]"
+                          className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px] cursor-pointer disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? 'Submitting...' : 'Submit'}
                         </button>
@@ -206,7 +210,7 @@ export default function ReportModal({
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900"
                   >
-                    Discard Changes?
+                    Discard Report for {restaurantName}?
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
@@ -218,14 +222,14 @@ export default function ReportModal({
                   <div className="mt-4 flex flex-col space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:mt-0 sm:min-w-[100px]"
+                      className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:mt-0 sm:min-w-[100px] cursor-pointer"
                       onClick={() => setShowConfirmDialog(false)}
                     >
                       No, Keep Editing
                     </button>
                     <button
                       type="button"
-                      className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px]"
+                      className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px] cursor-pointer"
                       onClick={closeModal}
                     >
                       Yes, Discard
