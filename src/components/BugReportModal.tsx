@@ -1,6 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState, useRef, useEffect } from 'react';
-import { XMarkIcon, ExclamationTriangleIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ExclamationTriangleIcon, PhotoIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
@@ -26,6 +26,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -142,7 +143,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
         throw new Error('Failed to submit bug report');
       }
       
-      toast.success('Bug report submitted successfully!');
+      toast.success('Thank you! Your bug report has been submitted successfully. We will look into it.');
       closeModal();
     } catch (err) {
       toast.error('Failed to submit bug report. Please try again.');
@@ -198,14 +199,14 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-testid="bug-report-form">
                     <div>
                       <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                        Issue Title *
+                        What&apos;s not working? *
                       </label>
                       <input
                         type="text"
                         id="title"
-                        {...register('title', { required: 'Title is required' })}
+                        {...register('title', { required: 'Please provide a brief description of the issue' })}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                        placeholder="e.g., 'Search button not working' or 'Can't submit restaurant review'"
+                        placeholder="e.g., 'Search not working' or 'Can't submit review'"
                         data-testid="bug-report-title"
                       />
                       {errors.title && (
@@ -217,14 +218,14 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
 
                     <div>
                       <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                        Description *
+                        Tell us more about the issue *
                       </label>
                       <textarea
                         id="description"
-                        {...register('description', { required: 'Description is required' })}
+                        {...register('description', { required: 'Please provide more details about the issue' })}
                         rows={3}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                        placeholder="Please provide a clear and detailed description of what's not working. Include any error messages you see."
+                        placeholder="What were you trying to do? What happened instead?"
                         data-testid="bug-report-description"
                       />
                       {errors.description && (
@@ -234,113 +235,10 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                       )}
                     </div>
 
-                    <div>
-                      <label htmlFor="stepsToReproduce" className="block text-sm font-medium text-gray-700">
-                        Steps to Reproduce *
-                      </label>
-                      <textarea
-                        id="stepsToReproduce"
-                        {...register('stepsToReproduce', { required: 'Steps to reproduce are required' })}
-                        rows={3}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                        placeholder="1. Go to the restaurant listing page&#10;2. Click on the search bar&#10;3. Type 'halal' and press Enter&#10;4. Notice that..."
-                        data-testid="bug-report-steps"
-                      />
-                      {errors.stepsToReproduce && (
-                        <p className="mt-1 text-sm text-red-600" data-testid="steps-error">
-                          {errors.stepsToReproduce.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="expectedBehavior" className="block text-sm font-medium text-gray-700">
-                          Expected Behavior
-                        </label>
-                        <textarea
-                          id="expectedBehavior"
-                          {...register('expectedBehavior')}
-                          rows={2}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                          placeholder="e.g., 'Search results should show all restaurants with 'halal' in their name or description'"
-                          data-testid="bug-report-expected"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="actualBehavior" className="block text-sm font-medium text-gray-700">
-                          Actual Behavior
-                        </label>
-                        <textarea
-                          id="actualBehavior"
-                          {...register('actualBehavior')}
-                          rows={2}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                          placeholder="e.g., 'No search results appear' or 'Getting an error message saying...'"
-                          data-testid="bug-report-actual"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="browser" className="block text-sm font-medium text-gray-700">
-                          Browser
-                        </label>
-                        <input
-                          type="text"
-                          id="browser"
-                          {...register('browser')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                          placeholder="e.g., 'Chrome 120.0' or 'Safari 17.2'"
-                          data-testid="bug-report-browser"
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="device" className="block text-sm font-medium text-gray-700">
-                          Device
-                        </label>
-                        <input
-                          type="text"
-                          id="device"
-                          {...register('device')}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                          placeholder="e.g., 'iPhone 15 Pro' or 'MacBook Pro M3'"
-                          data-testid="bug-report-device"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        Email (optional)
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        {...register('email', {
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: 'Invalid email address',
-                          },
-                        })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
-                        placeholder="your.email@example.com (for follow-up questions)"
-                        data-testid="bug-report-email"
-                      />
-                      {errors.email && (
-                        <p className="mt-1 text-sm text-red-600" data-testid="email-error">
-                          {errors.email.message}
-                        </p>
-                      )}
-                    </div>
-
                     {/* Screenshot upload section */}
                     <div className="space-y-2">
                       <label className="block text-sm font-medium text-gray-700">
-                        Screenshot (optional)
+                        Add a screenshot (optional)
                       </label>
                       <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pt-5 pb-6">
                         <div className="space-y-1 text-center">
@@ -377,7 +275,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                               alt="Screenshot preview"
                               fill
                               className="rounded-md object-contain"
-                              unoptimized // Since we're using object URLs
+                              unoptimized
                             />
                           </div>
                           <button
@@ -395,6 +293,93 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                         </div>
                       )}
                     </div>
+
+                    {/* Advanced Fields Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvancedFields(!showAdvancedFields)}
+                      className="flex items-center text-sm text-gray-600 hover:text-gray-900 focus:outline-none group"
+                    >
+                      {showAdvancedFields ? (
+                        <ChevronUpIcon className="h-5 w-5 mr-1" />
+                      ) : (
+                        <ChevronDownIcon className="h-5 w-5 mr-1" />
+                      )}
+                      {showAdvancedFields ? 'Show less' : 'Add more details (optional)'}
+                    </button>
+
+                    {/* Advanced Fields */}
+                    {showAdvancedFields && (
+                      <div className="space-y-4 border-t pt-4 mt-2">
+                        <div>
+                          <label htmlFor="stepsToReproduce" className="block text-sm font-medium text-gray-700">
+                            Steps to reproduce the issue
+                          </label>
+                          <textarea
+                            id="stepsToReproduce"
+                            {...register('stepsToReproduce')}
+                            rows={3}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
+                            placeholder="1. Go to...&#10;2. Click on...&#10;3. Notice that..."
+                            data-testid="bug-report-steps"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div>
+                            <label htmlFor="browser" className="block text-sm font-medium text-gray-700">
+                              Browser
+                            </label>
+                            <input
+                              type="text"
+                              id="browser"
+                              {...register('browser')}
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
+                              placeholder="e.g., Chrome, Safari"
+                              data-testid="bug-report-browser"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="device" className="block text-sm font-medium text-gray-700">
+                              Device
+                            </label>
+                            <input
+                              type="text"
+                              id="device"
+                              {...register('device')}
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
+                              placeholder="e.g., iPhone, MacBook"
+                              data-testid="bug-report-device"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            Email (for follow-up questions)
+                          </label>
+                          <input
+                            type="email"
+                            id="email"
+                            {...register('email', {
+                              pattern: {
+                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                message: 'Invalid email address',
+                              },
+                            })}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
+                            placeholder="your.email@example.com"
+                            data-testid="bug-report-email"
+                          />
+                          {errors.email && (
+                            <p className="mt-1 text-sm text-red-600" data-testid="email-error">
+                              {errors.email.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-6 flex justify-end gap-3">
                       <button
