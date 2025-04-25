@@ -1,4 +1,5 @@
 {
+  "$schema": "./node_modules/@types/package.json",
   "name": "halal-restaurants-atl",
   "version": "0.1.0",
   "private": true,
@@ -15,7 +16,7 @@
     "seed-prod": "dotenv -e .env.production -- npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",
@@ -48,6 +49,7 @@
     "prisma": "^6.6.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }
 }

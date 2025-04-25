@@ -18,9 +18,17 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+interface CustomError extends Error {
+  code?: string;
+  statusCode?: number;
+}
+
 export async function POST(request: Request) {
   try {
+    console.log('Starting bug report submission...');
+    
     const formData = await request.formData();
+    console.log('Form data received');
     
     // Extract form fields
     const title = formData.get('title') as string;
@@ -33,23 +41,47 @@ export async function POST(request: Request) {
     const email = formData.get('email') as string;
     const screenshot = formData.get('screenshot') as File | null;
 
+    console.log('Form fields extracted:', {
+      title,
+      hasDescription: !!description,
+      hasSteps: !!stepsToReproduce,
+      hasScreenshot: !!screenshot
+    });
+
     let screenshotUrl = '';
 
     // Upload screenshot to Cloudinary if present
     if (screenshot) {
-      const bytes = await screenshot.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      
-      // Convert buffer to base64
-      const base64Image = `data:${screenshot.type};base64,${buffer.toString('base64')}`;
-      
-      // Upload to Cloudinary
-      const uploadResult = await cloudinary.uploader.upload(base64Image, {
-        folder: 'bug-reports',
-        resource_type: 'auto',
-      });
-      
-      screenshotUrl = uploadResult.secure_url;
+      try {
+        console.log('Processing screenshot:', {
+          type: screenshot.type,
+          size: screenshot.size,
+          name: screenshot.name
+        });
+
+        const bytes = await screenshot.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        
+        console.log('Screenshot converted to buffer, size:', buffer.length);
+        
+        // Convert buffer to base64
+        const base64Image = `data:${screenshot.type};base64,${buffer.toString('base64')}`;
+        
+        console.log('Uploading to Cloudinary...');
+        
+        // Upload to Cloudinary
+        const uploadResult = await cloudinary.uploader.upload(base64Image, {
+          folder: 'bug-reports',
+          resource_type: 'auto',
+        });
+        
+        screenshotUrl = uploadResult.secure_url;
+        console.log('Screenshot uploaded successfully:', screenshotUrl);
+      } catch (error) {
+        const customError = error as CustomError;
+        console.error('Error uploading screenshot:', customError);
+        throw new Error(`Screenshot upload failed: ${customError.message || 'Unknown error'}`);
+      }
     }
 
     // Format the email content
@@ -103,20 +135,32 @@ export async function POST(request: Request) {
       ` : ''}
     `;
 
+    console.log('Sending email...');
+
     // Send email
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
-      to: 'zeinkap@gmail.com',
+      to: process.env.GMAIL_USER, // Send to the same email
       subject: `Bug Report: ${title}`,
       text: emailContent,
       html: htmlContent,
     });
 
+    console.log('Email sent successfully');
+
     return NextResponse.json({ message: 'Bug report submitted successfully' });
   } catch (error) {
-    console.error('Error sending bug report:', error);
+    const customError = error as CustomError;
+    console.error('Detailed error in bug report submission:', {
+      message: customError.message || 'Unknown error',
+      stack: customError.stack,
+      name: customError.name,
+      code: customError.code,
+      statusCode: customError.statusCode
+    });
+    
     return NextResponse.json(
-      { error: 'Failed to submit bug report' },
+      { error: `Failed to submit bug report: ${customError.message || 'Unknown error'}` },
       { status: 500 }
     );
   }
