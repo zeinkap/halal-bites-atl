@@ -20,7 +20,7 @@ const validateEnvVariables = () => {
   };
 
   const missing = Object.entries(required)
-    .filter(([_, value]) => !value)
+    .filter(([, value]) => !value)
     .map(([key]) => key);
 
   if (missing.length > 0) {
