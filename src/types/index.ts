@@ -1,3 +1,5 @@
+import { CuisineType } from '@prisma/client';
+
 /**
  * Represents a restaurant in the application.
  * 
@@ -9,7 +11,7 @@
 export interface Restaurant {
   id: string;
   name: string;
-  cuisineType: string;
+  cuisineType: CuisineType;
   address: string;
   description?: string;
   priceRange: string;

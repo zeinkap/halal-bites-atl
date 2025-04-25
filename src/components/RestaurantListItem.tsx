@@ -1,7 +1,10 @@
 import { Restaurant } from '@/types';
-import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
-import CommentModal from './CommentModal';
+import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon, FlagIcon } from '@heroicons/react/24/solid';
+import { useState, lazy, Suspense } from 'react';
+
+// Lazy load modals
+const CommentModal = lazy(() => import('./CommentModal'));
+const ReportModal = lazy(() => import('./ReportModal'));
 
 interface RestaurantListItemProps {
   restaurant: Restaurant;
@@ -22,6 +25,7 @@ const formatPriceRange = (priceRange: string) => {
 
 export default function RestaurantListItem({ restaurant }: RestaurantListItemProps) {
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -59,13 +63,13 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                 {restaurant.hasPrayerRoom && (
                   <div className="flex items-center gap-1">
                     <HomeModernIcon className="h-4 w-4 text-blue-600" />
-                    <span className="text-xs text-gray-600">Prayer Room</span>
+                    <span className="text-xs text-gray-600">Prayer Space</span>
                   </div>
                 )}
                 {restaurant.isZabiha && (
                   <div className="flex items-center gap-1">
                     <HeartIcon className="h-4 w-4 text-red-600" />
-                    <span className="text-xs text-gray-600">Zabiha</span>
+                    <span className="text-xs text-gray-600">Zabiha (hand-cut)</span>
                   </div>
                 )}
                 {restaurant.hasOutdoorSeating && (
@@ -124,6 +128,20 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
               >
                 <ChatBubbleLeftIcon className="h-5 w-5" />
               </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsReportModalOpen(true);
+                }}
+                className="p-2 text-gray-600 hover:text-red-600 transition-colors cursor-pointer group relative"
+                title="Report Issue"
+                data-testid={`restaurant-report-icon-${restaurant.id}`}
+              >
+                <FlagIcon className="h-5 w-5" />
+                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Report Issue
+                </span>
+              </button>
             </div>
           </div>
 
@@ -162,12 +180,25 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
         </div>
       </div>
 
-      <CommentModal
-        isOpen={isCommentModalOpen}
-        onClose={() => setIsCommentModalOpen(false)}
-        restaurantId={restaurant.id}
-        restaurantName={restaurant.name}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        {isCommentModalOpen && (
+          <CommentModal
+            isOpen={isCommentModalOpen}
+            onClose={() => setIsCommentModalOpen(false)}
+            restaurantId={restaurant.id}
+            restaurantName={restaurant.name}
+          />
+        )}
+
+        {isReportModalOpen && (
+          <ReportModal
+            isOpen={isReportModalOpen}
+            onClose={() => setIsReportModalOpen(false)}
+            restaurantId={restaurant.id}
+            restaurantName={restaurant.name}
+          />
+        )}
+      </Suspense>
     </>
   );
 } 

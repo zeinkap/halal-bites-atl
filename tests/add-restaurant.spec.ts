@@ -65,6 +65,15 @@ test.describe("Restaurant Management", () => {
       );
     }
 
+    // Wait for any modals to close and UI to update
+    await page.waitForLoadState('networkidle');
+    
+    // If there's a success modal, wait for it to disappear
+    const successModal = page.locator('[data-testid="success-modal"]');
+    if (await successModal.isVisible()) {
+      await successModal.waitFor({ state: 'hidden' });
+    }
+
     // Verify restaurant in database
     const savedRestaurant = await waitForRestaurantInDB(
       request,

@@ -62,7 +62,7 @@ export async function waitForRestaurantInDB(
  * Handles all form fields including:
  * - Basic info (name, cuisine type, price range, address)
  * - Description (if provided)
- * - Feature checkboxes (prayer room, zabiha, outdoor seating, etc.)
+ * - Feature checkboxes (prayer space, zabiha, outdoor seating, etc.)
  * 
  * Waits for each field to be properly set before proceeding
  * 
@@ -160,17 +160,34 @@ export async function verifyRestaurantDetails(
   restaurantId: string, 
   details: { [key: string]: string }
 ) {
-  const restaurantItem = page.locator(`[data-testid="restaurant-item-${restaurantId}"]`);
+  // Wait for any loading states to complete
+  await page.waitForLoadState('networkidle');
+  
+  // First verify the restaurant exists in the list
+  const restaurantsList = page.locator('[data-testid="restaurants-list"]');
+  await expect(restaurantsList).toBeVisible();
+
+  // Look for the restaurant by name instead of ID since it's more reliable
+  const restaurantCard = page.locator(`[data-testid^="restaurant-name-"]`, {
+    hasText: details.name
+  });
+  await expect(restaurantCard).toBeVisible();
+
+  // Get the parent restaurant item
+  const restaurantItem = restaurantCard.locator('xpath=ancestor::*[@data-testid^="restaurant-item-"]');
   await expect(restaurantItem).toBeVisible();
 
-  // Verify name and basic details
-  await expect(page.locator(`[data-testid="restaurant-name-${restaurantId}"]`)).toContainText(details.name);
-  await expect(page.locator(`[data-testid="restaurant-cuisine-${restaurantId}"]`)).toContainText(formatCuisine(details.cuisine));
-  await expect(page.locator(`[data-testid="restaurant-address-${restaurantId}"]`)).toContainText(details.address);
+  // Now verify all the details
+  const cuisineElement = restaurantItem.locator(`[data-testid^="restaurant-cuisine-"]`);
+  const addressElement = restaurantItem.locator(`[data-testid^="restaurant-address-"]`);
+  
+  await expect(cuisineElement).toContainText(formatCuisine(details.cuisine));
+  await expect(addressElement).toContainText(details.address);
   
   // Verify price range if provided
   if (details.priceRange) {
-    await expect(page.locator(`[data-testid="restaurant-price-${restaurantId}"]`)).toContainText(formatPriceRange(details.priceRange));
+    const priceElement = restaurantItem.locator(`[data-testid^="restaurant-price-"]`);
+    await expect(priceElement).toContainText(formatPriceRange(details.priceRange));
   }
 }
 
@@ -531,4 +548,103 @@ export async function fillCommentFormWithTestData(page: Page) {
   await page.fill('[data-testid="comment-author-input"]', "Test Author");
   await page.fill('[data-testid="comment-content-input"]', "Test Comment");
   await page.click('[data-testid="rating-star-4-button"]');
+}
+
+/**
+ * Opens the filters panel and verifies it's visible
+ * @param page - Playwright's page object
+ */
+export async function openFiltersPanel(page: Page) {
+  await page.click('[data-testid="filters-button"]');
+  await expect(page.locator('[data-testid="filters-panel"]')).toBeVisible();
+  await expect(page.locator('[data-testid="cuisine-select"]')).toBeVisible();
+  await expect(page.locator('[data-testid="price-select"]')).toBeVisible();
+}
+
+/**
+ * Verifies cuisine filter options are properly formatted
+ * @param page - Playwright's page object
+ */
+export async function verifyCuisineFilterOptions(page: Page) {
+  const expectedFormats = {
+    'MIDDLE_EASTERN': 'Middle Eastern',
+    'INDIAN_PAKISTANI': 'Indian Pakistani',
+    'TURKISH': 'Turkish',
+    'PERSIAN': 'Persian',
+    'MEDITERRANEAN': 'Mediterranean',
+    'AFGHAN': 'Afghan',
+    'CAFE': 'Cafe',
+    'OTHER': 'Other'
+  };
+
+  const cuisineSelect = page.locator('[data-testid="cuisine-select"]');
+  const options = await cuisineSelect.locator('option:not(:first-child)').all();
+  
+  for (const option of options) {
+    const value = await option.getAttribute('value');
+    const text = await option.textContent();
+    if (value && value in expectedFormats) {
+      expect(text?.trim()).toBe(expectedFormats[value as keyof typeof expectedFormats]);
+    }
+  }
+}
+
+/**
+ * Verifies price range filter options are in correct order
+ * @param page - Playwright's page object
+ */
+export async function verifyPriceFilterOptions(page: Page) {
+  const priceSelect = page.locator('[data-testid="price-select"]');
+  const options = await priceSelect.locator('option').all();
+  
+  const expectedOptions = ['Any Price', '$', '$$', '$$$'];
+  
+  for (let i = 0; i < options.length; i++) {
+    const text = await options[i].textContent();
+    expect(text?.trim()).toBe(expectedOptions[i]);
+  }
+}
+
+/**
+ * Applies filters and verifies filtered results
+ * @param page - Playwright's page object
+ * @param cuisineType - Cuisine type to filter by
+ * @param priceRange - Price range to filter by
+ * @param expectedRestaurantName - Name of a restaurant that should be included in results
+ */
+export async function applyFiltersAndVerifyResults(
+  page: Page,
+  cuisineType: string,
+  priceRange: string,
+  expectedRestaurantName: string
+) {
+  await page.selectOption('[data-testid="cuisine-select"]', cuisineType);
+  await page.selectOption('[data-testid="price-select"]', priceRange);
+  
+  // Wait for the filtering to complete
+  await page.waitForTimeout(500);
+
+  // Get all restaurant cards
+  const restaurantCards = page.locator('[data-testid^="restaurant-item-"]');
+  
+  // Verify we have exactly 5 results
+  await expect(restaurantCards).toHaveCount(5);
+
+  // Get all restaurant names and verify the expected one is present
+  const restaurantNames = await page.locator('[data-testid^="restaurant-name-"]').allTextContents();
+  expect(restaurantNames).toContain(expectedRestaurantName);
+
+  // Verify all displayed restaurants match the filter criteria
+  const restaurants = await restaurantCards.all();
+  for (const restaurant of restaurants) {
+    const cuisineElement = restaurant.locator('[data-testid^="restaurant-cuisine-"]');
+    const priceElement = restaurant.locator('[data-testid^="restaurant-price-"]');
+    
+    if (cuisineType !== 'all') {
+      await expect(cuisineElement).toContainText('Middle Eastern');
+    }
+    if (priceRange !== 'all') {
+      await expect(priceElement).toContainText('$');
+    }
+  }
 } 

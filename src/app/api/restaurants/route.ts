@@ -3,15 +3,34 @@ import { prisma } from '@/lib/prisma';
 import { CuisineType, PriceRange } from '@prisma/client';
 import { appendRestaurantToSeed } from '@/utils/updateSeedFile';
 import { appendToProdSeed } from '@/utils/updateProdSeedFile';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
+
+const CACHE_TTL = 60 * 5; // 5 minutes
+const RESTAURANTS_CACHE_KEY = 'restaurants:all';
 
 // Get all restaurants
 export async function GET() {
   try {
-    // Test database connection first
+    // Try to get from cache first
+    const cachedData = await redis.get(RESTAURANTS_CACHE_KEY);
+    if (cachedData) {
+      return NextResponse.json(cachedData);
+    }
+
+    // If not in cache, get from database
     await prisma.$connect();
-    
     const restaurants = await prisma.restaurant.findMany({
       orderBy: { createdAt: 'desc' },
+    });
+
+    // Store in cache
+    await redis.set(RESTAURANTS_CACHE_KEY, restaurants, {
+      ex: CACHE_TTL
     });
 
     return NextResponse.json(restaurants);
@@ -80,6 +99,9 @@ export async function POST(request: Request) {
         isFullyHalal: isFullyHalal || false,
       },
     });
+
+    // Invalidate cache after adding new restaurant
+    await redis.del(RESTAURANTS_CACHE_KEY);
 
     // Append to appropriate seed file based on environment
     if (process.env.NODE_ENV === 'production') {

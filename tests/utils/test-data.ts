@@ -11,9 +11,9 @@ import { generateRandomAtlantaAddress } from './address-generator';
  * @property address - Physical location of the restaurant
  * @property description - Optional detailed description of the restaurant
  * @property features - Object containing boolean flags for various restaurant features:
- *                     - hasPrayerRoom: Whether the restaurant has a prayer room
+ *                     - hasPrayerRoom: Whether the restaurant has a prayer space
  *                     - hasOutdoorSeating: Whether outdoor seating is available
- *                     - isZabiha: Whether they serve zabiha halal meat
+ *                     - isZabiha: Whether they serve zabiha (hand-cut) halal meat
  *                     - hasHighChair: Whether they provide high chairs for children
  *                     - servesAlcohol: Whether alcohol is served
  *                     - isFullyHalal: Whether the entire menu is halal
@@ -41,7 +41,7 @@ export interface TestRestaurant {
  * BASIC: Standard test restaurant with all features enabled
  * - Uses dynamic name generation to ensure uniqueness
  * - Sets Middle Eastern cuisine and low price range
- * - Enables most positive features (prayer room, zabiha, etc.)
+ * - Enables most positive features (prayer space, zabiha, etc.)
  * 
  * DUPLICATE: Used for testing duplicate restaurant validation
  * - Also uses dynamic name generation
@@ -124,7 +124,7 @@ export const TEST_COMMENTS: Record<string, TestComment> = {
     rating: 5
   },
   LONG: {
-    content: 'This is a very detailed review of the restaurant. The food was amazing, service was great, and the prayer room was clean and spacious. Would definitely recommend to others!',
+    content: 'This is a very detailed review of the restaurant. The food was amazing, service was great, and the prayer space was clean and spacious. Would definitely recommend to others!',
     authorName: 'Detailed Reviewer',
     rating: 4
   },

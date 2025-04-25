@@ -11,7 +11,7 @@ const siteConfig = {
     "halal restaurants georgia",
     "atlanta halal guide",
     "muslim owned cafes atlanta",
-    "zabiha restaurants atlanta",
+    "zabiha hand-cut restaurants atlanta",
     "halal dining atl",
     "islamic restaurants atlanta",
     "atlanta muslim food",

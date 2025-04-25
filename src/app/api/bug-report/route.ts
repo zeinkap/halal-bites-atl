@@ -9,14 +9,37 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Validate required environment variables
+const validateEnvVariables = () => {
+  const required = {
+    GMAIL_USER: process.env.GMAIL_USER,
+    GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+  };
+
+  const missing = Object.entries(required)
+    .filter(([_, value]) => !value)
+    .map(([key]) => key);
+
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+};
+
 // Create a transporter using Gmail SMTP
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const createTransporter = () => {
+  validateEnvVariables();
+  
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+};
 
 interface CustomError extends Error {
   code?: string;
@@ -26,6 +49,9 @@ interface CustomError extends Error {
 export async function POST(request: Request) {
   try {
     console.log('Starting bug report submission...');
+    
+    // Validate environment variables first
+    validateEnvVariables();
     
     const formData = await request.formData();
     console.log('Form data received');
@@ -135,8 +161,10 @@ export async function POST(request: Request) {
       ` : ''}
     `;
 
+    console.log('Creating email transporter...');
+    const transporter = createTransporter();
+    
     console.log('Sending email...');
-
     // Send email
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
@@ -159,8 +187,13 @@ export async function POST(request: Request) {
       statusCode: customError.statusCode
     });
     
+    // Return a more specific error message
+    const errorMessage = customError.message?.includes('Missing required environment variables')
+      ? 'Server configuration error. Please contact the administrator.'
+      : `Failed to submit bug report: ${customError.message || 'Unknown error'}`;
+    
     return NextResponse.json(
-      { error: `Failed to submit bug report: ${customError.message || 'Unknown error'}` },
+      { error: errorMessage },
       { status: 500 }
     );
   }

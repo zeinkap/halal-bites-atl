@@ -401,7 +401,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                 <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Restaurant Features</h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Prayer Room */}
+                  {/* Prayer Space */}
                   <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
                     <div className="flex items-center h-5">
                       <input
@@ -415,7 +415,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-semibold text-gray-900">Prayer Room</span>
+                      <span className="text-sm font-semibold text-gray-900">Prayer Space</span>
                       <p className="text-xs text-gray-500 mt-0.5">Dedicated prayer space available</p>
                     </div>
                   </label>
@@ -453,7 +453,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       />
                     </div>
                     <div className="ml-3">
-                      <span className="text-sm font-semibold text-gray-900">Zabiha Certified</span>
+                      <span className="text-sm font-semibold text-gray-900">Zabiha Certified (hand-cut)</span>
                       <p className="text-xs text-gray-500 mt-0.5">Serves certified zabiha meat</p>
                     </div>
                   </label>

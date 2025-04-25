@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Restaurant } from '@/types';
 import RestaurantListItem from './RestaurantListItem';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
+import { formatCuisineName } from '@/utils/formatCuisineName';
+import { CuisineType } from '@prisma/client';
+
+const ITEMS_PER_PAGE = 10;
 
 interface RestaurantListProps {
   initialSearch?: string;
@@ -11,13 +15,27 @@ interface RestaurantListProps {
 
 export default function RestaurantList({ initialSearch = '' }: RestaurantListProps) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [displayedRestaurants, setDisplayedRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedCuisine, setSelectedCuisine] = useState<string>('all');
+  const [selectedCuisine, setSelectedCuisine] = useState<CuisineType | 'all'>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'>('name-asc');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | undefined>(undefined);
+  const lastRestaurantRef = useCallback((node: HTMLDivElement) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -42,29 +60,42 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
   }, []);
 
   // Filter and sort restaurants
-  const filteredRestaurants = restaurants.filter(restaurant => {
-    const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisineType === selectedCuisine;
-    const matchesPriceRange = selectedPriceRange === 'all' || restaurant.priceRange === selectedPriceRange;
-    const matchesSearch = !searchQuery || 
-      restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      restaurant.cuisineType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      restaurant.address.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesCuisine && matchesPriceRange && matchesSearch;
-  }).sort((a, b) => {
-    switch (sortBy) {
-      case 'name-asc':
-        return a.name.localeCompare(b.name);
-      case 'name-desc':
-        return b.name.localeCompare(a.name);
-      case 'price-asc':
-        return a.priceRange.length - b.priceRange.length;
-      case 'price-desc':
-        return b.priceRange.length - a.priceRange.length;
-      default:
-        return 0;
-    }
-  });
+  useEffect(() => {
+    const filteredRestaurants = restaurants.filter(restaurant => {
+      const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisineType === selectedCuisine;
+      const matchesPriceRange = selectedPriceRange === 'all' || restaurant.priceRange === selectedPriceRange;
+      const matchesSearch = !searchQuery || 
+        restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.cuisineType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchesCuisine && matchesPriceRange && matchesSearch;
+    }).sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'price-asc':
+          return a.priceRange.length - b.priceRange.length;
+        case 'price-desc':
+          return b.priceRange.length - a.priceRange.length;
+        default:
+          return 0;
+      }
+    });
+
+    // Update displayed restaurants based on pagination
+    const startIndex = 0;
+    const endIndex = page * ITEMS_PER_PAGE;
+    setDisplayedRestaurants(filteredRestaurants.slice(startIndex, endIndex));
+    setHasMore(endIndex < filteredRestaurants.length);
+  }, [restaurants, searchQuery, selectedCuisine, selectedPriceRange, sortBy, page]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, selectedCuisine, selectedPriceRange, sortBy]);
 
   if (error) {
     return (
@@ -76,7 +107,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
 
   return (
     <div className="w-full">
-      <div className="mb-8">
+      <div className="mb-8 sticky top-0 bg-white z-10 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <div className="flex-1 relative">
             <input
@@ -92,6 +123,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center gap-2"
+            data-testid="filters-button"
           >
             <AdjustmentsHorizontalIcon className="h-5 w-5" />
             <span className="hidden sm:inline">Filters</span>
@@ -99,7 +131,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         </div>
 
         {showFilters && (
-          <div className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4">
+          <div className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4" data-testid="filters-panel">
             <div>
               <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
                 Sort By
@@ -109,6 +141,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700"
+                data-testid="sort-select"
               >
                 <option value="name-asc">Name: A to Z</option>
                 <option value="name-desc">Name: Z to A</option>
@@ -124,13 +157,14 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               <select
                 id="cuisine"
                 value={selectedCuisine}
-                onChange={(e) => setSelectedCuisine(e.target.value)}
+                onChange={(e) => setSelectedCuisine(e.target.value as CuisineType | 'all')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700"
+                data-testid="cuisine-select"
               >
                 <option value="all" className="text-gray-700">All Cuisines</option>
                 {Array.from(new Set(restaurants.map(r => r.cuisineType))).sort().map((cuisine) => (
                   <option key={cuisine} value={cuisine} className="text-gray-700">
-                    {cuisine}
+                    {formatCuisineName(cuisine as CuisineType)}
                   </option>
                 ))}
               </select>
@@ -145,9 +179,10 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 value={selectedPriceRange}
                 onChange={(e) => setSelectedPriceRange(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700"
+                data-testid="price-select"
               >
                 <option value="all" className="text-gray-700">Any Price</option>
-                {Array.from(new Set(restaurants.map(r => r.priceRange))).sort().map((price) => (
+                {['LOW', 'MEDIUM', 'HIGH'].map((price) => (
                   <option key={price} value={price} className="text-gray-700">
                     {price === 'LOW' ? '$' : price === 'MEDIUM' ? '$$' : '$$$'}
                   </option>
@@ -165,7 +200,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               <span>Loading restaurants...</span>
             </div>
           ) : (
-            `Found ${filteredRestaurants.length} restaurant${filteredRestaurants.length !== 1 ? 's' : ''}`
+            `Found ${restaurants.length} restaurant${restaurants.length !== 1 ? 's' : ''}`
           )}
         </div>
       </div>
@@ -181,14 +216,21 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
             </div>
           ))}
         </div>
-      ) : filteredRestaurants.length > 0 ? (
+      ) : displayedRestaurants.length > 0 ? (
         <div className="space-y-4">
-          {filteredRestaurants.map((restaurant) => (
-            <RestaurantListItem
+          {displayedRestaurants.map((restaurant, index) => (
+            <div
               key={restaurant.id}
-              restaurant={restaurant}
-            />
+              ref={index === displayedRestaurants.length - 1 ? lastRestaurantRef : undefined}
+            >
+              <RestaurantListItem restaurant={restaurant} />
+            </div>
           ))}
+          {hasMore && (
+            <div className="flex justify-center p-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-12">

@@ -1,7 +1,8 @@
 import { Restaurant } from '@/types';
 import { useState } from 'react';
-import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon, FlagIcon } from '@heroicons/react/24/solid';
 import CommentModal from './CommentModal';
+import ReportModal from './ReportModal';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -9,6 +10,7 @@ interface RestaurantCardProps {
 
 export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   return (
     <>
@@ -42,11 +44,11 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
               
               {/* New Features Section */}
               <div className="grid grid-cols-2 gap-2 mt-3">
-                {/* Prayer Room */}
+                {/* Prayer Space */}
                 <div className="flex items-center gap-2">
                   <HomeModernIcon className="h-4 w-4 text-blue-600" />
                   <span className="text-sm text-gray-600" data-testid={`restaurant-prayer-room-${restaurant.id}`}>
-                    {restaurant.hasPrayerRoom ? 'Prayer Room ✓' : 'No Prayer Room'}
+                    {restaurant.hasPrayerRoom ? 'Prayer Space ✓' : 'No Prayer Space'}
                   </span>
                 </div>
                 
@@ -62,7 +64,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 <div className="flex items-center gap-2">
                   <HeartIcon className="h-4 w-4 text-red-600" />
                   <span className="text-sm text-gray-600" data-testid={`restaurant-zabiha-${restaurant.id}`}>
-                    {restaurant.isZabiha ? 'Zabiha ✓' : 'Non-Zabiha'}
+                    {restaurant.isZabiha ? 'Zabiha (hand-cut) ✓' : 'Non-Zabiha'}
                   </span>
                 </div>
                 
@@ -93,7 +95,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             </div>
 
             {/* Quick Actions */}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 mt-4">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -104,11 +106,12 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                     '_blank'
                   );
                 }}
-                className="p-2 text-gray-600 hover:text-green-600 transition-colors cursor-pointer"
+                className="px-4 py-2 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer flex items-center justify-center gap-2"
                 title="View on Maps"
                 data-testid={`restaurant-card-map-icon-${restaurant.id}`}
               >
                 <MapPinIcon className="h-5 w-5" />
+                View on Maps
               </button>
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -117,30 +120,52 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 data-testid={`get-directions-button-${restaurant.id}`}
-                className="px-4 py-2 bg-gradient-to-r from-slate-400 to-slate-500 text-white rounded-lg text-sm font-medium hover:from-slate-500 hover:to-slate-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer"
+                className="px-4 py-2 bg-slate-500 text-white rounded-lg text-sm font-medium hover:bg-slate-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer flex items-center justify-center gap-2"
               >
-                Directions
+                <MapPinIcon className="h-5 w-5" />
+                Get Directions
               </a>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsCommentModalOpen(true);
                 }}
-                className="p-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
-                title="Comments"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer flex items-center justify-center gap-2"
+                title="Add Comment"
                 data-testid={`restaurant-card-comment-icon-${restaurant.id}`}
               >
                 <ChatBubbleLeftIcon className="h-5 w-5" />
+                Add Comment
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsReportModalOpen(true);
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer flex items-center justify-center gap-2"
+                title="Report Issue"
+                data-testid={`restaurant-card-report-icon-${restaurant.id}`}
+              >
+                <FlagIcon className="h-5 w-5" />
+                Report Issue
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Comment Modal - moved outside the card */}
+      {/* Comment Modal */}
       <CommentModal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}
+        restaurantId={restaurant.id}
+        restaurantName={restaurant.name}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
         restaurantId={restaurant.id}
         restaurantName={restaurant.name}
       />
