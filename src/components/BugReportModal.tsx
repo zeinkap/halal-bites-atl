@@ -187,7 +187,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                     </Dialog.Title>
                     <button
                       type="button"
-                      className="text-gray-400 hover:text-gray-500 cursor-pointer"
+                      className="text-gray-400 hover:text-gray-500 cursor-pointer p-1 hover:bg-gray-100 rounded-lg transition-colors"
                       onClick={handleClose}
                       data-testid="close-bug-report-modal"
                     >
@@ -400,7 +400,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                       <button
                         type="button"
                         onClick={handleClose}
-                        className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 cursor-pointer"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
                         data-testid="bug-report-cancel"
                       >
                         Cancel
@@ -408,7 +408,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-w-[100px]"
                         data-testid="bug-report-submit"
                       >
                         {isSubmitting ? 'Submitting...' : 'Submit Report'}

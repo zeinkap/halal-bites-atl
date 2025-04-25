@@ -103,6 +103,14 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     }
 
     try {
+      console.log('Submitting restaurant data:', {
+        ...formData,
+        cuisineType: formData.cuisineType as CuisineType,
+        priceRange: formData.priceRange === '$' ? 'LOW' :
+                   formData.priceRange === '$$' ? 'MEDIUM' :
+                   formData.priceRange === '$$$' ? 'HIGH' : formData.priceRange
+      });
+      
       const response = await fetch('/api/restaurants', {
         method: 'POST',
         headers: {
@@ -119,6 +127,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Error response:', errorData);
         throw new Error(errorData.error || 'Failed to add restaurant');
       }
 

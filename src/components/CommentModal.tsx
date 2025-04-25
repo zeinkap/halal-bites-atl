@@ -442,16 +442,15 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   </p>
                   {comment.imageUrl && (
                     <div 
-                      className="mt-3 relative w-full aspect-video" 
+                      className="mt-3 relative w-full aspect-[4/3] max-h-[400px]" 
                       data-testid={`comment-image-container-${comment.id}`}
-                      style={{ minHeight: '200px' }}
                     >
                       <Image
                         src={comment.imageUrl}
                         alt={`Image from ${comment.authorName}`}
                         data-testid={`comment-image-${comment.id}`}
                         fill
-                        className="object-cover rounded-lg"
+                        className="object-contain rounded-lg"
                         sizes="(max-width: 768px) 100vw, 50vw"
                         priority
                       />

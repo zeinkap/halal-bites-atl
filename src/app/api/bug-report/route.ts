@@ -76,13 +76,40 @@ export async function POST(request: Request) {
       ${screenshotUrl ? `\nScreenshot: ${screenshotUrl}` : ''}
     `;
 
+    const htmlContent = `
+      <h2>Bug Report Details</h2>
+      <hr>
+      <p><strong>Title:</strong> ${title}</p>
+      <p><strong>Description:</strong> ${description}</p>
+      
+      <h3>Steps to Reproduce:</h3>
+      <p>${stepsToReproduce.split('\n').join('<br>')}</p>
+      
+      <h3>Expected Behavior:</h3>
+      <p>${expectedBehavior}</p>
+      
+      <h3>Actual Behavior:</h3>
+      <p>${actualBehavior}</p>
+      
+      <h3>Technical Details:</h3>
+      <hr>
+      <p><strong>Browser:</strong> ${browser}</p>
+      <p><strong>Device:</strong> ${device}</p>
+      <p><strong>Reporter Email:</strong> ${email || 'Not provided'}</p>
+      ${screenshotUrl ? `
+        <h3>Screenshot:</h3>
+        <img src="${screenshotUrl}" alt="Bug Report Screenshot" style="max-width: 100%; margin-top: 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <p><a href="${screenshotUrl}" target="_blank">View full image</a></p>
+      ` : ''}
+    `;
+
     // Send email
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
       to: 'zeinkap@gmail.com',
       subject: `Bug Report: ${title}`,
       text: emailContent,
-      html: emailContent.replace(/\n/g, '<br>'),
+      html: htmlContent,
     });
 
     return NextResponse.json({ message: 'Bug report submitted successfully' });

@@ -84,7 +84,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, cuisine, or location"
-              className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-500"
+              className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400"
               data-testid="search-input"
             />
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -108,7 +108,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 id="sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700"
               >
                 <option value="name-asc">Name: A to Z</option>
                 <option value="name-desc">Name: Z to A</option>
@@ -125,11 +125,11 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 id="cuisine"
                 value={selectedCuisine}
                 onChange={(e) => setSelectedCuisine(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700"
               >
-                <option value="all">All Cuisines</option>
+                <option value="all" className="text-gray-700">All Cuisines</option>
                 {Array.from(new Set(restaurants.map(r => r.cuisineType))).sort().map((cuisine) => (
-                  <option key={cuisine} value={cuisine}>
+                  <option key={cuisine} value={cuisine} className="text-gray-700">
                     {cuisine}
                   </option>
                 ))}
@@ -144,11 +144,11 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 id="price"
                 value={selectedPriceRange}
                 onChange={(e) => setSelectedPriceRange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700"
               >
-                <option value="all">Any Price</option>
+                <option value="all" className="text-gray-700">Any Price</option>
                 {Array.from(new Set(restaurants.map(r => r.priceRange))).sort().map((price) => (
-                  <option key={price} value={price}>
+                  <option key={price} value={price} className="text-gray-700">
                     {price === 'LOW' ? '$' : price === 'MEDIUM' ? '$$' : '$$$'}
                   </option>
                 ))}
