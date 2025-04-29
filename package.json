@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@types/package.json",
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "halal-restaurants-atl",
   "version": "0.1.0",
   "private": true,
@@ -34,24 +34,30 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.1",
     "react-hot-toast": "^2.5.2",
-    "react-toastify": "^11.0.5",
-    "uuid": "^11.1.0"
+    "react-stars": "^2.2.5",
+    "react-textarea-autosize": "^8.5.3",
+    "sharp": "^0.33.2",
+    "tailwind-merge": "^2.2.1",
+    "typescript": "^5.3.3",
+    "uuid": "^11.1.0",
+    "zod": "^3.22.4",
+    "yet-another-react-lightbox": "^3.17.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@playwright/test": "^1.51.1",
     "@prisma/client": "^6.6.0",
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20.17.30",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.19",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
+    "postcss": "^8.4.38",
     "prisma": "^6.6.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "tsx": "^4.19.3"
   }
 }

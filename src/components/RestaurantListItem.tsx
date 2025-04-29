@@ -58,6 +58,13 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                 </p>
               </div>
 
+              {/* Show description by default */}
+              {restaurant.description && (
+                <p className="text-sm text-gray-600 mt-2 mb-2" data-testid={`restaurant-description-${restaurant.id}`}> 
+                  {restaurant.description}
+                </p>
+              )}
+
               {/* Quick Features */}
               <div className="flex flex-wrap gap-3 mt-2">
                 {restaurant.hasPrayerRoom && (
@@ -138,9 +145,6 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                 data-testid={`restaurant-report-icon-${restaurant.id}`}
               >
                 <FlagIcon className="h-5 w-5" />
-                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Report Issue
-                </span>
               </button>
             </div>
           </div>
@@ -148,11 +152,6 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
           {/* Expanded Content */}
           {isExpanded && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              {restaurant.description && (
-                <p className="text-sm text-gray-600 mb-4">
-                  {restaurant.description}
-                </p>
-              )}
               <div className="flex gap-2">
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(

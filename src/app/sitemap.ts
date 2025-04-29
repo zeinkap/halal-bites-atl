@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Add restaurant entries
-  const restaurantEntries = restaurants.map((restaurant) => ({
+  const restaurantEntries = restaurants.map((restaurant: { id: string; updatedAt: Date }) => ({
     url: `https://halalbitesatl.org/restaurant/${restaurant.id}`,
     lastModified: restaurant.updatedAt,
     changeFrequency: 'weekly' as const,

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 
 export default function ScrollToTop() {
@@ -33,11 +35,11 @@ export default function ScrollToTop() {
       {isVisible && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-4 right-4 z-50 p-3 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg hover:from-orange-500 hover:to-orange-600 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+          className="fixed bottom-24 sm:bottom-6 right-6 z-50 p-3 rounded-xl bg-white/90 backdrop-blur-sm text-gray-700 shadow-lg hover:bg-white hover:text-gray-900 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 border border-gray-200/50"
           aria-label="Scroll to top"
         >
           <svg
-            className="w-6 h-6"
+            className="w-5 h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -46,8 +48,8 @@ export default function ScrollToTop() {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
+              strokeWidth={2.5}
+              d="M5 15l7-7 7 7"
             />
           </svg>
         </button>

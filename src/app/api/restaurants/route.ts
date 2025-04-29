@@ -47,24 +47,27 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { 
-      name, 
-      cuisineType, 
-      address, 
-      priceRange,
+    const {
+      name,
+      cuisineType,
+      address,
       description,
+      priceRange,
       hasPrayerRoom,
       hasOutdoorSeating,
       isZabiha,
       hasHighChair,
       servesAlcohol,
-      isFullyHalal
+      isFullyHalal,
+      imageUrl,
     } = body;
 
     // Validate required fields
     if (!name || !cuisineType || !address || !priceRange) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
+      return new Response(
+        JSON.stringify({
+          error: 'Missing required fields: name, cuisineType, address, priceRange',
+        }),
         { status: 400 }
       );
     }
@@ -89,14 +92,15 @@ export async function POST(request: Request) {
         name,
         cuisineType,
         address,
+        description,
         priceRange,
-        description: description || '',
-        hasPrayerRoom: hasPrayerRoom || false,
-        hasOutdoorSeating: hasOutdoorSeating || false,
-        isZabiha: isZabiha || false,
-        hasHighChair: hasHighChair || false,
-        servesAlcohol: servesAlcohol || false,
-        isFullyHalal: isFullyHalal || false,
+        hasPrayerRoom,
+        hasOutdoorSeating,
+        isZabiha,
+        hasHighChair,
+        servesAlcohol,
+        isFullyHalal,
+        imageUrl,
       },
     });
 
@@ -126,18 +130,19 @@ export async function PATCH(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const body = await request.json();
-    const { 
-      name, 
-      cuisineType, 
-      address, 
-      priceRange,
+    const {
+      name,
+      cuisineType,
+      address,
       description,
+      priceRange,
       hasPrayerRoom,
       hasOutdoorSeating,
       isZabiha,
       hasHighChair,
       servesAlcohol,
-      isFullyHalal
+      isFullyHalal,
+      imageUrl,
     } = body;
 
     if (!id) {
@@ -162,24 +167,25 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const restaurant = await prisma.restaurant.update({
+    const updatedRestaurant = await prisma.restaurant.update({
       where: { id },
       data: {
-        name: name || undefined,
-        cuisineType: cuisineType || undefined,
-        address: address || undefined,
-        priceRange: priceRange || undefined,
-        description: description || undefined,
-        hasPrayerRoom: hasPrayerRoom !== undefined ? hasPrayerRoom : undefined,
-        hasOutdoorSeating: hasOutdoorSeating !== undefined ? hasOutdoorSeating : undefined,
-        isZabiha: isZabiha !== undefined ? isZabiha : undefined,
-        hasHighChair: hasHighChair !== undefined ? hasHighChair : undefined,
-        servesAlcohol: servesAlcohol !== undefined ? servesAlcohol : undefined,
-        isFullyHalal: isFullyHalal !== undefined ? isFullyHalal : undefined,
+        name,
+        cuisineType,
+        address,
+        description,
+        priceRange,
+        hasPrayerRoom,
+        hasOutdoorSeating,
+        isZabiha,
+        hasHighChair,
+        servesAlcohol,
+        isFullyHalal,
+        imageUrl,
       },
     });
 
-    return NextResponse.json(restaurant);
+    return NextResponse.json(updatedRestaurant);
   } catch (error) {
     console.error('Error updating restaurant:', error);
     if (error instanceof Error) {

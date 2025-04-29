@@ -57,6 +57,7 @@ export async function addToProdSeed(restaurant: Omit<Restaurant, 'id' | 'created
       hasHighChair: ${restaurant.hasHighChair},
       servesAlcohol: ${restaurant.servesAlcohol},
       isFullyHalal: ${restaurant.isFullyHalal},
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 `;
 
@@ -111,6 +112,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Kimchi Red - Alpharetta', {
@@ -125,6 +127,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant("Olomi's Grill", {
@@ -139,6 +142,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Spices Hut Food Court', {
@@ -153,6 +157,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Pista House Alpharetta', {
@@ -167,6 +172,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Namak', {
@@ -181,6 +187,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Biryani House Atlanta', {
@@ -195,6 +202,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Al Zein Shawarma & Mediterranean Grill', {
@@ -209,6 +217,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Kimchi Red - Johns Creek', {
@@ -223,6 +232,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Cafe Efendi Mediterranean Restaurant', {
@@ -237,6 +247,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Karachi Broast & Grill', {
@@ -251,6 +262,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Zyka: The Taste | Indian Restaurant | Decatur', {
@@ -265,6 +277,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('The Halal Guys', {
@@ -279,6 +292,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant("Khan's Kitchen", {
@@ -293,6 +307,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Shibam Coffee', {
@@ -307,6 +322,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('MOTW Coffee and Pastries', {
@@ -321,6 +337,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('967 Coffee Co', {
@@ -335,6 +352,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Baladi Coffee', {
@@ -349,6 +367,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Jerusalem Bakery & Grill', {
@@ -363,6 +382,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Bismillah Cafe', {
@@ -377,6 +397,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Merhaba Shawarma', {
@@ -391,6 +412,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Delbar - Old Milton', {
@@ -405,6 +427,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Sabri Kabab House', {
@@ -419,6 +442,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Al-Amin Supermarket & Restaurant', {
@@ -433,6 +457,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('ZamZam Halal Supermarket & Restaurant', {
@@ -447,6 +472,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Kabul Kabob', {
@@ -461,6 +487,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Al Madina Grocery & Restaurant', {
@@ -475,11 +502,12 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Chinese Dhaba', {
       name: 'Chinese Dhaba',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.CHINESE,
       address: '5675 Jimmy Carter Blvd, Norcross, GA 30071',
       description: 'Chinese halal restaurant serving authentic Chinese cuisine made with halal ingredients. Known for their hand-pulled noodles and lamb dishes.',
       priceRange: PriceRange.LOW,
@@ -489,6 +517,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Star Pizza', {
@@ -503,6 +532,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('PONKO Chicken - Alpharetta', {
@@ -517,6 +547,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Express Burger & Grill', {
@@ -531,11 +562,12 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Moctezuma Mexican Grill', {
       name: 'Moctezuma Mexican Grill',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.MEXICAN,
       address: '13020 Morris Road, Alpharetta, GA',
       description: 'Mexican restaurant offering halal options. Features authentic Mexican dishes and specialties made with halal meats.',
       priceRange: PriceRange.MEDIUM,
@@ -545,6 +577,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Adana Mediterranean Grill', {
@@ -559,6 +592,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Dil Bahar Cafe & Market', {
@@ -573,6 +607,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Briskfire BBQ', {
@@ -587,6 +622,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Stone Creek Halal Pizza', {
@@ -601,6 +637,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Salsa Taqueria & Wings', {
@@ -615,6 +652,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Auntie Vees Kitchen', {
@@ -629,6 +667,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Springreens at Community Cafe', {
@@ -643,6 +682,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Mukja Korean Fried Chicken', {
@@ -657,6 +697,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Baraka Shawarma Atlanta', {
@@ -671,6 +712,7 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Botiwalla by Chai Pani', {
@@ -685,6 +727,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Dantanna\'s', {
@@ -699,6 +742,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     await upsertRestaurant('Jaffa Restaurant Atl (Halal)', {
@@ -713,6 +757,7 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
     // Log summary with production-specific details

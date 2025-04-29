@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import ScrollToTop from "@/components/ScrollToTop";
 import Script from "next/script";
 import { metadata } from "./metadata";
 import { Toaster } from 'react-hot-toast';
@@ -47,6 +48,7 @@ export default function RootLayout({
       >
         <Navbar />
         {children}
+        <ScrollToTop />
         <Toaster 
           position="bottom-center"
           toastOptions={{

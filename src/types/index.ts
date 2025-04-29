@@ -1,26 +1,37 @@
-import { CuisineType } from '@prisma/client';
+export enum CuisineType {
+  MIDDLE_EASTERN = 'MIDDLE_EASTERN',
+  INDIAN_PAKISTANI = 'INDIAN_PAKISTANI',
+  TURKISH = 'TURKISH',
+  PERSIAN = 'PERSIAN',
+  MEDITERRANEAN = 'MEDITERRANEAN',
+  AFGHAN = 'AFGHAN',
+  CAFE = 'CAFE',
+  MEXICAN = 'MEXICAN',
+  CHINESE = 'CHINESE',
+  THAI = 'THAI',
+  OTHER = 'OTHER'
+}
 
-/**
- * Represents a restaurant in the application.
- * 
- * Note on ID format:
- * The id field uses CUID format (e.g., 'clm2p3mf9j0001pgp6edund7yb')
- * This provides better security and scalability compared to sequential IDs.
- * For more details, see docs/database.md
- */
+export enum PriceRange {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
+
 export interface Restaurant {
   id: string;
   name: string;
   cuisineType: CuisineType;
   address: string;
   description?: string;
-  priceRange: string;
+  priceRange: PriceRange;
   hasPrayerRoom: boolean;
   hasOutdoorSeating: boolean;
   isZabiha: boolean;
   hasHighChair: boolean;
   servesAlcohol: boolean;
   isFullyHalal: boolean;
+  imageUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
 } 

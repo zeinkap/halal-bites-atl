@@ -29,6 +29,12 @@ export const metadata: Metadata = {
   authors: [{ name: "Halal Bites ATL" }],
   creator: "Halal Bites ATL",
   metadataBase: new URL(siteConfig.url),
+  icons: {
+    icon: [
+      { url: '/images/logo-transparent.png', type: 'image/png' }
+    ],
+    shortcut: '/favicon.ico'
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

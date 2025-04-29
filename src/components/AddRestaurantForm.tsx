@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { CuisineType, PriceRange } from '@prisma/client';
-import { toast, ToastContainer } from 'react-toastify';
+import { CuisineType, PriceRange } from '@/types';
+import toast from 'react-hot-toast';
 import { XMarkIcon, BuildingStorefrontIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
-import 'react-toastify/dist/ReactToastify.css';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { formatPriceRange } from '@/utils/formatPriceRange';
 
@@ -12,7 +11,21 @@ interface AddRestaurantFormProps {
   onRestaurantAdded?: () => void;
 }
 
-const initialFormState = {
+interface FormData {
+  name: string;
+  cuisineType: CuisineType | '';
+  address: string;
+  priceRange: PriceRange | '';
+  description: string;
+  hasPrayerRoom: boolean;
+  hasOutdoorSeating: boolean;
+  isZabiha: boolean;
+  hasHighChair: boolean;
+  servesAlcohol: boolean;
+  isFullyHalal: boolean;
+}
+
+const initialFormState: FormData = {
   name: '',
   cuisineType: '',
   address: '',
@@ -27,7 +40,7 @@ const initialFormState = {
 };
 
 export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }: AddRestaurantFormProps) {
-  const [formData, setFormData] = useState(initialFormState);
+  const [formData, setFormData] = useState<FormData>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
@@ -103,14 +116,6 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     }
 
     try {
-      console.log('Submitting restaurant data:', {
-        ...formData,
-        cuisineType: formData.cuisineType as CuisineType,
-        priceRange: formData.priceRange === '$' ? 'LOW' :
-                   formData.priceRange === '$$' ? 'MEDIUM' :
-                   formData.priceRange === '$$$' ? 'HIGH' : formData.priceRange
-      });
-      
       const response = await fetch('/api/restaurants', {
         method: 'POST',
         headers: {
@@ -119,9 +124,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
         body: JSON.stringify({
           ...formData,
           cuisineType: formData.cuisineType as CuisineType,
-          priceRange: formData.priceRange === '$' ? 'LOW' :
-                     formData.priceRange === '$$' ? 'MEDIUM' :
-                     formData.priceRange === '$$$' ? 'HIGH' : formData.priceRange
+          priceRange: formData.priceRange as PriceRange
         }),
       });
 
@@ -131,41 +134,26 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
         throw new Error(errorData.error || 'Failed to add restaurant');
       }
 
-      const restaurantName = formData.name; // Store the name before resetting form
+      const restaurantName = formData.name;
 
-      // Show success toast first
       toast.success(`Restaurant "${restaurantName}" was successfully added!`, {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        toastId: 'success-toast',
-        data: {
-          'data-testid': 'success-toast'
-        }
+        id: 'success-toast',
+        duration: 3000,
       });
 
-      // Reset form data
       setFormData(initialFormState);
       setHalalVerificationConsent(false);
-
-      // Start closing animation
       setIsVisible(false);
 
-      // Wait before actually closing the modal
       setTimeout(() => {
         onClose();
         onRestaurantAdded?.();
-      }, 3000); // Wait for toast to complete before closing modal
+      }, 3000);
 
     } catch (error) {
       console.error('Error adding restaurant:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to add restaurant. Please try again.';
       
-      // Set focus to the relevant field based on the error
       if (errorMessage.includes('name already exists')) {
         document.getElementById('name')?.focus();
       } else if (errorMessage.includes('address already exists')) {
@@ -174,19 +162,9 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
       
       setError(errorMessage);
       
-      // Show error toast
       toast.error(errorMessage, {
-        position: "top-center",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        theme: "colored",
-        toastId: 'error-toast',
-        data: {
-          'data-testid': 'error-toast'
-        }
+        id: 'error-toast',
+        duration: 3000,
       });
     } finally {
       setIsSubmitting(false);
@@ -202,6 +180,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={handleClose}
+        data-testid="add-restaurant-modal-backdrop"
       >
         {/* Confirmation Dialog */}
         {showConfirmDialog && (
@@ -260,9 +239,10 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
             isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
           }`}
           onClick={e => e.stopPropagation()}
+          data-testid="add-restaurant-modal-panel"
         >
           {/* Header - Fixed at top */}
-          <div className="sticky top-0 z-10 bg-white border-b border-gray-100 p-6 rounded-t-2xl bg-gradient-to-r from-orange-50 to-amber-50">
+          <div className="sticky top-0 z-10 bg-white border-b border-gray-100 p-6 rounded-t-2xl bg-gradient-to-r from-orange-50 to-amber-50" data-testid="add-restaurant-modal-header">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl text-white">
@@ -289,8 +269,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
           <div className="flex-1 overflow-y-auto p-6">
             <form id="restaurant-form" onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information Section */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Basic Information</h3>
+              <div className="bg-gray-50 rounded-xl p-4 space-y-4" data-testid="basic-info-section">
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide" data-testid="basic-info-header">Basic Information</h3>
                 
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5 px-1">
@@ -397,8 +377,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
               </div>
 
               {/* Restaurant Features Section */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Restaurant Features</h3>
+              <div className="bg-gray-50 rounded-xl p-4 space-y-4" data-testid="features-section">
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide" data-testid="features-header">Restaurant Features</h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Prayer Space */}
@@ -518,8 +498,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
               </div>
 
               {/* Description Section */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Additional Information</h3>
+              <div className="bg-gray-50 rounded-xl p-4 space-y-4" data-testid="additional-info-section">
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide" data-testid="additional-info-header">Additional Information</h3>
                 
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5 px-1">
@@ -539,7 +519,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
               </div>
 
               {/* Verification Section */}
-              <div className="bg-orange-50 rounded-xl p-4">
+              <div className="bg-orange-50 rounded-xl p-4" data-testid="verification-section">
                 <label 
                   htmlFor="halalVerification" 
                   className="flex items-start cursor-pointer"
@@ -572,7 +552,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
           </div>
 
           {/* Footer - Fixed at bottom */}
-          <div className="sticky bottom-0 z-10 bg-white border-t border-gray-100 p-6 rounded-b-2xl">
+          <div className="sticky bottom-0 z-10 bg-white border-t border-gray-100 p-6 rounded-b-2xl" data-testid="add-restaurant-modal-footer">
             <div className="flex justify-end gap-3">
               <button
                 type="button"
@@ -602,18 +582,6 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
           </div>
         </div>
       </div>
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
     </>
   );
 } 

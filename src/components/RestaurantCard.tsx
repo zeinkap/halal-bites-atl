@@ -121,6 +121,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 rel="noopener noreferrer"
                 data-testid={`get-directions-button-${restaurant.id}`}
                 className="px-4 py-2 bg-slate-500 text-white rounded-lg text-sm font-medium hover:bg-slate-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer flex items-center justify-center gap-2"
+                title="Get Directions"
               >
                 <MapPinIcon className="h-5 w-5" />
                 Get Directions

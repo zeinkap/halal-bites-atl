@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { StarIcon, XMarkIcon, PhotoIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import Image from 'next/image';
+import ImageWithLightbox from './ImageWithLightbox';
 
 interface Comment {
   id: string;
@@ -167,10 +168,27 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      toast.success('Comment added successfully!');
+
+      // Show success toast
+      toast.success('Comment added successfully!', {
+        id: 'comment-success-toast',
+        duration: 3000,
+      });
+
+      // Reset form and close modal
+      setIsVisible(false);
+      setTimeout(() => {
+        onClose();
+      }, 300);
     } catch (error) {
       console.error('Error adding comment:', error);
-      toast.error('Failed to add comment');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add comment. Please try again.';
+      
+      // Show error toast
+      toast.error(errorMessage, {
+        id: 'comment-error-toast',
+        duration: 3000,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -184,6 +202,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       onClick={handleClose}
+      data-testid="comment-modal-backdrop"
     >
       {/* Confirmation Dialog */}
       {showConfirmDialog && (
@@ -242,20 +261,21 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}
         onClick={e => e.stopPropagation()}
+        data-testid="comment-modal-panel"
       >
-        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10 shadow-sm">
+        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10 shadow-sm" data-testid="comment-modal-header">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900" data-testid="comment-modal-title">
                 Comments for {restaurantName}
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 mt-1" data-testid="comment-modal-subtitle">
                 This site is community-driven - we encourage you to share your experiences and help others discover great halal restaurants!
               </p>
             </div>
             <button
               onClick={handleClose}
-              data-testid="close-modal-button"
+              data-testid="close-comment-modal-button"
               className="text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
             >
               <XMarkIcon className="h-6 w-6" />
@@ -285,7 +305,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
               <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
                 Rating
               </label>
-              <div className="flex items-center mt-1 space-x-1">
+              <div className="flex items-center mt-1 space-x-1" data-testid="rating-stars-container">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -323,7 +343,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
             </div>
 
             {/* Image Upload */}
-            <div>
+            <div data-testid="image-upload-section">
               <label className="block text-sm font-medium text-gray-700">
                 Add Image (optional)
               </label>
@@ -346,7 +366,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   Choose Image
                 </button>
                 {imagePreview && (
-                  <div className="relative w-20 h-20">
+                  <div className="relative w-20 h-20" data-testid="image-preview-container">
                     <Image
                       src={imagePreview}
                       alt="Preview"
@@ -442,17 +462,16 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   </p>
                   {comment.imageUrl && (
                     <div 
-                      className="mt-3 relative w-full aspect-[4/3] max-h-[400px]" 
+                      className="mt-3 relative w-full sm:w-1/2 mx-auto aspect-[4/3] max-h-[300px]" 
                       data-testid={`comment-image-container-${comment.id}`}
                     >
-                      <Image
+                      <ImageWithLightbox
                         src={comment.imageUrl}
                         alt={`Image from ${comment.authorName}`}
+                        width={600}
+                        height={450}
+                        className="object-contain rounded-lg w-full h-full"
                         data-testid={`comment-image-${comment.id}`}
-                        fill
-                        className="object-contain rounded-lg"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        priority
                       />
                     </div>
                   )}

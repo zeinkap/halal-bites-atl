@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Restaurant } from '@/types';
+import { Restaurant, CuisineType } from '@/types';
 import RestaurantListItem from './RestaurantListItem';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { formatCuisineName } from '@/utils/formatCuisineName';
-import { CuisineType } from '@prisma/client';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -85,6 +84,8 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
       }
     });
 
+    setFilteredCount(filteredRestaurants.length);
+
     // Update displayed restaurants based on pagination
     const startIndex = 0;
     const endIndex = page * ITEMS_PER_PAGE;
@@ -97,6 +98,9 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
     setPage(1);
   }, [searchQuery, selectedCuisine, selectedPriceRange, sortBy]);
 
+  // Add state for filtered count
+  const [filteredCount, setFilteredCount] = useState(0);
+
   if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -106,8 +110,8 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-8 sticky top-0 bg-white z-10 p-4 shadow-sm">
+    <div className="w-full" data-testid="restaurant-list-container">
+      <div className="mb-8 bg-white z-10 p-4 shadow-sm" data-testid="restaurant-list-searchbar-section">
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <div className="flex-1 relative">
             <input
@@ -122,7 +126,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center gap-2"
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 flex items-center gap-2 cursor-pointer"
             data-testid="filters-button"
           >
             <AdjustmentsHorizontalIcon className="h-5 w-5" />
@@ -193,23 +197,23 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         )}
 
         {/* Results count */}
-        <div className="text-gray-600">
+        <div className="text-gray-600" data-testid="restaurant-list-results-count">
           {isLoading ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-testid="restaurant-list-loading-spinner">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
               <span>Loading restaurants...</span>
             </div>
           ) : (
-            `Found ${restaurants.length} restaurant${restaurants.length !== 1 ? 's' : ''}`
+            `Found ${filteredCount} restaurant${filteredCount !== 1 ? 's' : ''}`
           )}
         </div>
       </div>
 
       {/* Restaurant List */}
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="restaurant-list-loading-section">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+            <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse" data-testid="restaurant-list-loading-item">
               <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
               <div className="h-4 bg-gray-200 rounded w-full"></div>
@@ -217,23 +221,24 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
           ))}
         </div>
       ) : displayedRestaurants.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="restaurant-list-items-section">
           {displayedRestaurants.map((restaurant, index) => (
             <div
               key={restaurant.id}
               ref={index === displayedRestaurants.length - 1 ? lastRestaurantRef : undefined}
+              data-testid={`restaurant-list-item-${restaurant.id}`}
             >
               <RestaurantListItem restaurant={restaurant} />
             </div>
           ))}
           {hasMore && (
-            <div className="flex justify-center p-4">
+            <div className="flex justify-center p-4" data-testid="restaurant-list-has-more-spinner">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           )}
         </div>
       ) : (
-        <div className="text-center py-12">
+        <div className="text-center py-12" data-testid="restaurant-list-no-results">
           <p className="text-gray-600">No restaurants found matching your criteria.</p>
         </div>
       )}

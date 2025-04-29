@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { 
   openFiltersPanel,
   verifyCuisineFilterOptions,
@@ -30,5 +30,19 @@ test.describe('Restaurant Filters', () => {
       'LOW',
       'Al Madina Grocery & Restaurant'
     );
+  });
+
+  test('Donate button in navbar exists and opens widget', async ({ page }) => {
+    const donateButton = page.locator('[data-testid="donate-navbar-button"]');
+    await expect(donateButton).toBeVisible();
+    await donateButton.click();
+    // Check for the donation modal
+    const donationModal = page.locator('[data-testid="donation-modal"]');
+    await expect(donationModal).toBeVisible();
+    // Check for the Buy Me a Coffee widget (iframe)
+    const widget = page.locator('[data-testid="donation-widget-iframe"]');
+    await expect(widget).toBeVisible();
+    // Check that the modal contains the correct text
+    await expect(donationModal).toContainText('Support Halal Bites ATL');
   });
 }); 

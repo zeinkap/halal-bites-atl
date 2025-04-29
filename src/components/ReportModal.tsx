@@ -77,7 +77,7 @@ export default function ReportModal({
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={handleClose}>
+        <Dialog as="div" className="relative z-50" onClose={handleClose} data-testid="report-modal">
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -87,7 +87,7 @@ export default function ReportModal({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity" />
+            <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity" data-testid="report-modal-backdrop" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -101,27 +101,30 @@ export default function ReportModal({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all" data-testid="report-modal-panel">
                   <Dialog.Title
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center"
+                    data-testid="report-modal-title"
                   >
                     Report Incorrect Information for {restaurantName}
                     <button
                       type="button"
                       className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none cursor-pointer"
                       onClick={handleClose}
+                      data-testid="close-report-modal"
                     >
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
                   </Dialog.Title>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
+                  <form onSubmit={handleSubmit(onSubmit)} className="mt-4" data-testid="report-form">
                     <div className="space-y-4">
                       <div>
                         <label
                           htmlFor="reportDetails"
                           className="block text-sm font-medium text-gray-700"
+                          data-testid="report-details-label"
                         >
                           What information is incorrect?
                         </label>
@@ -142,9 +145,10 @@ export default function ReportModal({
                             rows={4}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm text-gray-900 placeholder-gray-500"
                             placeholder="Please describe what information needs to be corrected (e.g., incorrect address, wrong restaurant features, not in atlanta, etc.). Minimum 30 characters required."
+                            data-testid="report-details-input"
                           />
                           {errors.reportDetails && (
-                            <p className="mt-1 text-sm text-red-600">
+                            <p className="mt-1 text-sm text-red-600" data-testid="report-details-error">
                               {errors.reportDetails.message}
                             </p>
                           )}
@@ -156,6 +160,7 @@ export default function ReportModal({
                           type="button"
                           onClick={handleClose}
                           className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px] cursor-pointer"
+                          data-testid="cancel-report-button"
                         >
                           Cancel
                         </button>
@@ -163,6 +168,7 @@ export default function ReportModal({
                           type="submit"
                           disabled={isSubmitting}
                           className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px] cursor-pointer disabled:cursor-not-allowed"
+                          data-testid="submit-report-button"
                         >
                           {isSubmitting ? 'Submitting...' : 'Submit'}
                         </button>
@@ -181,6 +187,7 @@ export default function ReportModal({
           as="div"
           className="relative z-[60]"
           onClose={() => setShowConfirmDialog(false)}
+          data-testid="confirm-dialog"
         >
           <Transition.Child
             as={Fragment}
@@ -191,7 +198,7 @@ export default function ReportModal({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity" />
+            <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity" data-testid="confirm-dialog-backdrop" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -205,15 +212,16 @@ export default function ReportModal({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all" data-testid="confirm-dialog-panel">
                   <Dialog.Title
                     as="h3"
                     className="text-lg font-medium leading-6 text-gray-900"
+                    data-testid="confirm-dialog-title"
                   >
                     Discard Report for {restaurantName}?
                   </Dialog.Title>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500" data-testid="confirm-dialog-message">
                       Are you sure you want to discard your changes? This action
                       cannot be undone.
                     </p>
@@ -224,6 +232,7 @@ export default function ReportModal({
                       type="button"
                       className="inline-flex justify-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:mt-0 sm:min-w-[100px] cursor-pointer"
                       onClick={() => setShowConfirmDialog(false)}
+                      data-testid="confirm-dialog-keep-editing"
                     >
                       No, Keep Editing
                     </button>
@@ -231,6 +240,7 @@ export default function ReportModal({
                       type="button"
                       className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:min-w-[100px] cursor-pointer"
                       onClick={closeModal}
+                      data-testid="confirm-dialog-discard"
                     >
                       Yes, Discard
                     </button>

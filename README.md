@@ -147,7 +147,7 @@ Retrieves all restaurants.
   {
     "id": "string",
     "name": "string",
-    "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | OTHER",
+    "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | MEXICAN | CHINESE | THAI | OTHER",
     "address": "string",
     "description": "string",
     "priceRange": "LOW | MEDIUM | HIGH",
@@ -168,7 +168,7 @@ Creates a new restaurant.
 ```json
 {
   "name": "string (required)",
-  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | OTHER (required)",
+  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | MEXICAN | CHINESE | THAI | OTHER (required)",
   "address": "string (required)",
   "priceRange": "LOW | MEDIUM | HIGH (required)",
   "description": "string (optional)",
@@ -188,7 +188,7 @@ Updates an existing restaurant.
 ```json
 {
   "name": "string (optional)",
-  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | OTHER (optional)",
+  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | MEXICAN | CHINESE | THAI | OTHER (optional)",
   "address": "string (optional)",
   "priceRange": "LOW | MEDIUM | HIGH (optional)",
   "description": "string (optional)",
