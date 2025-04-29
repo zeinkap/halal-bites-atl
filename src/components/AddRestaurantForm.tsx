@@ -271,7 +271,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     }
 
     try {
-      let imageUrl = '/images/placeholder-restaurant.jpg';
+      let imageUrl = '/images/logo.png';
       
       // Upload image if provided
       if (formData.image) {
