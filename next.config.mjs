@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+  },
   images: {
     remotePatterns: [
       {
@@ -7,6 +10,7 @@ const nextConfig = {
         hostname: 'res.cloudinary.com',
       },
     ],
+    domains: ['maps.googleapis.com', 'lh3.googleusercontent.com'],
   }
 };
 

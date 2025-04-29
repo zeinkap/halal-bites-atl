@@ -1,6 +1,7 @@
 import { Restaurant } from '@/types';
 import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon, FlagIcon } from '@heroicons/react/24/solid';
 import { useState, lazy, Suspense } from 'react';
+import Image from 'next/image';
 
 // Lazy load modals
 const CommentModal = lazy(() => import('./CommentModal'));
@@ -30,84 +31,99 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
         <div 
-          className="p-4 cursor-pointer"
+          className="cursor-pointer"
           onClick={() => setIsExpanded(!isExpanded)}
           data-testid={`restaurant-item-${restaurant.id}`}
         >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-start">
+            {/* Restaurant Image */}
+            <div className="relative w-full h-48 sm:w-40 sm:h-40 flex-shrink-0 border-b sm:border-b-0 sm:border-r border-gray-100">
+              <Image
+                src={restaurant.imageUrl || '/images/logo.png'}
+                alt={restaurant.name}
+                fill
+                className="object-contain sm:object-cover p-4 sm:p-0"
+                sizes="(max-width: 768px) 100vw, 25vw"
+                priority={true}
+                quality={85}
+              />
+            </div>
+
+            <div className="flex-1 p-4 sm:p-5 space-y-3">
+              {/* Header Section */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-semibold text-gray-900" data-testid={`restaurant-name-${restaurant.id}`}>
                   {restaurant.name}
                 </h3>
-                <span className="text-sm font-medium text-gray-600" data-testid={`restaurant-price-${restaurant.id}`}>
+                <span className="px-2 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-600" data-testid={`restaurant-price-${restaurant.id}`}>
                   {formatPriceRange(restaurant.priceRange)}
                 </span>
               </div>
               
-              <div className="text-sm text-gray-600 mt-1" data-testid={`restaurant-cuisine-${restaurant.id}`}>
+              <div className="inline-block px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600" data-testid={`restaurant-cuisine-${restaurant.id}`}>
                 {formatCuisine(restaurant.cuisineType)}
               </div>
 
-              <div className="flex items-start gap-2 mt-2">
+              {/* Address Section */}
+              <div className="flex items-start gap-2">
                 <MapPinIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-600 line-clamp-1" data-testid={`restaurant-address-${restaurant.id}`}>
+                <p className="text-sm text-gray-600 line-clamp-2" data-testid={`restaurant-address-${restaurant.id}`}>
                   {restaurant.address}
                 </p>
               </div>
 
-              {/* Show description by default */}
+              {/* Description Section */}
               {restaurant.description && (
-                <p className="text-sm text-gray-600 mt-2 mb-2" data-testid={`restaurant-description-${restaurant.id}`}> 
+                <p className="text-sm text-gray-700 line-clamp-2 sm:line-clamp-none leading-relaxed border-t border-gray-100 pt-3" data-testid={`restaurant-description-${restaurant.id}`}> 
                   {restaurant.description}
                 </p>
               )}
 
               {/* Quick Features */}
-              <div className="flex flex-wrap gap-3 mt-2">
+              <div className="flex flex-wrap gap-2 sm:gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                 {restaurant.hasPrayerRoom && (
-                  <div className="flex items-center gap-1">
-                    <HomeModernIcon className="h-4 w-4 text-blue-600" />
-                    <span className="text-xs text-gray-600">Prayer Space</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                    <HomeModernIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Prayer Space</span>
                   </div>
                 )}
                 {restaurant.isZabiha && (
-                  <div className="flex items-center gap-1">
-                    <HeartIcon className="h-4 w-4 text-red-600" />
-                    <span className="text-xs text-gray-600">Zabiha (hand-cut)</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                    <HeartIcon className="h-4 w-4 text-red-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Zabiha</span>
                   </div>
                 )}
                 {restaurant.hasOutdoorSeating && (
-                  <div className="flex items-center gap-1">
-                    <SunIcon className="h-4 w-4 text-yellow-600" />
-                    <span className="text-xs text-gray-600">Outdoor</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                    <SunIcon className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Outdoor</span>
                   </div>
                 )}
                 {restaurant.hasHighChair && (
-                  <div className="flex items-center gap-1">
-                    <UserGroupIcon className="h-4 w-4 text-purple-600" />
-                    <span className="text-xs text-gray-600">High Chairs</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                    <UserGroupIcon className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">High Chairs</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1">
-                  <BeakerIcon className="h-4 w-4 text-amber-600" />
-                  <span className="text-xs text-gray-600" data-testid={`restaurant-alcohol-${restaurant.id}`}>
-                    {restaurant.servesAlcohol ? 'Serves Alcohol' : 'No Alcohol ✓'}
+                <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                  <BeakerIcon className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap" data-testid={`restaurant-alcohol-${restaurant.id}`}>
+                    {restaurant.servesAlcohol ? 'Serves Alcohol' : 'No Alcohol'}
                   </span>
                 </div>
                 {restaurant.isFullyHalal && (
-                  <div className="flex items-center gap-1">
-                    <CheckBadgeIcon className="h-4 w-4 text-green-600" />
-                    <span className="text-xs text-gray-600">Fully Halal</span>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                    <CheckBadgeIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Fully Halal</span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="flex gap-2 ml-4">
+            <div className="flex sm:flex-col gap-2 p-4 border-t sm:border-t-0 sm:border-l border-gray-100 bg-gray-50 sm:bg-white">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -118,48 +134,48 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                     '_blank'
                   );
                 }}
-                className="p-2 text-gray-600 hover:text-green-600 transition-colors cursor-pointer"
+                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-green-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-green-50"
                 title="View on Maps"
                 data-testid={`restaurant-map-icon-${restaurant.id}`}
               >
-                <MapPinIcon className="h-5 w-5" />
+                <MapPinIcon className="h-5 w-5 mx-auto" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsCommentModalOpen(true);
                 }}
-                className="p-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-blue-50"
                 title="Comments"
                 data-testid={`restaurant-comment-icon-${restaurant.id}`}
               >
-                <ChatBubbleLeftIcon className="h-5 w-5" />
+                <ChatBubbleLeftIcon className="h-5 w-5 mx-auto" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsReportModalOpen(true);
                 }}
-                className="p-2 text-gray-600 hover:text-red-600 transition-colors cursor-pointer group relative"
+                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-red-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-red-50"
                 title="Report Issue"
                 data-testid={`restaurant-report-icon-${restaurant.id}`}
               >
-                <FlagIcon className="h-5 w-5" />
+                <FlagIcon className="h-5 w-5 mx-auto" />
               </button>
             </div>
           </div>
 
           {/* Expanded Content */}
           {isExpanded && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex gap-2">
+            <div className="border-t border-gray-100 bg-gray-50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-4">
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                     `${restaurant.name} ${restaurant.address}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 text-center px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg text-sm font-medium hover:from-teal-600 hover:to-emerald-600 transition-all duration-200"
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg text-sm font-medium hover:from-teal-600 hover:to-emerald-600 transition-all duration-200 text-center shadow-sm"
                 >
                   View on Maps
                 </a>
@@ -169,7 +185,7 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 text-center px-4 py-2 bg-gradient-to-r from-slate-400 to-slate-500 text-white rounded-lg text-sm font-medium hover:from-slate-500 hover:to-slate-600 transition-all duration-200"
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-slate-400 to-slate-500 text-white rounded-lg text-sm font-medium hover:from-slate-500 hover:to-slate-600 transition-all duration-200 text-center shadow-sm"
                 >
                   Get Directions
                 </a>

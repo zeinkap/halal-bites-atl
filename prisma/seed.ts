@@ -315,66 +315,6 @@ async function main() {
       imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
-    await upsertRestaurant('Mukja Korean Fried Chicken', {
-      name: 'Mukja Korean Fried Chicken',
-      cuisineType: CuisineType.OTHER,
-      address: '933 Peachtree St NE, Atlanta, GA 30309',
-      description: '',
-      priceRange: PriceRange.MEDIUM,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: false,
-      imageUrl: '/images/placeholder-restaurant.jpg'
-    });
-
-    await upsertRestaurant('Baraka Shawarma Atlanta', {
-      name: 'Baraka Shawarma Atlanta',
-      cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '68 Walton St NW, Atlanta, GA 30303',
-      description: '',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: false,
-      servesAlcohol: false,
-      isFullyHalal: true,
-      imageUrl: '/images/placeholder-restaurant.jpg'
-    });
-
-    await upsertRestaurant('Botiwalla by Chai Pani', {
-      name: 'Botiwalla by Chai Pani',
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: 'Ponce City Market, 675 Ponce De Leon Ave NE n134, Atlanta, GA 30308',
-      description: '',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: true,
-      isZabiha: false,
-      hasHighChair: true,
-      servesAlcohol: true,
-      isFullyHalal: false,
-      imageUrl: '/images/placeholder-restaurant.jpg'
-    });
-
-    await upsertRestaurant('Dantanna\'s', {
-      name: 'Dantanna\'s',
-      cuisineType: CuisineType.OTHER,
-      address: '3400 Around Lenox Rd NE #304, Atlanta, GA 30326',
-      description: '',
-      priceRange: PriceRange.HIGH,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: true,
-      isFullyHalal: false,
-      imageUrl: '/images/placeholder-restaurant.jpg'
-    });
-
     await upsertRestaurant('Jerusalem Bakery & Grill', {
       name: 'Jerusalem Bakery & Grill',
       cuisineType: CuisineType.MIDDLE_EASTERN,
@@ -687,6 +627,201 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Mukja Korean Fried Chicken', {
+      name: 'Mukja Korean Fried Chicken',
+      cuisineType: CuisineType.OTHER,
+      address: '933 Peachtree St NE, Atlanta, GA 30309',
+      description: 'Modern Korean restaurant specializing in Korean-style fried chicken with halal options. Known for their crispy double-fried chicken with various sauce options including soy garlic, sweet spicy, and honey butter. Also serves Korean fusion dishes and traditional sides.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Baraka Shawarma Atlanta', {
+      name: 'Baraka Shawarma Atlanta',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '68 Walton St NW, Atlanta, GA 30303',
+      description: 'Downtown Atlanta\'s premier halal shawarma spot, offering authentic Middle Eastern street food. Famous for their freshly carved shawarma wraps, platters, and homemade sauces. Features a selection of falafel, hummus, and traditional Middle Eastern sides.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Botiwalla by Chai Pani', {
+      name: 'Botiwalla by Chai Pani',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: 'Ponce City Market, 675 Ponce De Leon Ave NE n134, Atlanta, GA 30308',
+      description: 'Modern Indian street food restaurant in Ponce City Market. Specializes in grilled kababs, rolls, and chaat with halal meat options. Features a creative menu inspired by Indian street food vendors and tea houses, known for their SPDP (Sev Potato Dahi Puri) and chicken tikka roll.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Dantanna\'s', {
+      name: 'Dantanna\'s',
+      cuisineType: CuisineType.OTHER,
+      address: '3400 Around Lenox Rd NE #304, Atlanta, GA 30326',
+      description: 'Upscale sports restaurant offering halal steaks and seafood. Known for their premium cuts of halal beef, fresh seafood selections, and sophisticated atmosphere. Features a diverse menu including gourmet burgers, fresh salads, and signature dishes.',
+      priceRange: PriceRange.HIGH,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Jaffa Restaurant Atl (Halal)', {
+      name: 'Jaffa Restaurant Atl (Halal)',
+      cuisineType: CuisineType.MEDITERRANEAN,
+      address: '10684 Alpharetta Hwy #500, Roswell, GA 30076',
+      description: 'The Jaffa Restaurant may be a new spot but is backed by veteran restaurateurs behind Atlanta\'s Mediterranean and Middle Eastern food scene. It is a family-owned and operated restaurant aiming to bring nothing but the best to the table.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Talkin\' Tacos Buckhead', {
+      name: 'Talkin\' Tacos Buckhead',
+      cuisineType: CuisineType.OTHER,
+      address: '2625 Piedmont Rd NE Ste 34A, Atlanta, GA 30324',
+      description: 'Known for Taco, Rice Bowl, Refried Beans, Burritos, Shrimp, Quesadilla, Carne Asada Tacos, Taco Salad, Nachos, Birria Tacos, Mexican Food, Tres Leches Cake, Churros, and Pico De Gallo and Chips',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Ariana Kabob House', {
+      name: 'Ariana Kabob House',
+      cuisineType: CuisineType.AFGHAN,
+      address: '2870 Peachtree Industrial Blvd, Duluth, GA 30097',
+      description: 'Authentic Afghan restaurant specializing in traditional kabobs, rice dishes, and Afghan specialties. Known for their quality meats and generous portions.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Hyderabad House Atlanta - Biryani Place', {
+      name: 'Hyderabad House Atlanta - Biryani Place',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '130 Perimeter Center Pl, Dunwoody, GA 30346',
+      description: 'Authentic Hyderabadi restaurant specializing in various styles of biryani and Indian cuisine. Known for their traditional recipes and flavorful dishes.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Asma\'s Cuisine', {
+      name: 'Asma\'s Cuisine',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '3099 Breckinridge Blvd #114b, Duluth, GA 30096',
+      description: 'Family-owned restaurant serving authentic Pakistani and Indian dishes. Known for their home-style cooking and traditional recipes.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Three Buddies', {
+      name: 'Three Buddies',
+      cuisineType: CuisineType.OTHER,
+      address: '4966 Buford Hwy NE, Chamblee, GA 30341',
+      description: 'Quality fresh food at a resonable price. Offers burgers, sandwiches, wings, nachos, and more.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Alif Cafe', {
+      name: 'Alif Cafe',
+      cuisineType: CuisineType.OTHER,
+      address: '4301 Buford Hwy NE, Atlanta, GA 30345',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('NaanStop', {
+      name: 'NaanStop',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '64 Broad St NW, Atlanta, GA 30303',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Mashawi Mediterranean', {
+      name: 'Mashawi Mediterranean',
+      cuisineType: CuisineType.MEDITERRANEAN,
+      address: '850 Mansell Rd, Roswell, GA 30076',
+      description: '',
+      priceRange: PriceRange.HIGH,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
       imageUrl: '/images/placeholder-restaurant.jpg'
     });
     

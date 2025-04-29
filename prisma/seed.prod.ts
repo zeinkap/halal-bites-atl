@@ -760,6 +760,126 @@ async function main() {
       imageUrl: '/images/placeholder-restaurant.jpg'
     });
 
+    await upsertRestaurant('Talkin\' Tacos Buckhead', {
+      name: 'Talkin\' Tacos Buckhead',
+      cuisineType: CuisineType.OTHER,
+      address: '2625 Piedmont Rd NE Ste 34A, Atlanta, GA 30324',
+      description: 'Known for Taco, Rice Bowl, Refried Beans, Burritos, Shrimp, Quesadilla, Carne Asada Tacos, Taco Salad, Nachos, Birria Tacos, Mexican Food, Tres Leches Cake, Churros, and Pico De Gallo and Chips',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Ariana Kabob House', {
+      name: 'Ariana Kabob House',
+      cuisineType: CuisineType.AFGHAN,
+      address: '2870 Peachtree Industrial Blvd, Duluth, GA 30097',
+      description: 'Authentic Afghan restaurant specializing in traditional kabobs, rice dishes, and Afghan specialties. Known for their quality meats and generous portions.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Hyderabad House Atlanta - Biryani Place', {
+      name: 'Hyderabad House Atlanta - Biryani Place',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '130 Perimeter Center Pl, Dunwoody, GA 30346',
+      description: 'Authentic Hyderabadi restaurant specializing in various styles of biryani and Indian cuisine. Known for their traditional recipes and flavorful dishes.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Asma\'s Cuisine', {
+      name: 'Asma\'s Cuisine',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '3099 Breckinridge Blvd #114b, Duluth, GA 30096',
+      description: 'Family-owned restaurant serving authentic Pakistani and Indian dishes. Known for their home-style cooking and traditional recipes.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Three Buddies', {
+      name: 'Three Buddies',
+      cuisineType: CuisineType.OTHER,
+      address: '4966 Buford Hwy NE, Chamblee, GA 30341',
+      description: 'Quality fresh food at a resonable price. Offers burgers, sandwiches, wings, nachos, and more.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Alif Cafe', {
+      name: 'Alif Cafe',
+      cuisineType: CuisineType.OTHER,
+      address: '4301 Buford Hwy NE, Atlanta, GA 30345',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('NaanStop', {
+      name: 'NaanStop',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '64 Broad St NW, Atlanta, GA 30303',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
+    await upsertRestaurant('Mashawi Mediterranean', {
+      name: 'Mashawi Mediterranean',
+      cuisineType: CuisineType.MEDITERRANEAN,
+      address: '850 Mansell Rd, Roswell, GA 30076',
+      description: '',
+      priceRange: PriceRange.HIGH,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      imageUrl: '/images/placeholder-restaurant.jpg'
+    });
+
     // Log summary with production-specific details
     console.log('\nProduction Seed Summary:');
     console.log(`Total restaurants processed: ${successCount + errorCount}`);

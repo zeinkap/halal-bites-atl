@@ -115,137 +115,6 @@ When writing new tests:
 3. Include proper cleanup in the test teardown
 4. Add appropriate assertions and error checks
 
-Example test structure:
-```typescript
-test.describe('Feature Name', () => {
-  test('should perform specific action', async ({ page }) => {
-    // Arrange - Setup test data and navigation
-    await page.goto('/');
-    
-    // Act - Perform the test actions
-    await page.click('[data-testid="some-button"]');
-    
-    // Assert - Verify the expected outcome
-    await expect(page.locator('[data-testid="result"]')).toBeVisible();
-    
-    // Cleanup - Remove test data
-    // ... cleanup code ...
-  });
-});
-```
-
-## API Documentation
-
-The application provides the following REST API endpoints for managing restaurants:
-
-### GET /api/restaurants
-Retrieves all restaurants.
-
-**Response**
-```json
-[
-  {
-    "id": "string",
-    "name": "string",
-    "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | MEXICAN | CHINESE | THAI | OTHER",
-    "address": "string",
-    "description": "string",
-    "priceRange": "LOW | MEDIUM | HIGH",
-    "hasPrayerRoom": boolean,
-    "hasOutdoorSeating": boolean,
-    "isZabiha": boolean,
-    "hasHighChair": boolean,
-    "createdAt": "datetime",
-    "updatedAt": "datetime"
-  }
-]
-```
-
-### POST /api/restaurants
-Creates a new restaurant.
-
-**Request Body**
-```json
-{
-  "name": "string (required)",
-  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | MEXICAN | CHINESE | THAI | OTHER (required)",
-  "address": "string (required)",
-  "priceRange": "LOW | MEDIUM | HIGH (required)",
-  "description": "string (optional)",
-  "hasPrayerRoom": "boolean (optional)",
-  "hasOutdoorSeating": "boolean (optional)",
-  "isZabiha": "boolean (optional)",
-  "hasHighChair": "boolean (optional)",
-  "servesAlcohol": "boolean (optional)",
-  "isFullyHalal": "boolean (optional)"
-}
-```
-
-### PATCH /api/restaurants?id={restaurantId}
-Updates an existing restaurant.
-
-**Request Body**
-```json
-{
-  "name": "string (optional)",
-  "cuisineType": "MIDDLE_EASTERN | INDIAN_PAKISTANI | TURKISH | PERSIAN | MEDITERRANEAN | AFGHAN | CAFE | MEXICAN | CHINESE | THAI | OTHER (optional)",
-  "address": "string (optional)",
-  "priceRange": "LOW | MEDIUM | HIGH (optional)",
-  "description": "string (optional)",
-  "hasPrayerRoom": "boolean (optional)",
-  "hasOutdoorSeating": "boolean (optional)",
-  "isZabiha": "boolean (optional)",
-  "hasHighChair": "boolean (optional)",
-  "servesAlcohol": "boolean (optional)",
-  "isFullyHalal": "boolean (optional)"
-}
-```
-
-### DELETE /api/restaurants?id={restaurantId}
-Deletes a restaurant and its associated comments.
-
-**Response**
-```json
-{
-  "success": true
-}
-```
-
-### Example Usage
-
-```javascript
-// Get all restaurants
-const response = await fetch('/api/restaurants');
-const restaurants = await response.json();
-
-// Create a new restaurant
-const newRestaurant = await fetch('/api/restaurants', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    name: "New Restaurant",
-    cuisineType: "MIDDLE_EASTERN",
-    address: "123 Main St, Atlanta, GA",
-    priceRange: "MEDIUM"
-  })
-});
-
-// Update a restaurant
-const updatedRestaurant = await fetch('/api/restaurants?id=restaurant_id', {
-  method: 'PATCH',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    description: "Updated description",
-    isZabiha: true
-  })
-});
-
-// Delete a restaurant
-const deleteResponse = await fetch('/api/restaurants?id=restaurant_id', {
-  method: 'DELETE'
-});
-```
-
 ## Getting Started
 
 1. Clone the repository:
@@ -314,29 +183,32 @@ The application uses Prisma with PostgreSQL (Neon) as the database. Here's the s
 model Restaurant {
   id                String      @id @default(cuid())
   name              String      @unique
-  cuisine           CuisineType
-  address           String
+  cuisineType       CuisineType
+  address           String      @unique
   description       String?
   priceRange        PriceRange
   hasPrayerRoom     Boolean     @default(false)
   hasOutdoorSeating Boolean     @default(false)
   isZabiha          Boolean     @default(false)
   hasHighChair      Boolean     @default(false)
+  servesAlcohol     Boolean     @default(false)
+  isFullyHalal      Boolean     @default(false)
+  imageUrl          String?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   comments          Comment[]
 }
 
 model Comment {
-  id            String      @id @default(cuid())
-  content       String
-  rating        Int         @default(5)
-  authorName    String
-  imageUrl      String?     @db.Text
-  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
-  restaurantId  String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id           String     @id @default(cuid())
+  content      String
+  rating       Int        @default(5)
+  authorName   String
+  restaurantId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  imageUrl     String?
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@index([restaurantId])
 }
@@ -349,6 +221,9 @@ enum CuisineType {
   MEDITERRANEAN
   AFGHAN
   CAFE
+  MEXICAN
+  CHINESE
+  THAI
   OTHER
 }
 
@@ -415,8 +290,8 @@ Easiest way is to run the seed command with the database URL directly via:
 To verify data is actually in the Prod database, run this query:
 `DATABASE_URL="PASTE_HERE" npx prisma studio`
 
-Run these commands to reset, migrate and seed prod database:
-`npm run reset-prod && npm run migrate-prod && npm run seed-prod`
+Run these commands to migrate and seed prod database:
+`npm run migrate-prod && npm run seed-prod`
 
 ## Contributing
 

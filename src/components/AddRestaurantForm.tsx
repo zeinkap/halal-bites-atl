@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CuisineType, PriceRange } from '@/types';
 import toast from 'react-hot-toast';
-import { XMarkIcon, BuildingStorefrontIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon, BuildingStorefrontIcon, ExclamationTriangleIcon, PhotoIcon, MapPinIcon } from '@heroicons/react/24/solid';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { formatPriceRange } from '@/utils/formatPriceRange';
+import { useLoadScript } from '@react-google-maps/api';
+import { Libraries } from '@react-google-maps/api/dist/utils/make-load-script-url';
+import Image from 'next/image';
+
+// Define libraries array as a constant outside the component
+const libraries: Libraries = ['places'];
 
 interface AddRestaurantFormProps {
   isOpen: boolean;
@@ -23,6 +29,7 @@ interface FormData {
   hasHighChair: boolean;
   servesAlcohol: boolean;
   isFullyHalal: boolean;
+  image?: File;
 }
 
 const initialFormState: FormData = {
@@ -36,8 +43,13 @@ const initialFormState: FormData = {
   isZabiha: false,
   hasHighChair: false,
   servesAlcohol: false,
-  isFullyHalal: false
+  isFullyHalal: false,
+  image: undefined
 };
+
+const MAX_NAME_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 500;
+const MIN_DESCRIPTION_LENGTH = 50;
 
 export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }: AddRestaurantFormProps) {
   const [formData, setFormData] = useState<FormData>(initialFormState);
@@ -47,6 +59,24 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
   const [halalVerificationConsent, setHalalVerificationConsent] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [addressSuggestions, setAddressSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const placesService = useRef<google.maps.places.PlacesService | null>(null);
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    libraries,
+  });
+
+  useEffect(() => {
+    if (isLoaded && !placesService.current) {
+      // Create a temporary div for the PlacesService
+      const tempNode = document.createElement('div');
+      placesService.current = new google.maps.places.PlacesService(tempNode);
+    }
+  }, [isLoaded]);
 
   useEffect(() => {
     if (isOpen) {
@@ -89,33 +119,178 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     setShowConfirmDialog(false);
   };
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast.error('Please upload an image file');
+          return;
+        }
+        // Validate file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('Image size should be less than 5MB');
+          return;
+        }
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        // Simulate upload progress
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(progressInterval);
+              return 90;
+            }
+            return prev + 10;
+          });
+        }, 100);
+
+        setFormData({ ...formData, image: file });
+        
+        // Clear interval and set progress to 100
+        setTimeout(() => {
+          clearInterval(progressInterval);
+          setUploadProgress(100);
+          setIsUploading(false);
+        }, 1500);
+
+      } catch (error) {
+        console.error('Error handling image:', error);
+        toast.error('Failed to process image. Please try again.');
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
+    }
+  };
+
+  const handleAddressChange = async (value: string) => {
+    if (!isLoaded || value.trim() === '') {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    try {
+      const request: google.maps.places.AutocompletionRequest = {
+        input: value,
+        componentRestrictions: { country: 'us' },
+        types: ['address'],
+      };
+
+      const session = new google.maps.places.AutocompleteSessionToken();
+      const service = new google.maps.places.AutocompleteService();
+      
+      const predictions = await service.getPlacePredictions({
+        ...request,
+        sessionToken: session,
+      });
+
+      setAddressSuggestions(predictions.predictions);
+      setShowSuggestions(true);
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleAddressSelect = async (suggestion: google.maps.places.AutocompletePrediction) => {
+    if (!placesService.current) return;
+
+    try {
+      const placeResult = await new Promise<google.maps.places.PlaceResult>((resolve, reject) => {
+        placesService.current?.getDetails(
+          {
+            placeId: suggestion.place_id,
+            fields: ['formatted_address'],
+          },
+          (place, status) => {
+            if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+              resolve(place);
+            } else {
+              reject(new Error('Failed to get place details'));
+            }
+          }
+        );
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        address: placeResult.formatted_address || suggestion.description,
+      }));
+      setShowSuggestions(false);
+    } catch (error) {
+      console.error('Error getting place details:', error);
+      // Fallback to using the suggestion description
+      setFormData((prev) => ({
+        ...prev,
+        address: suggestion.description,
+      }));
+      setShowSuggestions(false);
+    }
+  };
+
+  const validateForm = (): string | null => {
+    if (formData.name.trim().length === 0) {
+      return 'Restaurant name is required';
+    }
+    if (formData.name.length > MAX_NAME_LENGTH) {
+      return `Restaurant name must be less than ${MAX_NAME_LENGTH} characters`;
+    }
+    if (formData.description && formData.description.length > MAX_DESCRIPTION_LENGTH) {
+      return `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`;
+    }
+    if (formData.description && formData.description.length < MIN_DESCRIPTION_LENGTH) {
+      return `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters`;
+    }
+    if (!formData.cuisineType) {
+      return 'Please select a cuisine type';
+    }
+    if (!formData.priceRange) {
+      return 'Please select a price range';
+    }
+    if (!formData.address.trim()) {
+      return 'Address is required';
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
 
-    // Validate address format
-    const addressParts = formData.address.split(',').map(part => part.trim());
-    if (addressParts.length < 3) {
-      setError('Please include city, state, and ZIP code in the address. Example: 1000 Main St, Atlanta, GA 30005');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       setIsSubmitting(false);
-      document.getElementById('address')?.focus();
-      return;
-    }
-
-    // Get the last part which should be State ZIP
-    const stateZipPart = addressParts[addressParts.length - 1].trim();
-
-    // Validate state and ZIP format
-    const stateZipRegex = /^[A-Z]{2}\s*\d{5}(?:-\d{4})?$/;
-    if (!stateZipRegex.test(stateZipPart)) {
-      setError('The address should end with a two-letter state code and ZIP code. Example: GA 30005');
-      setIsSubmitting(false);
-      document.getElementById('address')?.focus();
       return;
     }
 
     try {
+      let imageUrl = '/images/placeholder-restaurant.jpg';
+      
+      // Upload image if provided
+      if (formData.image) {
+        const formDataWithImage = new FormData();
+        formDataWithImage.append('image', formData.image);
+        
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataWithImage,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const { url } = await uploadResponse.json();
+        imageUrl = url;
+      }
+
       const response = await fetch('/api/restaurants', {
         method: 'POST',
         headers: {
@@ -123,6 +298,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
         },
         body: JSON.stringify({
           ...formData,
+          imageUrl,
           cuisineType: formData.cuisineType as CuisineType,
           priceRange: formData.priceRange as PriceRange
         }),
@@ -267,6 +443,21 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto p-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4" data-testid="form-error">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      Please fix the following error:
+                    </h3>
+                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             <form id="restaurant-form" onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information Section */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-4" data-testid="basic-info-section">
@@ -285,8 +476,14 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Enter restaurant name"
+                    maxLength={MAX_NAME_LENGTH}
                     required
                   />
+                  <div className="flex justify-end mt-1">
+                    <span className="text-xs text-gray-500">
+                      {formData.name.length}/{MAX_NAME_LENGTH}
+                    </span>
+                  </div>
                   {error && error.toLowerCase().includes('name') && (
                     <p className="mt-1 text-xs text-red-600 px-1" data-testid="name-error">
                       {error}
@@ -350,24 +547,45 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                   </div>
                 </div>
 
-                <div>
+                <div className="relative">
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1 px-1">
                     Address <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    data-testid="restaurant-address-input"
-                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder="e.g. Suite A, 5215 Windward Pkwy, Alpharetta, GA 30004"
-                    required
-                  />
-                  <p className="mt-1 text-xs text-gray-500 px-1">
-                    Make sure to include the city, state (2 letters), and ZIP code at the end
-                  </p>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="address"
+                      id="address"
+                      data-testid="restaurant-address-input"
+                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900 pl-10"
+                      value={formData.address}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, address: e.target.value }));
+                        handleAddressChange(e.target.value);
+                      }}
+                      onFocus={() => setShowSuggestions(true)}
+                      placeholder="Start typing the restaurant address..."
+                      required
+                    />
+                    <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  </div>
+                  {showSuggestions && addressSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-auto">
+                      {addressSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion.place_id}
+                          type="button"
+                          className="w-full text-left px-4 py-3 text-sm hover:bg-orange-50 focus:bg-orange-50 focus:outline-none transition-colors border-b border-gray-100 last:border-0"
+                          onClick={() => handleAddressSelect(suggestion)}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">{suggestion.structured_formatting.main_text}</span>
+                            <span className="text-gray-500 text-xs mt-0.5">{suggestion.structured_formatting.secondary_text}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   {error && (error.toLowerCase().includes('state') || error.toLowerCase().includes('address')) && (
                     <p className="mt-1 text-xs text-red-600 px-1" data-testid="address-error">
                       {error}
@@ -514,7 +732,81 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     placeholder="Tell us about the restaurant's specialties, atmosphere, or any other notable features..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    maxLength={MAX_DESCRIPTION_LENGTH}
                   />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-xs text-gray-500">
+                      {formData.description.length < MIN_DESCRIPTION_LENGTH && 
+                        `At least ${MIN_DESCRIPTION_LENGTH} characters required`}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formData.description.length}/{MAX_DESCRIPTION_LENGTH}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-4" data-testid="image-upload-section">
+                <h3 className="text-base font-semibold text-gray-900 px-1 mb-2 tracking-wide">Restaurant Image</h3>
+                
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    htmlFor="image-upload"
+                    className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    {isUploading ? (
+                      <div className="flex flex-col items-center justify-center space-y-3">
+                        <div className="w-full max-w-xs bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-orange-500 h-2.5 rounded-full transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-sm text-gray-600">Uploading... {uploadProgress}%</p>
+                      </div>
+                    ) : formData.image ? (
+                      <>
+                        <Image
+                          src={URL.createObjectURL(formData.image)}
+                          alt="Restaurant preview"
+                          fill
+                          className="object-cover rounded-lg"
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center rounded-lg opacity-0 hover:opacity-100 transition-opacity">
+                          <p className="text-white text-sm mb-2">Click to change image</p>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setFormData({ ...formData, image: undefined });
+                            }}
+                            className="px-3 py-1 bg-red-600 text-white text-xs rounded-full hover:bg-red-700 transition-colors"
+                          >
+                            Remove Image
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <PhotoIcon className="w-12 h-12 text-gray-400 mb-3" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                      </div>
+                    )}
+                    <input
+                      id="image-upload"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      data-testid="restaurant-image-input"
+                      disabled={isUploading}
+                    />
+                  </label>
                 </div>
               </div>
 
