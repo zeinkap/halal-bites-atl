@@ -1,6 +1,20 @@
 import { PrismaClient } from '@prisma/client';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+// Load production environment variables
+dotenv.config({ path: '.env.production' });
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('Production DATABASE_URL is not set in .env.production');
+}
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL
+    }
+  }
+});
 
 // Helper function to normalize strings for comparison
 function normalizeString(str: string): string {
@@ -83,36 +97,81 @@ async function main() {
         name: true,
         cuisineType: true,
         address: true,
+        description: true,
         priceRange: true,
         hasPrayerRoom: true,
         hasOutdoorSeating: true,
         isZabiha: true,
         hasHighChair: true,
         servesAlcohol: true,
-        isFullyHalal: true
+        isFullyHalal: true,
+        imageUrl: true
       }
     });
 
+    console.log(`\nFound ${prodRestaurants.length} restaurants in production database`);
+    console.log(`${seedRestaurants.length} restaurants in seed file`);
+
+    // Find restaurants in production but not in seed
     console.log('\nRestaurants in production but not in seed file:');
-    const missingRestaurants = prodRestaurants.filter(
+    const missingFromSeed = prodRestaurants.filter(
       restaurant => !seedRestaurants.some(seedName => 
         normalizeString(seedName) === normalizeString(restaurant.name)
       )
     );
 
-    if (missingRestaurants.length === 0) {
-      console.log('No missing restaurants found.');
+    if (missingFromSeed.length === 0) {
+      console.log('No missing restaurants found in production.');
     } else {
-      missingRestaurants.forEach(restaurant => {
+      console.log(`Found ${missingFromSeed.length} restaurants that need to be added to seed file:`);
+      missingFromSeed.forEach(restaurant => {
         console.log('\n---');
         console.log(`Restaurant: ${restaurant.name}`);
         console.log('Details:');
         console.log(JSON.stringify(restaurant, null, 2));
+        
+        // Print the restaurant entry in seed.ts format
+        console.log('\nSeed entry:');
+        console.log(`    await upsertRestaurant('${restaurant.name}', {`);
+        console.log(`      name: '${restaurant.name}',`);
+        console.log(`      cuisineType: CuisineType.${restaurant.cuisineType},`);
+        console.log(`      address: '${restaurant.address}',`);
+        console.log(`      description: '${(restaurant.description || '').replace(/'/g, "\\'")}',`);
+        console.log(`      priceRange: PriceRange.${restaurant.priceRange},`);
+        console.log(`      hasPrayerRoom: ${restaurant.hasPrayerRoom},`);
+        console.log(`      hasOutdoorSeating: ${restaurant.hasOutdoorSeating},`);
+        console.log(`      isZabiha: ${restaurant.isZabiha},`);
+        console.log(`      hasHighChair: ${restaurant.hasHighChair},`);
+        console.log(`      servesAlcohol: ${restaurant.servesAlcohol},`);
+        console.log(`      isFullyHalal: ${restaurant.isFullyHalal},`);
+        console.log(`      imageUrl: '${restaurant.imageUrl}'`);
+        console.log('    });');
+      });
+    }
+
+    // Find restaurants in seed but not in production
+    console.log('\nRestaurants in seed file but not in production:');
+    const missingFromProd = seedRestaurants.filter(
+      seedName => !prodRestaurants.some(restaurant => 
+        normalizeString(restaurant.name) === normalizeString(seedName)
+      )
+    );
+
+    if (missingFromProd.length === 0) {
+      console.log('No missing restaurants found in seed file.');
+    } else {
+      console.log(`Found ${missingFromProd.length} restaurants that are in seed but not in production:`);
+      missingFromProd.forEach(name => {
+        console.log(`- ${name}`);
       });
     }
 
   } catch (error) {
     console.error('Error:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      console.error('Stack trace:', error.stack);
+    }
   } finally {
     await prisma.$disconnect();
   }

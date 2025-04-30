@@ -9,6 +9,7 @@ export enum CuisineType {
   MEXICAN = 'MEXICAN',
   CHINESE = 'CHINESE',
   THAI = 'THAI',
+  FAST_FOOD = 'FAST_FOOD',
   OTHER = 'OTHER'
 }
 

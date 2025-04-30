@@ -14,7 +14,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Sort by name or price
 - ➕ Add new restaurants with details:
   - Name and location
-  - Cuisine type (Middle Eastern, Indian Pakistani, Turkish, Persian, Mediterranean, Afghan, etc.)
+  - Cuisine type (Middle Eastern, Indian Pakistani, Turkish, Persian, Mediterranean, Afghan, Fast Food, etc.)
   - Price range
   - Description and other details
 - 💬 Community-driven reviews and ratings:
@@ -137,8 +137,8 @@ When writing new tests:
 
      # Cloudinary Configuration
      CLOUDINARY_CLOUD_NAME="your_cloud_name"
-     CLOUDINARY_API_KEY="your_api_key"
-     CLOUDINARY_API_SECRET="your_api_secret"
+     CLOUDINARY_API_KEY="xxxxx"
+     CLOUDINARY_API_SECRET="xxxxx"
      ```
 
 4. Set up the database:
@@ -292,6 +292,34 @@ To verify data is actually in the Prod database, run this query:
 
 Run these commands to migrate and seed prod database:
 `npm run migrate-prod && npm run seed-prod`
+
+## Troubleshooting
+
+### UI Not Reflecting Database Changes
+
+If you notice discrepancies between Prisma Studio and the UI (e.g., updated cuisine types not showing):
+
+1. Stop the Next.js server:
+   ```bash
+   pkill -f "next dev"
+   ```
+
+2. Clear Next.js cache:
+   ```bash
+   rm -rf .next
+   ```
+
+3. Regenerate Prisma client:
+   ```bash
+   npx prisma generate
+   ```
+
+4. Restart the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Refresh your browser to see the changes.
 
 ## Contributing
 

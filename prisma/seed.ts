@@ -1,7 +1,15 @@
 import { PrismaClient, CuisineType, PriceRange, Prisma, Restaurant } from '@prisma/client';
 import { createId } from '@paralleldrive/cuid2';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
+
+// Track restaurants added through production
+const PROD_ADDED_RESTAURANTS: Array<{
+  name: string;
+  data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>;
+}> = [];
 
 // Helper function to identify test restaurants
 function isTestRestaurant(name: string): boolean {
@@ -10,9 +18,72 @@ function isTestRestaurant(name: string): boolean {
   return /^(Test|Duplicate) Restaurant \d+-[\w-]+$/.test(name);
 }
 
+// Function to add a restaurant to production seed
+export async function addToProdSeed(restaurant: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
+  // Only add restaurants in production environment
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Skipping seed addition - not in production environment');
+    return;
+  }
+
+  try {
+    // Check if restaurant already exists in PROD_ADDED_RESTAURANTS
+    const exists = PROD_ADDED_RESTAURANTS.some(r => r.name === restaurant.name);
+    if (exists) {
+      console.log(`Restaurant ${restaurant.name} already exists in production seed`);
+      return;
+    }
+
+    // Add to tracking array
+    PROD_ADDED_RESTAURANTS.push({
+      name: restaurant.name,
+      data: restaurant
+    });
+
+    // Update this file with the new restaurant
+    const filePath = path.join(process.cwd(), 'prisma', 'seed.ts');
+    let content = await fs.readFile(filePath, 'utf8');
+
+    // Find the position before the summary logging
+    const summaryPosition = content.indexOf('// Log summary');
+    if (summaryPosition === -1) {
+      throw new Error('Could not find position to insert new restaurant');
+    }
+
+    // Create the new restaurant entry
+    const newEntry = `
+    await upsertRestaurant('${restaurant.name}', {
+      name: '${restaurant.name}',
+      cuisineType: CuisineType.${restaurant.cuisineType},
+      address: '${restaurant.address}',
+      description: '${(restaurant.description || '').replace(/'/g, "\\'")}',
+      priceRange: PriceRange.${restaurant.priceRange},
+      hasPrayerRoom: ${restaurant.hasPrayerRoom},
+      hasOutdoorSeating: ${restaurant.hasOutdoorSeating},
+      isZabiha: ${restaurant.isZabiha},
+      hasHighChair: ${restaurant.hasHighChair},
+      servesAlcohol: ${restaurant.servesAlcohol},
+      isFullyHalal: ${restaurant.isFullyHalal},
+      imageUrl: '${restaurant.imageUrl}'
+    });
+`;
+
+    // Insert the new entry before the summary
+    content = content.slice(0, summaryPosition) + newEntry + content.slice(summaryPosition);
+
+    // Write back to file
+    await fs.writeFile(filePath, content, 'utf8');
+    console.log(`✓ Added ${restaurant.name} to seed file`);
+
+  } catch (error) {
+    console.error(`Failed to add ${restaurant.name} to seed:`, error);
+    throw error;
+  }
+}
+
 async function main() {
   try {
-    console.log('Starting database seed...');
+    console.log(`Starting database seed... (${process.env.NODE_ENV || 'development'} environment)`);
     let successCount = 0;
     let errorCount = 0;
     let skippedCount = 0;
@@ -20,9 +91,9 @@ async function main() {
 
     // Helper function to handle restaurant upsert
     async function upsertRestaurant(name: string, data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
-      // Skip test restaurants
-      if (isTestRestaurant(name)) {
-        console.log(`⚠ Skipping test restaurant: ${name}`);
+      // Skip test restaurants in production
+      if (process.env.NODE_ENV === 'production' && isTestRestaurant(name)) {
+        console.log(`⚠ Skipping test restaurant in production: ${name}`);
         skippedCount++;
         return;
       }
@@ -30,8 +101,8 @@ async function main() {
       try {
         const id = createId();
         await prisma.restaurant.upsert({
-          where: { name },  // Using name as the unique identifier for upsert
-          update: {},
+          where: { name },
+          update: data,     // Update with the new data if record exists
           create: { ...data, id },
         });
         successCount++;
@@ -467,7 +538,7 @@ async function main() {
 
     await upsertRestaurant('Star Pizza', {
       name: 'Star Pizza',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.FAST_FOOD,
       address: '11490 Alpharetta Highway, Roswell, GA',
       description: 'Italian pizza restaurant serving halal options. Known for their pizza varieties and Italian specialties.',
       priceRange: PriceRange.MEDIUM,
@@ -482,7 +553,7 @@ async function main() {
 
     await upsertRestaurant('PONKO Chicken - Alpharetta', {
       name: 'PONKO Chicken - Alpharetta',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.FAST_FOOD,
       address: '220 South Main Street, Alpharetta, GA',
       description: 'Japanese-American fusion restaurant specializing in halal chicken tenders with unique Asian-inspired sauces. Known for their crispy chicken and signature PONKO sauce.',
       priceRange: PriceRange.LOW,
@@ -572,7 +643,7 @@ async function main() {
 
     await upsertRestaurant('Stone Creek Halal Pizza', {
       name: 'Stone Creek Halal Pizza',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.FAST_FOOD,
       address: '5330 Lilburn Stone Mountain Rd #108, Lilburn, GA 30047',
       description: 'The best bet for halal pizza, subs, and wings in metro Atlanta. Try their signature spicy tandoori chicken pizza topped with green peppers, onions, and mozzarella.',
       priceRange: PriceRange.LOW,
@@ -587,7 +658,7 @@ async function main() {
 
     await upsertRestaurant('Salsa Taqueria & Wings', {
       name: 'Salsa Taqueria & Wings',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.MEXICAN,
       address: '3799 Buford Hwy NE, Brookhaven, GA 30329',
       description: 'A counter-service taqueria serving a halal menu of Mexican-American comfort foods, including beef and chicken birria tacos, tamales, wings, tortas, and burgers. Features special weekend menu items.',
       priceRange: PriceRange.LOW,
@@ -707,7 +778,7 @@ async function main() {
 
     await upsertRestaurant('Talkin\' Tacos Buckhead', {
       name: 'Talkin\' Tacos Buckhead',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.MEXICAN,
       address: '2625 Piedmont Rd NE Ste 34A, Atlanta, GA 30324',
       description: 'Known for Taco, Rice Bowl, Refried Beans, Burritos, Shrimp, Quesadilla, Carne Asada Tacos, Taco Salad, Nachos, Birria Tacos, Mexican Food, Tres Leches Cake, Churros, and Pico De Gallo and Chips',
       priceRange: PriceRange.LOW,
@@ -767,7 +838,7 @@ async function main() {
 
     await upsertRestaurant('Three Buddies', {
       name: 'Three Buddies',
-      cuisineType: CuisineType.OTHER,
+      cuisineType: CuisineType.FAST_FOOD,
       address: '4966 Buford Hwy NE, Chamblee, GA 30341',
       description: 'Quality fresh food at a resonable price. Offers burgers, sandwiches, wings, nachos, and more.',
       priceRange: PriceRange.LOW,
@@ -824,12 +895,164 @@ async function main() {
       isFullyHalal: false,
       imageUrl: '/images/logo.png'
     });
+
+    await upsertRestaurant('Laghman Express', {
+      name: 'Laghman Express',
+      cuisineType: CuisineType.OTHER,
+      address: '3070 Windward Plaza x1, Alpharetta, GA 30005, USA',
+      description: '',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Kabob Land', {
+      name: 'Kabob Land',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '3137 Piedmont Rd NE, Atlanta, GA 30305',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: false,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Ali N\' One Zabiha Halal Kitchen', {
+      name: 'Ali N\' One Zabiha Halal Kitchen',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '5382 Buford Hwy NE, Doraville, GA 30340',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: true,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Nature Village Restaurant', {
+      name: 'Nature Village Restaurant',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '302 Satellite Blvd NE STE 125, Suwanee, GA 30024',
+      description: '',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Halal Pizza and cafe', {
+      name: 'Halal Pizza and cafe',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '420 N Indian Creek Dr, Clarkston, GA 30021',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Bawarchi Biryanis Atlanta', {
+      name: 'Bawarchi Biryanis Atlanta',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '6627-A Roswell Rd NE, Sandy Springs, GA 30328',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Shah\'s Halal Food', {
+      name: 'Shah\'s Halal Food',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '5450 Peachtree Pkwy NW, Peachtree Corners, GA 30092',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Lahore Grill', {
+      name: 'Lahore Grill',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '1869 Cobb Pkwy Suite#150, Marietta, GA 30060',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('AZ Pizza, Wings & Fish (Halal)', {
+      name: 'AZ Pizza, Wings & Fish (Halal)',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '855 S Cobb Dr SE, Marietta, GA 30060',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
+
+    await upsertRestaurant('Scoville Hot Chicken - Buckhead', {
+      name: 'Scoville Hot Chicken - Buckhead',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '3420 Piedmont Rd NE Unit B, Atlanta, GA 30305',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png'
+    });
     
     // Log summary
     console.log('\nSeed Summary:');
     console.log(`Total restaurants processed: ${successCount + errorCount + skippedCount}`);
     console.log(`✓ Successful: ${successCount}`);
-    console.log(`⚠ Skipped test restaurants: ${skippedCount}`);
+    if (skippedCount > 0) {
+      console.log(`⚠ Skipped test restaurants: ${skippedCount}`);
+    }
     if (errorCount > 0) {
       console.error(`✗ Failed: ${errorCount}`);
       console.error('\nDetailed Errors:');

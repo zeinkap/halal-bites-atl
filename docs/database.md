@@ -76,4 +76,38 @@ model Comment {
 
   @@index([restaurantId])
 }
-``` 
+```
+
+### Enums
+
+#### CuisineType
+```prisma
+enum CuisineType {
+  MIDDLE_EASTERN
+  MEDITERRANEAN
+  INDIAN_PAKISTANI
+  TURKISH
+  PERSIAN
+  AFGHAN
+  CAFE
+  CHINESE
+  MEXICAN
+  THAI
+  FAST_FOOD
+  OTHER
+}
+```
+
+The CuisineType enum represents the different types of cuisine available in the application:
+- MIDDLE_EASTERN: Middle Eastern cuisine
+- MEDITERRANEAN: Mediterranean cuisine
+- INDIAN_PAKISTANI: Indian and Pakistani cuisine
+- TURKISH: Turkish cuisine
+- PERSIAN: Persian cuisine
+- AFGHAN: Afghan cuisine
+- CAFE: Cafe and coffee shops
+- CHINESE: Chinese cuisine
+- MEXICAN: Mexican cuisine
+- THAI: Thai cuisine
+- FAST_FOOD: Fast food restaurants
+- OTHER: Other cuisines not covered by the above categories 

@@ -12,7 +12,7 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "migrate-prod": "dotenv -e .env.production -- npx prisma migrate deploy",
-    "seed-prod": "dotenv -e .env.production -- npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.prod.ts"
+    "seed-prod": "dotenv -e .env.production -- npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
