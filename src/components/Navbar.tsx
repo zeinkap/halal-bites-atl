@@ -7,10 +7,12 @@ import { useState } from 'react';
 import BugReportModal from '@/components/BugReportModal';
 import DonationModal from '@/components/DonationModal';
 import AddRestaurantForm from '@/components/AddRestaurantForm';
+import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 
 export default function Navbar() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [showBugReportModal, setShowBugReportModal] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showAddRestaurantForm, setShowAddRestaurantForm] = useState(false);
@@ -20,7 +22,7 @@ export default function Navbar() {
       <nav className="bg-white/95 backdrop-blur-sm shadow-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 py-3">
           <div className="flex justify-between items-center">
-            <button 
+            <button
               onClick={() => {
                 router.push('/');
                 window.location.reload();
@@ -44,6 +46,14 @@ export default function Navbar() {
             </button>
 
             <div className="flex items-center gap-2 sm:gap-3">
+              {status === 'authenticated' && session?.user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL && (
+                <button
+                  onClick={() => router.push('/admin')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-100 text-purple-700 rounded-xl text-sm font-medium hover:bg-purple-200 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-sm"
+                >
+                  Admin
+                </button>
+              )}
               <button
                 onClick={() => setShowAddRestaurantForm(true)}
                 className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-xl text-sm font-medium hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm cursor-pointer"
@@ -89,6 +99,7 @@ export default function Navbar() {
           onClose={() => setShowBugReportModal(false)}
         />
       )}
+
       {showDonationModal && (
         <DonationModal
           isOpen={showDonationModal}
@@ -98,6 +109,7 @@ export default function Navbar() {
           }}
         />
       )}
+
       {showAddRestaurantForm && (
         <AddRestaurantForm
           isOpen={showAddRestaurantForm}

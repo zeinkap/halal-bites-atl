@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { CuisineType, PriceRange } from '@/types';
+import { CuisineType, PriceRange } from '@prisma/client';
 import toast from 'react-hot-toast';
 import { XMarkIcon, BuildingStorefrontIcon, ExclamationTriangleIcon, PhotoIcon, MapPinIcon } from '@heroicons/react/24/solid';
 import { formatCuisineName } from '@/utils/formatCuisineName';
@@ -29,6 +29,12 @@ interface FormData {
   hasHighChair: boolean;
   servesAlcohol: boolean;
   isFullyHalal: boolean;
+  zabihaChicken: boolean;
+  zabihaLamb: boolean;
+  zabihaBeef: boolean;
+  zabihaGoat: boolean;
+  zabihaVerified?: Date | null;
+  zabihaVerifiedBy?: string;
   image?: File;
 }
 
@@ -44,6 +50,12 @@ const initialFormState: FormData = {
   hasHighChair: false,
   servesAlcohol: false,
   isFullyHalal: false,
+  zabihaChicken: false,
+  zabihaLamb: false,
+  zabihaBeef: false,
+  zabihaGoat: false,
+  zabihaVerified: undefined,
+  zabihaVerifiedBy: '',
   image: undefined
 };
 
@@ -64,6 +76,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
   const [addressSuggestions, setAddressSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const placesService = useRef<google.maps.places.PlacesService | null>(null);
+  const modalContentRef = useRef<HTMLDivElement>(null);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -243,9 +256,6 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     if (formData.description && formData.description.length > MAX_DESCRIPTION_LENGTH) {
       return `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`;
     }
-    if (formData.description && formData.description.length < MIN_DESCRIPTION_LENGTH) {
-      return `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters`;
-    }
     if (!formData.cuisineType) {
       return 'Please select a cuisine type';
     }
@@ -254,6 +264,20 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     }
     if (!formData.address.trim()) {
       return 'Address is required';
+    }
+    if (formData.isZabiha) {
+      if (!formData.zabihaVerified) {
+        return 'Verification Date is required for Zabiha Certified restaurants';
+      }
+      if (formData.zabihaVerified && formData.zabihaVerified > new Date()) {
+        return 'Verification Date cannot be in the future';
+      }
+      if (!formData.zabihaVerifiedBy?.trim()) {
+        return 'Verified By is required for Zabiha Certified restaurants';
+      }
+      if (!formData.zabihaChicken && !formData.zabihaLamb && !formData.zabihaBeef && !formData.zabihaGoat) {
+        return 'Please select at least one Zabiha meat type';
+      }
     }
     return null;
   };
@@ -267,6 +291,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     if (validationError) {
       setError(validationError);
       setIsSubmitting(false);
+      // Scroll to top when there's an error
+      modalContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -337,6 +363,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
       }
       
       setError(errorMessage);
+      // Scroll to top when there's an error
+      modalContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       
       toast.error(errorMessage, {
         id: 'error-toast',
@@ -442,7 +470,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
           </div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div ref={modalContentRef} className="flex-1 overflow-y-auto p-6">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4" data-testid="form-error">
                 <div className="flex">
@@ -685,7 +713,15 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         data-testid="restaurant-alcohol-checkbox"
                         className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
                         checked={formData.servesAlcohol}
-                        onChange={(e) => setFormData({ ...formData, servesAlcohol: e.target.checked })}
+                        onChange={(e) => {
+                          const servesAlcohol = e.target.checked;
+                          setFormData({ 
+                            ...formData, 
+                            servesAlcohol,
+                            // If alcohol is checked, ensure fully halal is unchecked
+                            isFullyHalal: servesAlcohol ? false : formData.isFullyHalal 
+                          });
+                        }}
                       />
                     </div>
                     <div className="ml-3">
@@ -695,24 +731,142 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                   </label>
 
                   {/* Fully Halal Menu */}
-                  <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
+                  <label className={`relative flex items-start p-3 rounded-lg border border-gray-200 ${!formData.servesAlcohol ? 'hover:border-orange-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'} transition-colors`}>
                     <div className="flex items-center h-5">
                       <input
                         type="checkbox"
                         name="isFullyHalal"
                         id="isFullyHalal"
                         data-testid="restaurant-fully-halal-checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
+                        className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         checked={formData.isFullyHalal}
                         onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked })}
+                        disabled={formData.servesAlcohol}
                       />
                     </div>
                     <div className="ml-3">
                       <span className="text-sm font-semibold text-gray-900">Fully Halal Menu</span>
                       <p className="text-xs text-gray-500 mt-0.5">All menu items are halal</p>
+                      {formData.servesAlcohol && (
+                        <p className="text-xs text-orange-600 mt-1">Cannot be fully halal if alcohol is served</p>
+                      )}
                     </div>
                   </label>
                 </div>
+
+                {formData.isZabiha && (
+                  <div className="space-y-4 mt-4 p-4 bg-white rounded-lg border border-orange-100">
+                    <div className="text-sm font-medium text-gray-700">Zabiha Details</div>
+                    
+                    {/* Zabiha Meat Types */}
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-gray-700">Available Zabiha Meat: <span className="text-red-500">*</span></div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                            checked={formData.zabihaChicken}
+                            onChange={(e) => setFormData({ ...formData, zabihaChicken: e.target.checked })}
+                          />
+                          <span className="ml-2 text-sm text-gray-600">Chicken</span>
+                        </label>
+                        <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                            checked={formData.zabihaLamb}
+                            onChange={(e) => setFormData({ ...formData, zabihaLamb: e.target.checked })}
+                          />
+                          <span className="ml-2 text-sm text-gray-600">Lamb</span>
+                        </label>
+                        <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                            checked={formData.zabihaBeef}
+                            onChange={(e) => setFormData({ ...formData, zabihaBeef: e.target.checked })}
+                          />
+                          <span className="ml-2 text-sm text-gray-600">Beef</span>
+                        </label>
+                        <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                          <input
+                            type="checkbox"
+                            className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                            checked={formData.zabihaGoat}
+                            onChange={(e) => setFormData({ ...formData, zabihaGoat: e.target.checked })}
+                          />
+                          <span className="ml-2 text-sm text-gray-600">Goat</span>
+                        </label>
+                      </div>
+                      {error && error.toLowerCase().includes('zabiha meat type') && (
+                        <p className="mt-1 text-xs text-red-600" data-testid="zabiha-meat-error">
+                          {error}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Zabiha Verification */}
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-gray-700">Verification Details:</div>
+                      <div className="space-y-3">
+                        <div>
+                          <label htmlFor="zabihaVerified" className="block text-sm text-gray-600 mb-1">
+                            Verification Date <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="date"
+                              id="zabihaVerified"
+                              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm cursor-pointer text-gray-900 [color-scheme:light]"
+                              value={formData.zabihaVerified ? new Date(formData.zabihaVerified).toISOString().split('T')[0] : ''}
+                              max={new Date(new Date().setHours(0, 0, 0, 0)).toISOString().split('T')[0]}
+                              onChange={(e) => {
+                                const selectedDate = e.target.value ? new Date(e.target.value) : null;
+                                const today = new Date(new Date().setHours(0, 0, 0, 0));
+                                
+                                // Only set the date if it's not in the future
+                                if (selectedDate && selectedDate > today) {
+                                  return; // Ignore future dates
+                                }
+                                
+                                setFormData({ ...formData, zabihaVerified: selectedDate });
+                              }}
+                              onClick={(e) => {
+                                (e.target as HTMLInputElement).showPicker();
+                              }}
+                              required={formData.isZabiha}
+                            />
+                          </div>
+                          {error && error.toLowerCase().includes('verification date') && (
+                            <p className="mt-1 text-xs text-red-600" data-testid="verification-date-error">
+                              {error}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <label htmlFor="zabihaVerifiedBy" className="block text-sm text-gray-600 mb-1">
+                            Verified By <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="zabihaVerifiedBy"
+                            className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm text-gray-900 placeholder:text-gray-500"
+                            placeholder="e.g., Restaurant Management, Local Imam"
+                            value={formData.zabihaVerifiedBy || ''}
+                            onChange={(e) => setFormData({ ...formData, zabihaVerifiedBy: e.target.value })}
+                            required={formData.isZabiha}
+                          />
+                          {error && error.toLowerCase().includes('verified by') && (
+                            <p className="mt-1 text-xs text-red-600" data-testid="verified-by-error">
+                              {error}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Description Section */}
@@ -736,8 +890,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                   />
                   <div className="flex justify-between mt-1">
                     <span className="text-xs text-gray-500">
-                      {formData.description.length < MIN_DESCRIPTION_LENGTH && 
-                        `At least ${MIN_DESCRIPTION_LENGTH} characters required`}
+                      Optional
                     </span>
                     <span className="text-xs text-gray-500">
                       {formData.description.length}/{MAX_DESCRIPTION_LENGTH}

@@ -1,0 +1,41 @@
+name: Database Backup
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *'  # Run every other day at midnight
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          
+      - name: Create backup directory
+        run: mkdir -p backups/database
+          
+      - name: Run backup script
+        run: |
+          chmod +x scripts/backup.sh
+          ./scripts/backup.sh
+          
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-backup
+          path: backups/database/*.sql.gz
+          retention-days: 7
+          
+      - name: Cleanup old backups
+        run: |
+          find backups/database -name "*.sql.gz" -mtime +7 -delete 

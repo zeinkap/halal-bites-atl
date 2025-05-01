@@ -1,12 +1,21 @@
 import { PrismaClient } from '@prisma/client';
 import * as dotenv from 'dotenv';
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
 
-// Load production environment variables
-dotenv.config({ path: '.env.production' });
+// Load production environment variables by default, but allow override
+const envFile = process.argv[2] === '--dev' ? '.env' : '.env.production';
+dotenv.config({ path: envFile });
 
 if (!process.env.DATABASE_URL) {
-  throw new Error('Production DATABASE_URL is not set in .env.production');
+  console.error(chalk.red(`Error: DATABASE_URL is not set in ${envFile}`));
+  process.exit(1);
 }
+
+// Debug: Log the database URL (but mask sensitive parts)
+const dbUrl = process.env.DATABASE_URL;
+console.log(chalk.blue('Using database URL:'), dbUrl.replace(/:\/\/.*@/, '://*****@'));
 
 const prisma = new PrismaClient({
   datasources: {
@@ -19,15 +28,16 @@ const prisma = new PrismaClient({
 // Helper function to normalize strings for comparison
 function normalizeString(str: string): string {
   return str.toLowerCase()
-    .replace(/['']/g, "'")  // Normalize different types of apostrophes
-    .replace(/[^a-z0-9]/g, '');  // Remove all non-alphanumeric characters
+    .replace(/['']/g, '')  // Remove all types of apostrophes
+    .replace(/[^a-z0-9]/g, '')  // Remove all non-alphanumeric characters
+    .trim();
 }
 
 // List of restaurant names from seed.ts file
 const seedRestaurants = [
   'Shawarma Press - Johns Creek',
   'Kimchi Red - Alpharetta',
-  "Olomi's Grill",
+  'Olomi\'s Grill',
   'Spices Hut Food Court',
   'Pista House Alpharetta',
   'Namak',
@@ -38,7 +48,7 @@ const seedRestaurants = [
   'Karachi Broast & Grill',
   'Zyka: The Taste | Indian Restaurant | Decatur',
   'The Halal Guys',
-  "Khan's Kitchen",
+  'Khan\'s Kitchen',
   'Shibam Coffee',
   'MOTW Coffee and Pastries',
   '967 Coffee Co',
@@ -51,92 +61,70 @@ const seedRestaurants = [
   'Al-Amin Supermarket & Restaurant',
   'ZamZam Halal Supermarket & Restaurant',
   'Kabul Kabob',
-  'Al Madina Grocery & Restaurant',
-  'Chinese Dhaba',
-  'Star Pizza',
-  'PONKO Chicken - Alpharetta',
-  'Express Burger & Grill',
-  'Moctezuma Mexican Grill',
-  'Adana Mediterranean Grill',
-  'Dil Bahar Cafe & Market',
-  'Briskfire BBQ',
-  'Stone Creek Halal Pizza',
-  'Salsa Taqueria & Wings',
-  'Auntie Vees Kitchen',
-  'Springreens at Community Cafe',
-  'Mukja Korean Fried Chicken',
-  'Baraka Shawarma Atlanta',
-  'Botiwalla by Chai Pani',
-  "Dantanna's",
-  'Jaffa Restaurant Atl (Halal)',
-  'Talkin\' Tacos Buckhead',
-  'Ariana Kabob House',
-  'Hyderabad House Atlanta - Biryani Place',
-  'Asma\'s Cuisine',
-  'Three Buddies',
-  'Alif Cafe',
-  'NaanStop',
-  'Mashawi Mediterranean',
-  'Laghman Express',
-  'Kabob Land',
-  'Ali N\' One Zabiha Halal Kitchen',
-  'Nature Village Restaurant',
+  'Al Madina Restaurant',
+  'Scoville Hot Chicken - Buckhead',
+  'Desi Spice',
   'Halal Pizza and cafe',
-  'Bawarchi Biryanis Atlanta',
-  'Shah\'s Halal Food',
+  'Hyderabad House Atlanta - Biryani Place',
+  'Jaffa Restaurant Atl (Halal)',
+  'Kabob Land',
+  'Karachi Grill & BBQ',
+  'Laghman Express',
   'Lahore Grill',
-  'AZ Pizza, Wings & Fish (Halal)',
-  'Scoville Hot Chicken - Buckhead'
+  'Mashawi Mediterranean',
+  'Mediterranean Grill - Decatur',
+  'Moctezuma Mexican Grill',
+  'Mukja Korean Fried Chicken',
+  'NaanStop',
+  'Nature Village Restaurant',
+  'PONKO Chicken - Alpharetta',
+  'Pita Palace Mediterranean Grill',
+  'Rumi\'s Kitchen - Sandy Springs',
+  'Salsa Taqueria & Wings',
+  'Shah\'s Halal Food',
+  'Springreens at Community Cafe',
+  'Star Pizza',
+  'Stone Creek Halal Pizza',
+  'Talkin\' Tacos Buckhead',
+  'Three Buddies'
 ];
 
 async function main() {
   try {
-    console.log('Fetching restaurants from production database...');
+    console.log(chalk.cyan('\nGetting all restaurants from production database...'));
+    console.log(chalk.gray(`Using environment: ${envFile}\n`));
+
+    // Get all restaurants from production
     const prodRestaurants = await prisma.restaurant.findMany({
-      select: {
-        name: true,
-        cuisineType: true,
-        address: true,
-        description: true,
-        priceRange: true,
-        hasPrayerRoom: true,
-        hasOutdoorSeating: true,
-        isZabiha: true,
-        hasHighChair: true,
-        servesAlcohol: true,
-        isFullyHalal: true,
-        imageUrl: true
-      }
+      orderBy: { name: 'asc' }
     });
 
-    console.log(`\nFound ${prodRestaurants.length} restaurants in production database`);
-    console.log(`${seedRestaurants.length} restaurants in seed file`);
+    console.log(chalk.blue(`Found ${prodRestaurants.length} restaurants in production database`));
 
-    // Find restaurants in production but not in seed
-    console.log('\nRestaurants in production but not in seed file:');
-    const missingFromSeed = prodRestaurants.filter(
-      restaurant => !seedRestaurants.some(seedName => 
-        normalizeString(seedName) === normalizeString(restaurant.name)
-      )
-    );
+    // Find restaurants that exist in production but not in seed file
+    const missingRestaurants = prodRestaurants.filter(prodRestaurant => {
+      const normalizedProdName = normalizeString(prodRestaurant.name);
+      return !seedRestaurants.some(seedName => normalizeString(seedName) === normalizedProdName);
+    });
 
-    if (missingFromSeed.length === 0) {
-      console.log('No missing restaurants found in production.');
+    if (missingRestaurants.length === 0) {
+      console.log(chalk.green('\nAll production restaurants are in the seed file!'));
     } else {
-      console.log(`Found ${missingFromSeed.length} restaurants that need to be added to seed file:`);
-      missingFromSeed.forEach(restaurant => {
-        console.log('\n---');
-        console.log(`Restaurant: ${restaurant.name}`);
-        console.log('Details:');
-        console.log(JSON.stringify(restaurant, null, 2));
-        
-        // Print the restaurant entry in seed.ts format
-        console.log('\nSeed entry:');
+      console.log(chalk.yellow(`\nFound ${missingRestaurants.length} restaurants in production that are not in seed file:`));
+      missingRestaurants.forEach((r, i) => {
+        console.log(chalk.red(`${i + 1}. ${r.name}`));
+        console.log(chalk.gray(`   Address: ${r.address}`));
+        console.log(chalk.gray(`   Cuisine: ${r.cuisineType}`));
+        console.log('');
+      });
+
+      console.log(chalk.yellow('\nHere are the missing restaurants formatted for seed.ts:\n'));
+      missingRestaurants.forEach((restaurant, index) => {
         console.log(`    await upsertRestaurant('${restaurant.name}', {`);
         console.log(`      name: '${restaurant.name}',`);
         console.log(`      cuisineType: CuisineType.${restaurant.cuisineType},`);
         console.log(`      address: '${restaurant.address}',`);
-        console.log(`      description: '${(restaurant.description || '').replace(/'/g, "\\'")}',`);
+        console.log(`      description: '${restaurant.description || ''}',`);
         console.log(`      priceRange: PriceRange.${restaurant.priceRange},`);
         console.log(`      hasPrayerRoom: ${restaurant.hasPrayerRoom},`);
         console.log(`      hasOutdoorSeating: ${restaurant.hasOutdoorSeating},`);
@@ -144,37 +132,40 @@ async function main() {
         console.log(`      hasHighChair: ${restaurant.hasHighChair},`);
         console.log(`      servesAlcohol: ${restaurant.servesAlcohol},`);
         console.log(`      isFullyHalal: ${restaurant.isFullyHalal},`);
-        console.log(`      imageUrl: '${restaurant.imageUrl}'`);
-        console.log('    });');
+        console.log(`      imageUrl: '${restaurant.imageUrl}',`);
+        console.log(`      zabihaChicken: ${restaurant.zabihaChicken},`);
+        console.log(`      zabihaLamb: ${restaurant.zabihaLamb},`);
+        console.log(`      zabihaBeef: ${restaurant.zabihaBeef},`);
+        console.log(`      zabihaGoat: ${restaurant.zabihaGoat},`);
+        console.log(`      zabihaVerified: ${restaurant.zabihaVerified ? `new Date('${restaurant.zabihaVerified.toISOString().split('T')[0]}')` : 'null'},`);
+        console.log(`      zabihaVerifiedBy: ${restaurant.zabihaVerifiedBy ? `'${restaurant.zabihaVerifiedBy}'` : 'null'}`);
+        console.log('    });\n');
       });
     }
-
-    // Find restaurants in seed but not in production
-    console.log('\nRestaurants in seed file but not in production:');
-    const missingFromProd = seedRestaurants.filter(
-      seedName => !prodRestaurants.some(restaurant => 
-        normalizeString(restaurant.name) === normalizeString(seedName)
-      )
-    );
-
-    if (missingFromProd.length === 0) {
-      console.log('No missing restaurants found in seed file.');
-    } else {
-      console.log(`Found ${missingFromProd.length} restaurants that are in seed but not in production:`);
-      missingFromProd.forEach(name => {
-        console.log(`- ${name}`);
-      });
-    }
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error(chalk.red('\nError:'), error);
     if (error instanceof Error) {
-      console.error('Error details:', error.message);
-      console.error('Stack trace:', error.stack);
+      console.error(chalk.red('Error details:'), error.message);
+      console.error(chalk.gray('Stack trace:'), error.stack);
     }
+    process.exit(1);
   } finally {
     await prisma.$disconnect();
   }
+}
+
+// Add command line help
+if (process.argv.includes('--help')) {
+  console.log(`
+Usage: node scripts/compare-prod-restaurants.ts [options]
+
+Options:
+  --dev     Use development environment (.env)
+  --help    Show this help message
+
+By default, the script uses production environment (.env.production)
+  `);
+  process.exit(0);
 }
 
 main(); 

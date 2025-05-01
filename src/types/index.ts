@@ -1,38 +1,26 @@
-export enum CuisineType {
-  MIDDLE_EASTERN = 'MIDDLE_EASTERN',
-  INDIAN_PAKISTANI = 'INDIAN_PAKISTANI',
-  TURKISH = 'TURKISH',
-  PERSIAN = 'PERSIAN',
-  MEDITERRANEAN = 'MEDITERRANEAN',
-  AFGHAN = 'AFGHAN',
-  CAFE = 'CAFE',
-  MEXICAN = 'MEXICAN',
-  CHINESE = 'CHINESE',
-  THAI = 'THAI',
-  FAST_FOOD = 'FAST_FOOD',
-  OTHER = 'OTHER'
-}
-
-export enum PriceRange {
-  LOW = 'LOW',
-  MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH'
-}
+import { CuisineType, PriceRange } from '@prisma/client';
 
 export interface Restaurant {
   id: string;
   name: string;
   cuisineType: CuisineType;
   address: string;
-  description?: string;
+  description?: string | null;
   priceRange: PriceRange;
   hasPrayerRoom: boolean;
   hasOutdoorSeating: boolean;
-  isZabiha: boolean;
   hasHighChair: boolean;
   servesAlcohol: boolean;
   isFullyHalal: boolean;
-  imageUrl?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  isZabiha: boolean;
+  imageUrl?: string | null;
+  zabihaChicken: boolean;
+  zabihaLamb: boolean;
+  zabihaBeef: boolean;
+  zabihaGoat: boolean;
+  zabihaVerified?: Date | null;
+  zabihaVerifiedBy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  commentCount: number;
 } 

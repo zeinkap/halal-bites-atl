@@ -28,6 +28,21 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [localRestaurant, setLocalRestaurant] = useState(restaurant);
+
+  const handleCommentAdded = async () => {
+    try {
+      const response = await fetch(`/api/restaurants`);
+      if (!response.ok) throw new Error('Failed to fetch restaurant');
+      const restaurants = await response.json();
+      const updatedRestaurant = restaurants.find((r: Restaurant) => r.id === localRestaurant.id);
+      if (updatedRestaurant) {
+        setLocalRestaurant(updatedRestaurant);
+      }
+    } catch (error) {
+      console.error('Error refreshing restaurant data:', error);
+    }
+  };
 
   return (
     <>
@@ -35,14 +50,14 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
         <div 
           className="cursor-pointer"
           onClick={() => setIsExpanded(!isExpanded)}
-          data-testid={`restaurant-item-${restaurant.id}`}
+          data-testid={`restaurant-item-${localRestaurant.id}`}
         >
           <div className="flex flex-col sm:flex-row sm:items-start">
             {/* Restaurant Image */}
             <div className="relative w-full h-48 sm:w-40 sm:h-40 flex-shrink-0 border-b sm:border-b-0 sm:border-r border-gray-100">
               <Image
-                src={restaurant.imageUrl || '/images/logo.png'}
-                alt={restaurant.name}
+                src={localRestaurant.imageUrl || '/images/logo.png'}
+                alt={localRestaurant.name}
                 fill
                 className="object-contain sm:object-cover p-4 sm:p-0"
                 sizes="(max-width: 768px) 100vw, 25vw"
@@ -54,67 +69,94 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
             <div className="flex-1 p-4 sm:p-5 space-y-3">
               {/* Header Section */}
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-lg font-semibold text-gray-900" data-testid={`restaurant-name-${restaurant.id}`}>
-                  {restaurant.name}
+                <h3 className="text-lg font-semibold text-gray-900" data-testid={`restaurant-name-${localRestaurant.id}`}>
+                  {localRestaurant.name}
                 </h3>
-                <span className="px-2 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-600" data-testid={`restaurant-price-${restaurant.id}`}>
-                  {formatPriceRange(restaurant.priceRange)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-600" data-testid={`restaurant-price-${localRestaurant.id}`}>
+                    {formatPriceRange(localRestaurant.priceRange)}
+                  </span>
+                  <span className="px-2 py-1 bg-gray-100 rounded-full text-sm text-gray-600" data-testid={`restaurant-cuisine-${localRestaurant.id}`}>
+                    {formatCuisine(localRestaurant.cuisineType)}
+                  </span>
+                </div>
               </div>
               
-              <div className="inline-block px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600" data-testid={`restaurant-cuisine-${restaurant.id}`}>
-                {formatCuisine(restaurant.cuisineType)}
-              </div>
-
               {/* Address Section */}
               <div className="flex items-start gap-2">
                 <MapPinIcon className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-gray-600 line-clamp-2" data-testid={`restaurant-address-${restaurant.id}`}>
-                  {restaurant.address}
+                <p className="text-sm text-gray-600 line-clamp-2" data-testid={`restaurant-address-${localRestaurant.id}`}>
+                  {localRestaurant.address}
                 </p>
               </div>
 
               {/* Description Section */}
-              {restaurant.description && (
-                <p className="text-sm text-gray-700 line-clamp-2 sm:line-clamp-none leading-relaxed border-t border-gray-100 pt-3" data-testid={`restaurant-description-${restaurant.id}`}> 
-                  {restaurant.description}
+              {localRestaurant.description && (
+                <p className="text-sm text-gray-700 line-clamp-2 sm:line-clamp-none leading-relaxed border-t border-gray-100 pt-3" data-testid={`restaurant-description-${localRestaurant.id}`}> 
+                  {localRestaurant.description}
                 </p>
               )}
 
               {/* Quick Features */}
               <div className="flex flex-wrap gap-2 sm:gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                {restaurant.hasPrayerRoom && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                {localRestaurant.hasPrayerRoom && (
+                  <div className="flex items-center gap-1">
                     <HomeModernIcon className="h-4 w-4 text-blue-600 flex-shrink-0" />
                     <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Prayer Space</span>
                   </div>
                 )}
-                {restaurant.isZabiha && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
-                    <HeartIcon className="h-4 w-4 text-red-600 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Zabiha</span>
+                {localRestaurant.isZabiha && (localRestaurant.zabihaChicken || localRestaurant.zabihaLamb || localRestaurant.zabihaBeef || localRestaurant.zabihaGoat) && (
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1">
+                      <HeartIcon className="h-4 w-4 text-red-600" />
+                      <span className="text-xs font-semibold text-gray-600">Zabiha Status:</span>
+                    </div>
+                    <div className="ml-5 flex flex-col gap-1">
+                      {localRestaurant.zabihaChicken && (
+                        <span className="text-xs text-gray-600">✓ Chicken</span>
+                      )}
+                      {localRestaurant.zabihaLamb && (
+                        <span className="text-xs text-gray-600">✓ Lamb</span>
+                      )}
+                      {localRestaurant.zabihaBeef && (
+                        <span className="text-xs text-gray-600">✓ Beef</span>
+                      )}
+                      {localRestaurant.zabihaGoat && (
+                        <span className="text-xs text-gray-600">✓ Goat</span>
+                      )}
+                      {localRestaurant.zabihaVerified && (
+                        <span className="text-xs text-gray-500 italic">
+                          Verified: {new Date(localRestaurant.zabihaVerified).toLocaleDateString()}
+                          {localRestaurant.zabihaVerifiedBy && (
+                            <span className="block text-xs text-gray-500">
+                              By: {localRestaurant.zabihaVerifiedBy}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
-                {restaurant.hasOutdoorSeating && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                {localRestaurant.hasOutdoorSeating && (
+                  <div className="flex items-center gap-1">
                     <SunIcon className="h-4 w-4 text-yellow-600 flex-shrink-0" />
                     <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Outdoor</span>
                   </div>
                 )}
-                {restaurant.hasHighChair && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                {localRestaurant.hasHighChair && (
+                  <div className="flex items-center gap-1">
                     <UserGroupIcon className="h-4 w-4 text-purple-600 flex-shrink-0" />
                     <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">High Chairs</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                <div className="flex items-center gap-1">
                   <BeakerIcon className="h-4 w-4 text-amber-600 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap" data-testid={`restaurant-alcohol-${restaurant.id}`}>
-                    {restaurant.servesAlcohol ? 'Serves Alcohol' : 'No Alcohol'}
+                  <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap" data-testid={`restaurant-alcohol-${localRestaurant.id}`}>
+                    {localRestaurant.servesAlcohol ? 'Serves Alcohol' : 'No Alcohol'}
                   </span>
                 </div>
-                {restaurant.isFullyHalal && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full">
+                {localRestaurant.isFullyHalal && (
+                  <div className="flex items-center gap-1">
                     <CheckBadgeIcon className="h-4 w-4 text-green-600 flex-shrink-0" />
                     <span className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">Fully Halal</span>
                   </div>
@@ -129,14 +171,14 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                   e.stopPropagation();
                   window.open(
                     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${restaurant.name} ${restaurant.address}`
+                      `${localRestaurant.name} ${localRestaurant.address}`
                     )}`,
                     '_blank'
                   );
                 }}
-                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-green-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-green-50"
+                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-green-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-green-50 border border-gray-200"
                 title="View on Maps"
-                data-testid={`restaurant-map-icon-${restaurant.id}`}
+                data-testid={`restaurant-map-icon-${localRestaurant.id}`}
               >
                 <MapPinIcon className="h-5 w-5 mx-auto" />
               </button>
@@ -145,20 +187,25 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                   e.stopPropagation();
                   setIsCommentModalOpen(true);
                 }}
-                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-blue-50"
+                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-blue-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-blue-50 border border-gray-200 relative"
                 title="Comments"
-                data-testid={`restaurant-comment-icon-${restaurant.id}`}
+                data-testid={`restaurant-comment-icon-${localRestaurant.id}`}
               >
                 <ChatBubbleLeftIcon className="h-5 w-5 mx-auto" />
+                {localRestaurant.commentCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {localRestaurant.commentCount}
+                  </span>
+                )}
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsReportModalOpen(true);
                 }}
-                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-red-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-red-50"
+                className="flex-1 sm:flex-initial p-2 text-gray-600 hover:text-red-600 transition-colors cursor-pointer rounded-lg hover:bg-white sm:hover:bg-red-50 border border-gray-200"
                 title="Report Issue"
-                data-testid={`restaurant-report-icon-${restaurant.id}`}
+                data-testid={`restaurant-report-icon-${localRestaurant.id}`}
               >
                 <FlagIcon className="h-5 w-5 mx-auto" />
               </button>
@@ -171,7 +218,7 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-4">
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    `${restaurant.name} ${restaurant.address}`
+                    `${localRestaurant.name} ${localRestaurant.address}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -181,7 +228,7 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
                 </a>
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                    `${restaurant.name} ${restaurant.address}`
+                    `${localRestaurant.name} ${localRestaurant.address}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -200,8 +247,9 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
           <CommentModal
             isOpen={isCommentModalOpen}
             onClose={() => setIsCommentModalOpen(false)}
-            restaurantId={restaurant.id}
-            restaurantName={restaurant.name}
+            restaurantId={localRestaurant.id}
+            restaurantName={localRestaurant.name}
+            onCommentAdded={handleCommentAdded}
           />
         )}
 
@@ -209,8 +257,8 @@ export default function RestaurantListItem({ restaurant }: RestaurantListItemPro
           <ReportModal
             isOpen={isReportModalOpen}
             onClose={() => setIsReportModalOpen(false)}
-            restaurantId={restaurant.id}
-            restaurantName={restaurant.name}
+            restaurantId={localRestaurant.id}
+            restaurantName={localRestaurant.name}
           />
         )}
       </Suspense>

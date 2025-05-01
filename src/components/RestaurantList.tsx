@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Restaurant, CuisineType } from '@/types';
+import { Restaurant } from '@/types';
+import { CuisineType } from '@prisma/client';
 import RestaurantListItem from './RestaurantListItem';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { formatCuisineName } from '@/utils/formatCuisineName';
@@ -35,6 +36,21 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
     });
     if (node) observer.current.observe(node);
   }, [isLoading, hasMore]);
+  const [selectedFeatures, setSelectedFeatures] = useState<{
+    isZabiha: boolean;
+    hasPrayerRoom: boolean;
+    hasHighChair: boolean;
+    hasOutdoorSeating: boolean;
+    isFullyHalal: boolean;
+    servesAlcohol: boolean;
+  }>({
+    isZabiha: false,
+    hasPrayerRoom: false,
+    hasHighChair: false,
+    hasOutdoorSeating: false,
+    isFullyHalal: false,
+    servesAlcohol: false,
+  });
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -66,9 +82,16 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
       const matchesSearch = !searchQuery || 
         restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         restaurant.cuisineType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase());
+        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.address.match(/\b\d{5}\b/)?.[0]?.includes(searchQuery);
       
-      return matchesCuisine && matchesPriceRange && matchesSearch;
+      // Check if restaurant matches selected features
+      const matchesFeatures = Object.entries(selectedFeatures).every(([feature, isSelected]) => {
+        if (!isSelected) return true; // Skip if feature is not selected
+        return restaurant[feature as keyof typeof selectedFeatures];
+      });
+      
+      return matchesCuisine && matchesPriceRange && matchesSearch && matchesFeatures;
     }).sort((a, b) => {
       switch (sortBy) {
         case 'name-asc':
@@ -91,15 +114,22 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
     const endIndex = page * ITEMS_PER_PAGE;
     setDisplayedRestaurants(filteredRestaurants.slice(startIndex, endIndex));
     setHasMore(endIndex < filteredRestaurants.length);
-  }, [restaurants, searchQuery, selectedCuisine, selectedPriceRange, sortBy, page]);
+  }, [restaurants, searchQuery, selectedCuisine, selectedPriceRange, sortBy, page, selectedFeatures]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCuisine, selectedPriceRange, sortBy]);
+  }, [searchQuery, selectedCuisine, selectedPriceRange, sortBy, selectedFeatures]);
 
   // Add state for filtered count
   const [filteredCount, setFilteredCount] = useState(0);
+
+  const handleFeatureChange = (feature: keyof typeof selectedFeatures) => {
+    setSelectedFeatures(prev => ({
+      ...prev,
+      [feature]: !prev[feature]
+    }));
+  };
 
   if (error) {
     return (
@@ -118,8 +148,8 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, cuisine, or location"
-              className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400"
+              placeholder="Search by name, cuisine, city, or zip code"
+              className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400 text-xs sm:text-sm"
               data-testid="search-input"
             />
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -192,6 +222,69 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Features Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Features
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <label className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.isZabiha}
+                    onChange={() => handleFeatureChange('isZabiha')}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-700">Zabiha</span>
+                </label>
+                <label className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.hasPrayerRoom}
+                    onChange={() => handleFeatureChange('hasPrayerRoom')}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-700">Prayer Space</span>
+                </label>
+                <label className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.hasHighChair}
+                    onChange={() => handleFeatureChange('hasHighChair')}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-700">High Chairs</span>
+                </label>
+                <label className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.hasOutdoorSeating}
+                    onChange={() => handleFeatureChange('hasOutdoorSeating')}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-700">Outdoor Seating</span>
+                </label>
+                <label className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.isFullyHalal}
+                    onChange={() => handleFeatureChange('isFullyHalal')}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-700">Fully Halal</span>
+                </label>
+                <label className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedFeatures.servesAlcohol}
+                    onChange={() => handleFeatureChange('servesAlcohol')}
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="text-sm text-gray-700">Serves Alcohol</span>
+                </label>
+              </div>
             </div>
           </div>
         )}

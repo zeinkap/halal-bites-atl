@@ -1,84 +1,13 @@
 import { PrismaClient, CuisineType, PriceRange, Prisma, Restaurant } from '@prisma/client';
 import { createId } from '@paralleldrive/cuid2';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 
 const prisma = new PrismaClient();
-
-// Track restaurants added through production
-const PROD_ADDED_RESTAURANTS: Array<{
-  name: string;
-  data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>;
-}> = [];
 
 // Helper function to identify test restaurants
 function isTestRestaurant(name: string): boolean {
   // Test restaurants have timestamps and UUIDs in their names
   // Pattern: "Test Restaurant {timestamp}-{uuid}" or "Duplicate Restaurant {timestamp}-{uuid}"
   return /^(Test|Duplicate) Restaurant \d+-[\w-]+$/.test(name);
-}
-
-// Function to add a restaurant to production seed
-export async function addToProdSeed(restaurant: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
-  // Only add restaurants in production environment
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('Skipping seed addition - not in production environment');
-    return;
-  }
-
-  try {
-    // Check if restaurant already exists in PROD_ADDED_RESTAURANTS
-    const exists = PROD_ADDED_RESTAURANTS.some(r => r.name === restaurant.name);
-    if (exists) {
-      console.log(`Restaurant ${restaurant.name} already exists in production seed`);
-      return;
-    }
-
-    // Add to tracking array
-    PROD_ADDED_RESTAURANTS.push({
-      name: restaurant.name,
-      data: restaurant
-    });
-
-    // Update this file with the new restaurant
-    const filePath = path.join(process.cwd(), 'prisma', 'seed.ts');
-    let content = await fs.readFile(filePath, 'utf8');
-
-    // Find the position before the summary logging
-    const summaryPosition = content.indexOf('// Log summary');
-    if (summaryPosition === -1) {
-      throw new Error('Could not find position to insert new restaurant');
-    }
-
-    // Create the new restaurant entry
-    const newEntry = `
-    await upsertRestaurant('${restaurant.name}', {
-      name: '${restaurant.name}',
-      cuisineType: CuisineType.${restaurant.cuisineType},
-      address: '${restaurant.address}',
-      description: '${(restaurant.description || '').replace(/'/g, "\\'")}',
-      priceRange: PriceRange.${restaurant.priceRange},
-      hasPrayerRoom: ${restaurant.hasPrayerRoom},
-      hasOutdoorSeating: ${restaurant.hasOutdoorSeating},
-      isZabiha: ${restaurant.isZabiha},
-      hasHighChair: ${restaurant.hasHighChair},
-      servesAlcohol: ${restaurant.servesAlcohol},
-      isFullyHalal: ${restaurant.isFullyHalal},
-      imageUrl: '${restaurant.imageUrl}'
-    });
-`;
-
-    // Insert the new entry before the summary
-    content = content.slice(0, summaryPosition) + newEntry + content.slice(summaryPosition);
-
-    // Write back to file
-    await fs.writeFile(filePath, content, 'utf8');
-    console.log(`✓ Added ${restaurant.name} to seed file`);
-
-  } catch (error) {
-    console.error(`Failed to add ${restaurant.name} to seed:`, error);
-    throw error;
-  }
 }
 
 async function main() {
@@ -123,11 +52,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Kimchi Red - Alpharetta', {
@@ -138,11 +73,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant("Olomi's Grill", {
@@ -153,11 +94,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Spices Hut Food Court', {
@@ -168,11 +115,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Pista House Alpharetta', {
@@ -183,11 +136,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Namak', {
@@ -198,11 +157,17 @@ async function main() {
       priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Biryani House Atlanta', {
@@ -213,11 +178,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Al Zein Shawarma & Mediterranean Grill', {
@@ -228,11 +199,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Kimchi Red - Johns Creek', {
@@ -243,11 +220,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Cafe Efendi Mediterranean Restaurant', {
@@ -258,11 +241,17 @@ async function main() {
       priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Karachi Broast & Grill', {
@@ -273,11 +262,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: true,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Zyka: The Taste | Indian Restaurant | Decatur', {
@@ -288,11 +283,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('The Halal Guys', {
@@ -303,11 +304,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant("Khan's Kitchen", {
@@ -318,11 +325,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     // Now adding the cafes...
@@ -334,11 +347,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: true,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('MOTW Coffee and Pastries', {
@@ -349,11 +368,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: true,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: true,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: true,
+      zabihaLamb: false,
+      zabihaBeef: true,
+      zabihaGoat: false,
+      zabihaVerified: new Date('2025-04-30'),
+      zabihaVerifiedBy: 'Mudassir Uddin'
     });
 
     await upsertRestaurant('967 Coffee Co', {
@@ -364,11 +389,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Baladi Coffee', {
@@ -379,416 +410,584 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Jerusalem Bakery & Grill', {
       name: 'Jerusalem Bakery & Grill',
       cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '11235 Alpharetta Hwy, Roswell, GA 30076',
-      description: 'Authentic Middle Eastern bakery and restaurant known for their fresh pita bread, manakeesh, and traditional Middle Eastern dishes. Features an extensive bakery selection with fresh pastries, bread, and groceries.',
+      address: '585 Franklin Gateway SE, Marietta, GA 30067',
+      description: 'Authentic Middle Eastern bakery and grill.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Bismillah Cafe', {
       name: 'Bismillah Cafe',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '4022 Buford Hwy NE, Atlanta, GA 30345',
-      description: 'Popular spot for authentic Pakistani street food and traditional dishes. Known for their chai, paratha rolls, and authentic South Asian breakfast items.',
-      priceRange: PriceRange.LOW,
+      description: 'Traditional Indian and Pakistani cuisine.',
+      priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: false,
+      hasHighChair: true,
       servesAlcohol: false,
-      isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Merhaba Shawarma', {
       name: 'Merhaba Shawarma',
       cuisineType: CuisineType.MEDITERRANEAN,
-      address: '4188 E Ponce de Leon Ave, Clarkston, GA 30021',
-      description: 'Authentic Mediterranean shawarma and kebab restaurant offering fresh, halal meats and homemade sauces.',
+      address: '2960 Buford Hwy NE, Atlanta, GA 30329',
+      description: 'Mediterranean street food with authentic shawarma and falafel.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Delbar - Old Milton', {
       name: 'Delbar - Old Milton',
       cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '4120 Old Milton Pkwy, Alpharetta, GA 30005',
-      description: 'Modern Middle Eastern restaurant offering a fresh take on traditional dishes. Features family-style dining with an emphasis on Persian and Mediterranean flavors.',
+      address: '5486 Chamblee Dunwoody Rd, Atlanta, GA 30338',
+      description: 'Modern Middle Eastern cuisine with a contemporary twist.',
       priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Sabri Kabab House', {
       name: 'Sabri Kabab House',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '6075 Singleton Rd, Norcross, GA 30093',
-      description: 'Traditional Indian fare & sweets in a counter-serve setup with vibrant orange walls & blue booths.',
+      address: '2895 N Decatur Rd, Decatur, GA 30033',
+      description: 'Authentic Pakistani grilled specialties and curries.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Al-Amin Supermarket & Restaurant', {
       name: 'Al-Amin Supermarket & Restaurant',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '5466 Buford Hwy NE, Doraville, GA 30340',
-      description: 'Family-owned Bangladeshi and Indian restaurant serving authentic dishes. Known for their biryani, curries, and fresh tandoor items.',
+      address: '3675 Satellite Blvd, Duluth, GA 30096',
+      description: 'Combination grocery store and restaurant serving authentic South Asian cuisine.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('ZamZam Halal Supermarket & Restaurant', {
       name: 'ZamZam Halal Supermarket & Restaurant',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '5432 Buford Hwy NE, Doraville, GA 30340',
-      description: 'Authentic Pakistani and Indian cuisine serving traditional dishes. Known for their biryani, kebabs, and fresh naan bread.',
+      address: '4027 Buford Hwy NE, Atlanta, GA 30345',
+      description: 'Grocery store with a restaurant serving fresh Indian and Pakistani dishes.',
       priceRange: PriceRange.LOW,
-      hasPrayerRoom: true,
+      hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Kabul Kabob', {
       name: 'Kabul Kabob',
       cuisineType: CuisineType.AFGHAN,
-      address: '1475 Holcomb Bridge Rd, Roswell, GA 30076',
-      description: 'Afghan restaurant specializing in authentic kabobs, rice dishes, and traditional Afghan cuisine. Features fresh-baked Afghan bread.',
-      priceRange: PriceRange.MEDIUM,
+      address: '3125 Peachtree Industrial Blvd, Duluth, GA 30097',
+      description: 'Authentic Afghan cuisine and grilled specialties.',
+      priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
+      hasOutdoorSeating: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Al Madina Grocery & Restaurant', {
       name: 'Al Madina Grocery & Restaurant',
-      cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '5345 Jimmy Carter Blvd suite c, Norcross, GA 30093',
-      description: 'Middle Eastern restaurant and grocery store serving fresh shawarma, falafel, and grilled items. Features an in-house bakery and grocery section.',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '5290 Jimmy Carter Blvd, Norcross, GA 30093',
+      description: 'Grocery store with authentic restaurant.',
       priceRange: PriceRange.LOW,
-      hasPrayerRoom: true,
+      hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Chinese Dhaba', {
       name: 'Chinese Dhaba',
       cuisineType: CuisineType.CHINESE,
-      address: '5675 Jimmy Carter Blvd, Norcross, GA 30071',
-      description: 'Chinese halal restaurant serving authentic Chinese cuisine made with halal ingredients. Known for their hand-pulled noodles and lamb dishes.',
+      address: '1713 Church St, Decatur, GA 30033',
+      description: 'Indo-Chinese fusion cuisine.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
+      hasOutdoorSeating: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Star Pizza', {
       name: 'Star Pizza',
       cuisineType: CuisineType.FAST_FOOD,
-      address: '11490 Alpharetta Highway, Roswell, GA',
-      description: 'Italian pizza restaurant serving halal options. Known for their pizza varieties and Italian specialties.',
-      priceRange: PriceRange.MEDIUM,
+      address: '2200 Lawrenceville Hwy, Decatur, GA 30033',
+      description: 'Halal pizza and wings.',
+      priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
-      hasHighChair: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('PONKO Chicken - Alpharetta', {
       name: 'PONKO Chicken - Alpharetta',
       cuisineType: CuisineType.FAST_FOOD,
-      address: '220 South Main Street, Alpharetta, GA',
-      description: 'Japanese-American fusion restaurant specializing in halal chicken tenders with unique Asian-inspired sauces. Known for their crispy chicken and signature PONKO sauce.',
-      priceRange: PriceRange.LOW,
+      address: '2100 Ray\'s Way, Alpharetta, GA 30009',
+      description: 'Japanese-inspired chicken restaurant.',
+      priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: true,
+      servesAlcohol: false,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Express Burger & Grill', {
       name: 'Express Burger & Grill',
       cuisineType: CuisineType.MEDITERRANEAN,
-      address: '7291 North Point Parkway, Alpharetta, GA',
-      description: 'Mediterranean fusion restaurant offering halal burgers, grilled specialties, and Mediterranean favorites. Known for their fresh ingredients and generous portions.',
-      priceRange: PriceRange.MEDIUM,
+      address: '2100 Pleasant Hill Rd, Duluth, GA 30096',
+      description: 'Mediterranean grill with burgers.',
+      priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Moctezuma Mexican Grill', {
       name: 'Moctezuma Mexican Grill',
       cuisineType: CuisineType.MEXICAN,
-      address: '13020 Morris Road, Alpharetta, GA',
-      description: 'Mexican restaurant offering halal options. Features authentic Mexican dishes and specialties made with halal meats.',
+      address: '6450 Powers Ferry Rd, Sandy Springs, GA 30339',
+      description: 'Mexican grill with halal options.',
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: true,
+      hasOutdoorSeating: true,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Adana Mediterranean Grill', {
       name: 'Adana Mediterranean Grill',
       cuisineType: CuisineType.MEDITERRANEAN,
-      address: '585 Franklin Gateway Southeast, unit B-3, Marietta, GA 30067',
-      description: 'A Turkish and Greek spot with an entirely halal menu. Choose from a selection of mezze, grilled meats, and baked foods. The adana kebap, made with ground beef and lamb, is among the best around.',
+      address: '4500 Satellite Blvd, Duluth, GA 30096',
+      description: 'Turkish and Mediterranean cuisine.',
       priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: true,
-      hasPrayerRoom: true,
       hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      servesAlcohol: true,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Dil Bahar Cafe & Market', {
       name: 'Dil Bahar Cafe & Market',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '5825 Glenridge Drive Northeast, Sandy Springs, GA 30328',
-      description: 'Beloved local Pakistani bakery cafe serving Karachi-style chaat, Masala fries, panipuri, and samosas. Try the chicken roll, bun kabab, or kachori with sabzi. Features desserts like shahi tukray and refreshing falooda.',
+      address: '4030 Jimmy Carter Blvd, Norcross, GA 30093',
+      description: 'Indian and Pakistani cafe with market.',
       priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
-      hasPrayerRoom: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Briskfire BBQ', {
       name: 'Briskfire BBQ',
       cuisineType: CuisineType.OTHER,
-      address: '900 Indian Trail Lilburn Road Northwest, Lilburn, GA 30047',
-      description: 'A unique halal barbecue spot offering beef brisket and short ribs. The Lilburn restaurant is completely halal and has a robust selection of burgers, sandwiches, and smoked meats.',
+      address: '2100 Roswell Rd, Marietta, GA 30062',
+      description: 'Halal BBQ restaurant.',
       priceRange: PriceRange.MEDIUM,
-      hasOutdoorSeating: true,
-      isZabiha: true,
       hasPrayerRoom: false,
+      hasOutdoorSeating: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Stone Creek Halal Pizza', {
       name: 'Stone Creek Halal Pizza',
       cuisineType: CuisineType.FAST_FOOD,
-      address: '5330 Lilburn Stone Mountain Rd #108, Lilburn, GA 30047',
-      description: 'The best bet for halal pizza, subs, and wings in metro Atlanta. Try their signature spicy tandoori chicken pizza topped with green peppers, onions, and mozzarella.',
+      address: '5370 Stone Creek Pkwy, Atlanta, GA 30331',
+      description: 'Halal pizza restaurant.',
       priceRange: PriceRange.LOW,
-      hasOutdoorSeating: false,
-      isZabiha: true,
       hasPrayerRoom: false,
-      hasHighChair: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Salsa Taqueria & Wings', {
       name: 'Salsa Taqueria & Wings',
       cuisineType: CuisineType.MEXICAN,
-      address: '3799 Buford Hwy NE, Brookhaven, GA 30329',
-      description: 'A counter-service taqueria serving a halal menu of Mexican-American comfort foods, including beef and chicken birria tacos, tamales, wings, tortas, and burgers. Features special weekend menu items.',
+      address: '2730 Buford Hwy NE, Atlanta, GA 30324',
+      description: 'Mexican restaurant with halal wings.',
       priceRange: PriceRange.LOW,
-      hasOutdoorSeating: true,
-      isZabiha: true,
       hasPrayerRoom: false,
+      hasOutdoorSeating: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Auntie Vees Kitchen', {
       name: 'Auntie Vees Kitchen',
       cuisineType: CuisineType.OTHER,
-      address: '209 Edgewood Avenue Northeast, Atlanta, GA 30303',
-      description: 'A fusion of soul food classics and Caribbean flavors in halal dishes. Famous for jerk chicken fried rice, oxtail dinner, and specialty mac and cheese bowls like the Kamalee with jerk chicken and house sauce.',
-      priceRange: PriceRange.MEDIUM,
-      hasOutdoorSeating: true,
-      isZabiha: true,
+      address: '4650 Jimmy Carter Blvd, Norcross, GA 30093',
+      description: 'Home-style halal cooking.',
+      priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
+      hasOutdoorSeating: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Springreens at Community Cafe', {
       name: 'Springreens at Community Cafe',
       cuisineType: CuisineType.CAFE,
-      address: '566 Fayetteville Rd SE, Atlanta, GA 30316',
-      description: 'A cafe near East Lake Golf Club serving halal Southern comfort foods. Features chicken plates with black eyed peas, turkey meatloaf, halal burgers, seafood gumbo, and daily hot bar specials.',
+      address: '1110 West Peachtree St NW, Atlanta, GA 30309',
+      description: 'Community cafe with halal options.',
       priceRange: PriceRange.LOW,
-      hasOutdoorSeating: true,
-      isZabiha: true,
       hasPrayerRoom: false,
+      hasOutdoorSeating: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Mukja Korean Fried Chicken', {
       name: 'Mukja Korean Fried Chicken',
       cuisineType: CuisineType.OTHER,
       address: '933 Peachtree St NE, Atlanta, GA 30309',
-      description: 'Modern Korean restaurant specializing in Korean-style fried chicken with halal options. Known for their crispy double-fried chicken with various sauce options including soy garlic, sweet spicy, and honey butter. Also serves Korean fusion dishes and traditional sides.',
+      description: 'Korean fried chicken restaurant.',
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
-      servesAlcohol: false,
+      servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Baraka Shawarma Atlanta', {
       name: 'Baraka Shawarma Atlanta',
       cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '68 Walton St NW, Atlanta, GA 30303',
-      description: 'Downtown Atlanta\'s premier halal shawarma spot, offering authentic Middle Eastern street food. Famous for their freshly carved shawarma wraps, platters, and homemade sauces. Features a selection of falafel, hummus, and traditional Middle Eastern sides.',
-      priceRange: PriceRange.LOW,
+      address: '3529 Buford Hwy NE, Atlanta, GA 30329',
+      description: 'Middle Eastern shawarma restaurant.',
+      priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Botiwalla by Chai Pani', {
       name: 'Botiwalla by Chai Pani',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: 'Ponce City Market, 675 Ponce De Leon Ave NE n134, Atlanta, GA 30308',
-      description: 'Modern Indian street food restaurant in Ponce City Market. Specializes in grilled kababs, rolls, and chaat with halal meat options. Features a creative menu inspired by Indian street food vendors and tea houses, known for their SPDP (Sev Potato Dahi Puri) and chicken tikka roll.',
-      priceRange: PriceRange.LOW,
+      address: '675 Ponce De Leon Ave NE, Atlanta, GA 30308',
+      description: 'Modern Indian street food.',
+      priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Dantanna\'s', {
       name: 'Dantanna\'s',
       cuisineType: CuisineType.OTHER,
-      address: '3400 Around Lenox Rd NE #304, Atlanta, GA 30326',
-      description: 'Upscale sports restaurant offering halal steaks and seafood. Known for their premium cuts of halal beef, fresh seafood selections, and sophisticated atmosphere. Features a diverse menu including gourmet burgers, fresh salads, and signature dishes.',
+      address: '3400 Around Lenox Rd NE, Atlanta, GA 30326',
+      description: 'Upscale sports bar with halal options.',
       priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Jaffa Restaurant Atl (Halal)', {
       name: 'Jaffa Restaurant Atl (Halal)',
       cuisineType: CuisineType.MEDITERRANEAN,
-      address: '10684 Alpharetta Hwy #500, Roswell, GA 30076',
-      description: 'The Jaffa Restaurant may be a new spot but is backed by veteran restaurateurs behind Atlanta\'s Mediterranean and Middle Eastern food scene. It is a family-owned and operated restaurant aiming to bring nothing but the best to the table.',
+      address: '2200 Peachtree Rd NW, Atlanta, GA 30309',
+      description: 'Mediterranean cuisine with authentic flavors.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Talkin\' Tacos Buckhead', {
       name: 'Talkin\' Tacos Buckhead',
       cuisineType: CuisineType.MEXICAN,
-      address: '2625 Piedmont Rd NE Ste 34A, Atlanta, GA 30324',
-      description: 'Known for Taco, Rice Bowl, Refried Beans, Burritos, Shrimp, Quesadilla, Carne Asada Tacos, Taco Salad, Nachos, Birria Tacos, Mexican Food, Tres Leches Cake, Churros, and Pico De Gallo and Chips',
+      address: '3167 Peachtree Rd NE, Atlanta, GA 30305',
+      description: 'Mexican street tacos with halal options.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Ariana Kabob House', {
@@ -799,11 +998,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Hyderabad House Atlanta - Biryani Place', {
@@ -814,11 +1019,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Asma\'s Cuisine', {
@@ -829,11 +1040,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Three Buddies', {
@@ -844,11 +1061,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Alif Cafe', {
@@ -859,11 +1082,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('NaanStop', {
@@ -874,11 +1103,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Mashawi Mediterranean', {
@@ -889,11 +1124,17 @@ async function main() {
       priceRange: PriceRange.HIGH,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Laghman Express', {
@@ -904,11 +1145,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Kabob Land', {
@@ -919,11 +1166,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: false,
       servesAlcohol: true,
       isFullyHalal: false,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Ali N\' One Zabiha Halal Kitchen', {
@@ -934,11 +1187,17 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: true,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Nature Village Restaurant', {
@@ -949,11 +1208,17 @@ async function main() {
       priceRange: PriceRange.MEDIUM,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Halal Pizza and cafe', {
@@ -964,26 +1229,38 @@ async function main() {
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
-      isZabiha: false,
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Bawarchi Biryanis Atlanta', {
       name: 'Bawarchi Biryanis Atlanta',
-      cuisineType: CuisineType.MIDDLE_EASTERN,
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '6627-A Roswell Rd NE, Sandy Springs, GA 30328',
       description: '',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
-      isZabiha: false,
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Shah\'s Halal Food', {
@@ -998,7 +1275,13 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Lahore Grill', {
@@ -1013,7 +1296,13 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('AZ Pizza, Wings & Fish (Halal)', {
@@ -1028,7 +1317,13 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
 
     await upsertRestaurant('Scoville Hot Chicken - Buckhead', {
@@ -1043,9 +1338,187 @@ async function main() {
       hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png'
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
     });
     
+    await upsertRestaurant('Desi Spice', {
+      name: 'Desi Spice',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '1248 Clairmont Rd, Decatur, GA 30030',
+      description: 'Authentic Indian and Pakistani cuisine with a modern twist.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Pita Palace Mediterranean Grill', {
+      name: 'Pita Palace Mediterranean Grill',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '4800 Briarcliff Rd NE, Atlanta, GA 30345',
+      description: 'Mediterranean grill offering fresh pitas, shawarma, and falafel.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Karachi Grill & BBQ', {
+      name: 'Karachi Grill & BBQ',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '1960 Day Dr SW, Atlanta, GA 30331',
+      description: 'Pakistani BBQ restaurant specializing in grilled meats and traditional dishes.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Halal Guys - Midtown', {
+      name: 'Halal Guys - Midtown',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '95 8th St NW, Atlanta, GA 30309',
+      description: 'Famous New York-based halal food chain known for their platters and sandwiches.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Chai Pani', {
+      name: 'Chai Pani',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '406 W Ponce de Leon Ave, Decatur, GA 30030',
+      description: 'Modern Indian street food restaurant with creative takes on traditional dishes.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Rumi\'s Kitchen - Sandy Springs', {
+      name: 'Rumi\'s Kitchen - Sandy Springs',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '6112 Roswell Rd, Atlanta, GA 30328',
+      description: 'Upscale Persian restaurant known for their kabobs and rice dishes.',
+      priceRange: PriceRange.HIGH,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Cafe Istanbul', {
+      name: 'Cafe Istanbul',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '1850 Lawrenceville Hwy, Decatur, GA 30033',
+      description: 'Authentic Turkish cuisine with a cozy atmosphere.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Mediterranean Grill - Decatur', {
+      name: 'Mediterranean Grill - Decatur',
+      cuisineType: CuisineType.MEDITERRANEAN,
+      address: '1394 Church St, Decatur, GA 30030',
+      description: 'Mediterranean restaurant serving authentic halal dishes.',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    // Note: This section is for manually verified restaurants only.
+    // UI-added restaurants should NOT be added here - they are stored in the database only.
+    // This file is for maintaining a backup of verified restaurant data.
+
     // Log summary
     console.log('\nSeed Summary:');
     console.log(`Total restaurants processed: ${successCount + errorCount + skippedCount}`);

@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { uploadImage } from '@/lib/uploadImage';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
+
+const RESTAURANTS_CACHE_KEY = 'restaurants:all';
 
 // Get comments for a restaurant
 export async function GET(request: Request) {
@@ -95,6 +103,9 @@ export async function POST(request: Request) {
       },
     });
 
+    // Clear the restaurants cache to update comment counts
+    await redis.del(RESTAURANTS_CACHE_KEY);
+
     return NextResponse.json(comment);
   } catch (error) {
     // Enhanced error logging
@@ -133,6 +144,9 @@ export async function DELETE(request: Request) {
     await prisma.comment.delete({
       where: { id },
     });
+
+    // Clear the restaurants cache to update comment counts
+    await redis.del(RESTAURANTS_CACHE_KEY);
 
     return NextResponse.json({ success: true });
   } catch (error) {

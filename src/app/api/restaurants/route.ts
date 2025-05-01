@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CuisineType, PriceRange } from '@prisma/client';
-import { appendRestaurantToSeed } from '@/utils/updateSeedFile';
-import { appendToProdSeed } from '@/utils/updateProdSeedFile';
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
@@ -26,14 +24,28 @@ export async function GET() {
     await prisma.$connect();
     const restaurants = await prisma.restaurant.findMany({
       orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { comments: true }
+        }
+      }
+    });
+
+    // Transform the data to include commentCount
+    const restaurantsWithCommentCount = restaurants.map(restaurant => {
+      const { _count, ...rest } = restaurant;
+      return {
+        ...rest,
+        commentCount: _count.comments
+      };
     });
 
     // Store in cache
-    await redis.set(RESTAURANTS_CACHE_KEY, restaurants, {
+    await redis.set(RESTAURANTS_CACHE_KEY, restaurantsWithCommentCount, {
       ex: CACHE_TTL
     });
 
-    return NextResponse.json(restaurants);
+    return NextResponse.json(restaurantsWithCommentCount);
   } catch (error) {
     console.error('Error fetching restaurants:', error);
     // Return an empty array instead of an error object to prevent frontend mapping errors
@@ -46,79 +58,55 @@ export async function GET() {
 // Add a new restaurant
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const {
-      name,
-      cuisineType,
-      address,
-      description,
-      priceRange,
-      hasPrayerRoom,
-      hasOutdoorSeating,
-      isZabiha,
-      hasHighChair,
-      servesAlcohol,
-      isFullyHalal,
-      imageUrl,
-    } = body;
+    const data = await request.json();
 
     // Validate required fields
-    if (!name || !cuisineType || !address || !priceRange) {
-      return new Response(
-        JSON.stringify({
-          error: 'Missing required fields: name, cuisineType, address, priceRange',
-        }),
-        { status: 400 }
-      );
-    }
-
-    // Validate enum values
-    if (!Object.values(CuisineType).includes(cuisineType)) {
+    if (!data.name || !data.address || !data.cuisineType || !data.priceRange) {
       return NextResponse.json(
-        { error: 'Invalid cuisine type' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    if (!Object.values(PriceRange).includes(priceRange)) {
-      return NextResponse.json(
-        { error: 'Invalid price range' },
-        { status: 400 }
-      );
-    }
-
+    // Create restaurant in database
     const restaurant = await prisma.restaurant.create({
       data: {
-        name,
-        cuisineType,
-        address,
-        description,
-        priceRange,
-        hasPrayerRoom,
-        hasOutdoorSeating,
-        isZabiha,
-        hasHighChair,
-        servesAlcohol,
-        isFullyHalal,
-        imageUrl,
-      },
+        id: data.id,
+        name: data.name,
+        cuisineType: data.cuisineType as CuisineType,
+        address: data.address,
+        description: data.description || '',
+        priceRange: data.priceRange as PriceRange,
+        hasPrayerRoom: data.hasPrayerRoom || false,
+        hasOutdoorSeating: data.hasOutdoorSeating || false,
+        isZabiha: data.isZabiha || false,
+        hasHighChair: data.hasHighChair || false,
+        servesAlcohol: data.servesAlcohol || false,
+        isFullyHalal: data.isFullyHalal || false,
+        imageUrl: data.imageUrl || '/images/logo.png',
+        zabihaChicken: data.zabihaChicken || false,
+        zabihaLamb: data.zabihaLamb || false,
+        zabihaBeef: data.zabihaBeef || false,
+        zabihaGoat: data.zabihaGoat || false,
+        zabihaVerified: data.zabihaVerified || null,
+        zabihaVerifiedBy: data.zabihaVerifiedBy || null
+      }
     });
 
-    // Invalidate cache after adding new restaurant
+    // Clear the cache to ensure fresh data
     await redis.del(RESTAURANTS_CACHE_KEY);
-
-    // Append to appropriate seed file based on environment
-    if (process.env.NODE_ENV === 'production') {
-      await appendToProdSeed(restaurant);
-    } else {
-      await appendRestaurantToSeed(restaurant);
-    }
 
     return NextResponse.json(restaurant);
   } catch (error) {
     console.error('Error creating restaurant:', error);
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: `Error creating restaurant: ${error.message}` },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Failed to create restaurant' },
+      { error: 'Error creating restaurant' },
       { status: 500 }
     );
   }
@@ -130,19 +118,25 @@ export async function PATCH(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     const body = await request.json();
-    const {
-      name,
-      cuisineType,
-      address,
-      description,
+    const { 
+      name, 
+      cuisineType, 
+      address, 
       priceRange,
+      description,
       hasPrayerRoom,
       hasOutdoorSeating,
       isZabiha,
       hasHighChair,
       servesAlcohol,
       isFullyHalal,
-      imageUrl,
+      // New Zabiha fields
+      zabihaChicken,
+      zabihaLamb,
+      zabihaBeef,
+      zabihaGoat,
+      zabihaVerified,
+      zabihaVerifiedBy
     } = body;
 
     if (!id) {
@@ -167,25 +161,31 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const updatedRestaurant = await prisma.restaurant.update({
+    const restaurant = await prisma.restaurant.update({
       where: { id },
       data: {
-        name,
-        cuisineType,
-        address,
-        description,
-        priceRange,
-        hasPrayerRoom,
-        hasOutdoorSeating,
-        isZabiha,
-        hasHighChair,
-        servesAlcohol,
-        isFullyHalal,
-        imageUrl,
+        name: name || undefined,
+        cuisineType: cuisineType || undefined,
+        address: address || undefined,
+        priceRange: priceRange || undefined,
+        description: description || undefined,
+        hasPrayerRoom: hasPrayerRoom !== undefined ? hasPrayerRoom : undefined,
+        hasOutdoorSeating: hasOutdoorSeating !== undefined ? hasOutdoorSeating : undefined,
+        isZabiha: isZabiha !== undefined ? isZabiha : undefined,
+        hasHighChair: hasHighChair !== undefined ? hasHighChair : undefined,
+        servesAlcohol: servesAlcohol !== undefined ? servesAlcohol : undefined,
+        isFullyHalal: isFullyHalal !== undefined ? isFullyHalal : undefined,
+        // Add new Zabiha fields
+        zabihaChicken: zabihaChicken !== undefined ? zabihaChicken : undefined,
+        zabihaLamb: zabihaLamb !== undefined ? zabihaLamb : undefined,
+        zabihaBeef: zabihaBeef !== undefined ? zabihaBeef : undefined,
+        zabihaGoat: zabihaGoat !== undefined ? zabihaGoat : undefined,
+        zabihaVerified: zabihaVerified || undefined,
+        zabihaVerifiedBy: zabihaVerifiedBy || undefined
       },
     });
 
-    return NextResponse.json(updatedRestaurant);
+    return NextResponse.json(restaurant);
   } catch (error) {
     console.error('Error updating restaurant:', error);
     if (error instanceof Error) {
@@ -201,50 +201,4 @@ export async function PATCH(request: Request) {
   }
 }
 
-// Delete a restaurant
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Restaurant ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Test database connection first
-    await prisma.$connect();
-    
-    console.log('Attempting to delete restaurant with ID:', id);
-
-    // Delete associated comments first
-    const deletedComments = await prisma.comment.deleteMany({
-      where: { restaurantId: id }
-    });
-    console.log('Deleted associated comments:', deletedComments);
-
-    // Then delete the restaurant
-    const deletedRestaurant = await prisma.restaurant.delete({
-      where: { id }
-    });
-    console.log('Successfully deleted restaurant:', deletedRestaurant);
-
-    return NextResponse.json({ success: true, deletedRestaurant });
-  } catch (error) {
-    console.error('Error deleting restaurant:', error);
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: `Error deleting restaurant: ${error.message}` },
-        { status: 500 }
-      );
-    }
-    return NextResponse.json(
-      { error: 'Error deleting restaurant' },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
-  }
-} 
+// Delete endpoint removed - all deletions should go through the admin API 

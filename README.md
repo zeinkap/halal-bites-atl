@@ -57,6 +57,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Tailwind CSS for styling
   - React Toastify for notifications
   - Heroicons for icons
+  - NextAuth.js for authentication
 
 - **Backend:**
   - Next.js API routes
@@ -64,7 +65,8 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - PostgreSQL (Neon)
   - Cloudinary for image storage
   - Redis (Upstash) for caching
-  - Nodemailer for email notifications
+  - Nodemailer with SendGrid for email notifications
+  - Google OAuth for authentication
 
 ## Testing
 
@@ -139,6 +141,24 @@ When writing new tests:
      CLOUDINARY_CLOUD_NAME="your_cloud_name"
      CLOUDINARY_API_KEY="xxxxx"
      CLOUDINARY_API_SECRET="xxxxx"
+
+     # Redis Configuration
+     UPSTASH_REDIS_REST_URL="https://your-url.upstash.io"
+     UPSTASH_REDIS_REST_TOKEN="your-token"
+
+     # Email Configuration (SendGrid)
+     SMTP_HOST="smtp.sendgrid.net"
+     SMTP_PORT="587"
+     SMTP_USER="apikey"
+     SMTP_PASS="your_sendgrid_api_key"
+     SMTP_FROM="your_verified_sender@yourdomain.com"
+
+     # Authentication
+     GOOGLE_CLIENT_ID="your_google_oauth_client_id"
+     GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
+     NEXTAUTH_URL="http://localhost:3000"
+     NEXTAUTH_SECRET="your_nextauth_secret"
+     ADMIN_EMAIL="your_admin_email@domain.com"
      ```
 
 4. Set up the database:
@@ -161,7 +181,35 @@ The project uses two different environments:
 - **Development**: Uses a separate database for testing and development
 - **Production**: Uses the production database for live data
 
-Make sure to set up both `.env` and `.env.production` files with the appropriate database URLs and Cloudinary credentials.
+Make sure to set up both `.env` and `.env.production` files with the appropriate variables:
+
+```env
+# Database
+DATABASE_URL="your_development_database_url"
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="xxxxx"
+CLOUDINARY_API_SECRET="xxxxx"
+
+# Redis Configuration
+UPSTASH_REDIS_REST_URL="https://your-url.upstash.io"
+UPSTASH_REDIS_REST_TOKEN="your-token"
+
+# Email Configuration (SendGrid)
+SMTP_HOST="smtp.sendgrid.net"
+SMTP_PORT="587"
+SMTP_USER="apikey"
+SMTP_PASS="your_sendgrid_api_key"
+SMTP_FROM="your_verified_sender@yourdomain.com"
+
+# Authentication
+GOOGLE_CLIENT_ID="your_google_oauth_client_id"
+GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your_nextauth_secret"
+ADMIN_EMAIL="your_admin_email@domain.com"
+```
 
 ## Image Upload
 
@@ -333,15 +381,19 @@ If you notice discrepancies between Prisma Studio and the UI (e.g., updated cuis
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Redis Caching
+### Redis Caching System
 
-The application uses Upstash Redis for high-performance caching:
+The application uses Redis for high-performance caching with automatic invalidation:
 
 - **Restaurant List Caching:**
-  - 5-minute cache duration
-  - Automatic cache invalidation on updates
+  - 5-minute cache duration for public endpoints
+  - Automatic cache invalidation on:
+    - Restaurant updates
+    - Restaurant deletions
+    - New restaurant creation
   - Significant performance improvement (5x faster responses)
   - Graceful fallback to database
+  - Transaction-safe cache updates
 
 ### Setting up Redis:
 
@@ -358,9 +410,9 @@ The application uses Upstash Redis for high-performance caching:
 
 ### Cache Implementation:
 
-The caching system is implemented in the restaurant API routes:
+The caching system is implemented in both public and admin API routes:
 ```typescript
-// GET restaurants with caching
+// Public endpoint - GET restaurants with caching
 const cachedData = await redis.get(RESTAURANTS_CACHE_KEY);
 if (cachedData) {
   return NextResponse.json(cachedData);
@@ -372,8 +424,11 @@ await redis.set(RESTAURANTS_CACHE_KEY, restaurants, {
   ex: CACHE_TTL // 5 minutes
 });
 
-// Cache invalidation on updates
-await redis.del(RESTAURANTS_CACHE_KEY);
+// Admin endpoints - Automatic cache invalidation
+await prisma.$transaction([
+  // Database operations
+]);
+await redis.del(RESTAURANTS_CACHE_KEY); // Clear cache after changes
 ```
 
 ## Community Features
@@ -401,3 +456,69 @@ Both report types trigger email notifications:
 - Bug reports with attached images
 - Formatted HTML emails for better readability
 - Secure email sending via Gmail SMTP
+
+## Authentication & Admin Features
+
+The application uses NextAuth.js with Google OAuth for secure authentication:
+
+### Authentication Features
+- Google OAuth integration for secure sign-in
+- Protected admin routes and API endpoints
+- Session management with NextAuth.js
+- Admin-only access control
+- Secure admin access via `/secret-login` route
+
+### Admin Dashboard (/admin)
+The admin dashboard provides a centralized interface for administrative tasks:
+
+#### Access Control
+- Protected route with authentication checks
+- Only accessible to configured admin email
+- Secure login through `/secret-login` page
+- Automatic redirection for unauthorized users
+- Loading states during authentication checks
+
+#### How to Access Admin Interface
+1. Navigate to `/secret-login` in your browser
+2. Sign in with your Google account
+3. Only emails configured as `ADMIN_EMAIL` in environment variables will be granted access
+4. Upon successful authentication, you'll be redirected to the admin dashboard
+5. Unauthorized users will be redirected to the home page
+
+#### Features
+1. **Restaurant Management**
+   - View all restaurants with detailed information
+   - Edit restaurant details with real-time updates
+   - Delete restaurants with cascading deletions (comments and reports)
+   - Efficient caching with automatic invalidation
+   - Transaction-based operations for data integrity
+   - Responsive table layout with proper column sizing
+   - Quick actions for edit and delete operations
+
+2. **Database Management**
+   - Download complete database backups
+   - JSON export of all restaurants and comments
+   - Timestamped backup files
+   - One-click backup generation
+
+3. **Email System**
+   - Test email functionality
+   - Verify SendGrid configuration
+   - Instant feedback on email delivery
+   - Error handling with detailed messages
+
+#### Implementation
+```typescript
+// Example admin route protection
+if (!session?.user?.email || session.user.email !== process.env.ADMIN_EMAIL) {
+  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+}
+```
+
+### Admin Capabilities
+- Access to protected admin dashboard
+- Manage restaurant data with immediate updates
+- Handle user reports
+- View system backups
+- Send test emails
+- Monitor system health

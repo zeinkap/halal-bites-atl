@@ -16,14 +16,21 @@ model Restaurant {
   priceRange        PriceRange
   hasPrayerRoom     Boolean     @default(false)
   hasOutdoorSeating Boolean     @default(false)
-  isZabiha          Boolean     @default(false)
   hasHighChair      Boolean     @default(false)
   servesAlcohol     Boolean     @default(false)
   isFullyHalal      Boolean     @default(false)
+  isZabiha          Boolean     @default(false)
+  imageUrl          String?
+  zabihaChicken     Boolean     @default(false)
+  zabihaLamb        Boolean     @default(false)
+  zabihaBeef        Boolean     @default(false)
+  zabihaGoat        Boolean     @default(false)
+  zabihaVerified    DateTime?   @default(now())
+  zabihaVerifiedBy  String?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
-  imageUrl          String?
   comments          Comment[]
+  reports           Report[]
 }
 
 model Comment {
@@ -36,6 +43,29 @@ model Comment {
   updatedAt    DateTime   @updatedAt
   imageUrl     String?
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@index([restaurantId])
+}
+
+model Backup {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  filename  String
+  size      Int
+  status    String
+  error     String?
+}
+
+model Report {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  details      String
+  status       String     @default("pending") // pending, resolved, rejected
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  resolvedAt   DateTime?
+  resolvedBy   String?
 
   @@index([restaurantId])
 }

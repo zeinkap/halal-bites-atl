@@ -18,6 +18,7 @@ interface CommentModalProps {
   onClose: () => void;
   restaurantId: string;
   restaurantName: string;
+  onCommentAdded?: () => void;
 }
 
 const initialCommentState = {
@@ -26,7 +27,7 @@ const initialCommentState = {
   rating: 0
 };
 
-export default function CommentModal({ isOpen, onClose, restaurantId, restaurantName }: CommentModalProps) {
+export default function CommentModal({ isOpen, onClose, restaurantId, restaurantName, onCommentAdded }: CommentModalProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState(initialCommentState);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -141,6 +142,13 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate rating before proceeding
+    if (!newComment.rating) {
+      toast.error('Please select a rating before submitting');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -174,6 +182,9 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
         id: 'comment-success-toast',
         duration: 3000,
       });
+
+      // Call the callback to refresh parent data
+      onCommentAdded?.();
 
       // Reset form and close modal
       setIsVisible(false);
@@ -288,7 +299,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
           <form onSubmit={handleSubmit} className="space-y-4 bg-gray-50 p-4 rounded-lg" data-testid="comment-form">
             <div>
               <label htmlFor="authorName" className="block text-sm font-medium text-gray-700">
-                Your Name
+                Your Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -303,7 +314,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
 
             <div>
               <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
-                Rating
+                Rating <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center mt-1 space-x-1" data-testid="rating-stars-container">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -320,16 +331,11 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   </button>
                 ))}
               </div>
-              {!newComment.rating && (
-                <p className="mt-1 text-sm text-red-500" data-testid="rating-error">
-                  Please select a rating
-                </p>
-              )}
             </div>
 
             <div>
               <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
-                Your Comment
+                Your Comment <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="comment"
