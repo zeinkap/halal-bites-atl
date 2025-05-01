@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import EditRestaurantModal from '@/components/EditRestaurantModal';
-import { type Restaurant, CuisineType, PriceRange } from '@prisma/client';
+import { type Restaurant } from '@prisma/client';
 
 // Extend the Prisma Restaurant type for admin view
 interface AdminRestaurant extends Restaurant {
@@ -150,7 +150,11 @@ export default function RestaurantsManagement() {
                         <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 whitespace-nowrap">
                           <button
                             onClick={() => {
-                              const { commentCount, reportCount, ...restaurantData } = restaurant;
+                              const restaurantData = {
+                                ...restaurant,
+                                commentCount: undefined,
+                                reportCount: undefined
+                              };
                               setEditingRestaurant(restaurantData);
                             }}
                             className="text-blue-600 hover:text-blue-900 mr-4"

@@ -1515,6 +1515,174 @@ async function main() {
       zabihaVerifiedBy: null
     });
 
+    await upsertRestaurant('BaBa\’s Wings & Platters', {
+      name: 'BaBa\'s Wings & Platters',
+      cuisineType: CuisineType.MEDITERRANEAN,
+      address: '706 Grayson Hwy suite 211, Lawrenceville, GA 30046, USA',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Biryani Pot', {
+      name: 'Biryani Pot',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '5805 State Bridge Rd, Duluth, GA 30097, USA',
+      description: '',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Murrays In A Hurry', {
+      name: 'Murrays In A Hurry',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '3940 Peachtree Industrial Blvd, Duluth, GA 30096, USA',
+      description: 'Mediterranean restaurant serving authentic halal dishes.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: true,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Pizza Wali', {
+      name: 'Pizza Wali ',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '797 Morrow Rd, Forest Park, GA 30297, USA',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Mokhaport', {
+      name: 'Mokhaport',
+      cuisineType: CuisineType.CAFE,
+      address: '1861 Mountain Industrial Blvd suite 106 a, Tucker, GA 30084, USA',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Wowbõõza', {
+      name: 'Wowbõõza',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '1630 Pleasant Hill Rd #170, Duluth, GA 30096',
+      description: 'Mediterranean ice cream and desserts Kunafa baklava ',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Nara Cuisine & Lounge', {
+      name: 'Nara Cuisine & Lounge',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '9700 Medlock Crossing Pkwy, Johns Creek, GA 30022, USA',
+      description: '',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Bezoria Alpharetta ', {
+      name: 'Bezoria Alpharetta ',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '3325 Old Milton Pkwy, Alpharetta, GA 30022, USA',
+      description: 'This family owned location offers online ordering for no wait time, a Drive-Thru pickup window, small event rooms which provide prayer space, a large dining hall, and catering.  Fully halal menu and generous portions!  Owners are active volunteers in the community.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: true,
+      hasOutdoorSeating: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
     // Note: This section is for manually verified restaurants only.
     // UI-added restaurants should NOT be added here - they are stored in the database only.
     // This file is for maintaining a backup of verified restaurant data.

@@ -61,7 +61,6 @@ const initialFormState: FormData = {
 
 const MAX_NAME_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
-const MIN_DESCRIPTION_LENGTH = 50;
 
 export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }: AddRestaurantFormProps) {
   const [formData, setFormData] = useState<FormData>(initialFormState);

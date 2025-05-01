@@ -46,9 +46,6 @@ export function middleware(request: NextRequest) {
     response.headers.set('Content-Security-Policy-Report-Only', cspHeader);
   }
    
-  // Set cookie policy
-  const cookiePolicy = 'Secure; HttpOnly; SameSite=Lax';
-   
   // Get existing cookies
   const cookies = request.cookies;
    
