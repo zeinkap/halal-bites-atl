@@ -47,7 +47,7 @@ export function middleware(request: NextRequest) {
   }
    
   // Get existing cookies
-  const cookies = request.cookies;
+  // const cookies = request.cookies;
    
   // Preserve existing cookies with new security attributes
   // cookies.getAll().forEach(cookie => {
