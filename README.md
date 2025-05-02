@@ -158,7 +158,7 @@ When writing new tests:
      GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
      NEXTAUTH_URL="http://localhost:3000"
      NEXTAUTH_SECRET="your_nextauth_secret"
-     ADMIN_EMAIL="your_admin_email@domain.com"
+     NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
      ```
 
 4. Set up the database:
@@ -208,7 +208,7 @@ GOOGLE_CLIENT_ID="your_google_oauth_client_id"
 GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your_nextauth_secret"
-ADMIN_EMAIL="your_admin_email@domain.com"
+NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
 ```
 
 ## Image Upload
@@ -481,7 +481,7 @@ The admin dashboard provides a centralized interface for administrative tasks:
 #### How to Access Admin Interface
 1. Navigate to `/secret-login` in your browser
 2. Sign in with your Google account
-3. Only emails configured as `ADMIN_EMAIL` in environment variables will be granted access
+3. Only emails configured as `NEXT_PUBLIC_ADMIN_EMAIL` in environment variables will be granted access
 4. Upon successful authentication, you'll be redirected to the admin dashboard
 5. Unauthorized users will be redirected to the home page
 
@@ -510,7 +510,7 @@ The admin dashboard provides a centralized interface for administrative tasks:
 #### Implementation
 ```typescript
 // Example admin route protection
-if (!session?.user?.email || session.user.email !== process.env.ADMIN_EMAIL) {
+if (!session?.user?.email || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 }
 ```

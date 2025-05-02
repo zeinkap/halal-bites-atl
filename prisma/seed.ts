@@ -19,7 +19,7 @@ async function main() {
     const errors: Array<{ id: string; error: Error | Prisma.PrismaClientKnownRequestError }> = [];
 
     // Helper function to handle restaurant upsert
-    async function upsertRestaurant(name: string, data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>) {
+    async function upsertRestaurant(name: string, data: Omit<Restaurant, 'id' | 'createdAt' | 'updatedAt'>, brandName?: string) {
       // Skip test restaurants in production
       if (process.env.NODE_ENV === 'production' && isTestRestaurant(name)) {
         console.log(`⚠ Skipping test restaurant in production: ${name}`);
@@ -29,10 +29,19 @@ async function main() {
 
       try {
         const id = createId();
+        let brandConnect = {};
+        if (brandName) {
+          const brand = await prisma.brand.upsert({
+            where: { name: brandName },
+            update: {},
+            create: { name: brandName },
+          });
+          brandConnect = { brand: { connect: { id: brand.id } } };
+        }
         await prisma.restaurant.upsert({
-          where: { name },
-          update: data,     // Update with the new data if record exists
-          create: { ...data, id },
+          where: { address: data.address },
+          update: { ...data, ...brandConnect },
+          create: { ...data, id, ...brandConnect },
         });
         successCount++;
         console.log(`✓ Successfully upserted restaurant: ${name}`);
@@ -62,7 +71,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Kimchi Red - Alpharetta', {
@@ -83,8 +93,9 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Kimchi Red');
 
     await upsertRestaurant("Olomi's Grill", {
       name: "Olomi's Grill",
@@ -104,7 +115,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Spices Hut Food Court', {
@@ -125,7 +137,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Pista House Alpharetta', {
@@ -146,7 +159,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Namak', {
@@ -167,7 +181,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Biryani House Atlanta', {
@@ -188,7 +203,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Al Zein Shawarma & Mediterranean Grill', {
@@ -209,7 +225,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Kimchi Red - Johns Creek', {
@@ -230,8 +247,9 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Kimchi Red');
 
     await upsertRestaurant('Cafe Efendi Mediterranean Restaurant', {
       name: 'Cafe Efendi Mediterranean Restaurant',
@@ -251,7 +269,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Karachi Broast & Grill', {
@@ -272,7 +291,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Zyka: The Taste | Indian Restaurant | Decatur', {
@@ -293,7 +313,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('The Halal Guys', {
@@ -314,8 +335,9 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Halal Guys');
 
     await upsertRestaurant("Khan's Kitchen", {
       name: "Khan's Kitchen",
@@ -335,7 +357,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     // Now adding the cafes...
@@ -357,7 +380,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('MOTW Coffee and Pastries', {
@@ -378,7 +402,8 @@ async function main() {
       zabihaBeef: true,
       zabihaGoat: false,
       zabihaVerified: new Date('2025-04-30'),
-      zabihaVerifiedBy: 'Mudassir Uddin'
+      zabihaVerifiedBy: 'Mudassir Uddin',
+      brandId: null
     });
 
     await upsertRestaurant('967 Coffee Co', {
@@ -399,7 +424,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Baladi Coffee', {
@@ -420,7 +446,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Jerusalem Bakery & Grill', {
@@ -441,7 +468,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Bismillah Cafe', {
@@ -462,7 +490,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Merhaba Shawarma', {
@@ -483,7 +512,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Delbar - Old Milton', {
@@ -504,7 +534,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Sabri Kabab House', {
@@ -525,7 +556,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Al-Amin Supermarket & Restaurant', {
@@ -546,7 +578,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('ZamZam Halal Supermarket & Restaurant', {
@@ -567,7 +600,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Kabul Kabob', {
@@ -588,7 +622,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Al Madina Grocery & Restaurant', {
@@ -609,7 +644,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Chinese Dhaba', {
@@ -630,7 +666,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Star Pizza', {
@@ -651,7 +688,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('PONKO Chicken - Alpharetta', {
@@ -672,7 +710,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Express Burger & Grill', {
@@ -693,7 +732,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Moctezuma Mexican Grill', {
@@ -714,7 +754,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Adana Mediterranean Grill', {
@@ -735,7 +776,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Dil Bahar Cafe & Market', {
@@ -756,7 +798,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Briskfire BBQ', {
@@ -777,7 +820,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Stone Creek Halal Pizza', {
@@ -798,7 +842,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Salsa Taqueria & Wings', {
@@ -819,7 +864,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Auntie Vees Kitchen', {
@@ -840,7 +886,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Springreens at Community Cafe', {
@@ -861,7 +908,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Mukja Korean Fried Chicken', {
@@ -882,7 +930,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Baraka Shawarma Atlanta', {
@@ -903,7 +952,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Botiwalla by Chai Pani', {
@@ -924,7 +974,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Dantanna\'s', {
@@ -945,7 +996,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Jaffa Restaurant Atl (Halal)', {
@@ -966,7 +1018,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Talkin\' Tacos Buckhead', {
@@ -987,7 +1040,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Ariana Kabob House', {
@@ -1008,7 +1062,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Hyderabad House Atlanta - Biryani Place', {
@@ -1029,7 +1084,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Asma\'s Cuisine', {
@@ -1050,7 +1106,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Three Buddies', {
@@ -1071,7 +1128,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Alif Cafe', {
@@ -1092,7 +1150,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('NaanStop', {
@@ -1113,7 +1172,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Mashawi Mediterranean', {
@@ -1134,7 +1194,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Laghman Express', {
@@ -1155,7 +1216,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Kabob Land', {
@@ -1176,7 +1238,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Ali N\' One Zabiha Halal Kitchen', {
@@ -1197,7 +1260,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Nature Village Restaurant', {
@@ -1218,7 +1282,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Halal Pizza and cafe', {
@@ -1239,7 +1304,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Bawarchi Biryanis Atlanta', {
@@ -1260,7 +1326,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Shah\'s Halal Food', {
@@ -1281,7 +1348,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Lahore Grill', {
@@ -1302,7 +1370,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('AZ Pizza, Wings & Fish (Halal)', {
@@ -1323,7 +1392,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Scoville Hot Chicken - Buckhead', {
@@ -1344,7 +1414,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
     
     await upsertRestaurant('Desi Spice Indian Cuisine', {
@@ -1365,7 +1436,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Karachi Grill & BBQ', {
@@ -1386,7 +1458,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Halal Guys - Midtown', {
@@ -1407,8 +1480,9 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Halal Guys');
 
     await upsertRestaurant('Rumi\'s Kitchen - Sandy Springs', {
       name: 'Rumi\'s Kitchen - Sandy Springs',
@@ -1428,7 +1502,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Cafe Istanbul', {
@@ -1449,7 +1524,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Mediterranean Grill - Decatur', {
@@ -1470,7 +1546,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('BaBa\’s Wings & Platters', {
@@ -1491,7 +1568,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Biryani Pot', {
@@ -1512,7 +1590,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Murrays In A Hurry', {
@@ -1533,7 +1612,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Pizza Wali', {
@@ -1554,7 +1634,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Mokhaport', {
@@ -1575,7 +1656,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Wowbõõza', {
@@ -1596,7 +1678,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Nara Cuisine & Lounge', {
@@ -1617,7 +1700,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Bezoria Alpharetta', {
@@ -1638,8 +1722,9 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Bezoria');
 
     await upsertRestaurant('Buzzin Burgers', {
       name: 'Buzzin Burgers',
@@ -1659,7 +1744,8 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
 
     await upsertRestaurant('Shalimar Kabab House', {
@@ -1680,8 +1766,53 @@ async function main() {
       zabihaBeef: false,
       zabihaGoat: false,
       zabihaVerified: null,
-      zabihaVerifiedBy: null
+      zabihaVerifiedBy: null,
+      brandId: null
     });
+
+    await upsertRestaurant('Bezoria - Duluth', {
+      name: 'Bezoria - Duluth',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '2131 Pleasant Hill Rd Suite 153, Duluth, GA 30096',
+      description: 'Shawarma you waiting for? Bezoria\'s got shawarma , falafel , hummus, bowls, & more! Tasty | Healthy | Halal | Cumberland | Duluth | Alpharetta.',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Bezoria');
+
+    await upsertRestaurant('Bezoria - Cumberland', {
+      name: 'Bezoria - Cumberland',
+      cuisineType: CuisineType.MIDDLE_EASTERN,
+      address: '2860 Cumberland Mall #1101, Atlanta, GA 30339',
+      description: 'Bezoria\'s got shawarma, falafel, hummus, bowls, and more. In Cumberland + Duluth + Alpharetta + N Olmsted, OH (Coming Soon)',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null
+    }, 'Bezoria');
 
     // Note: This section is for manually verified restaurants only.
     // UI-added restaurants should NOT be added here - they are stored in the database only.

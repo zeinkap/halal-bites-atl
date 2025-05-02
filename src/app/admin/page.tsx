@@ -10,7 +10,8 @@ import {
   ClockIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
-  BuildingStorefrontIcon
+  BuildingStorefrontIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 
 interface SystemStats {
@@ -28,12 +29,33 @@ interface BackupHistory {
   status: string;
 }
 
+interface BugReport {
+  id: string;
+  title: string;
+  description: string;
+  email?: string;
+  createdAt: string;
+}
+
+interface RestaurantReport {
+  id: string;
+  restaurantId: string;
+  status: string;
+  createdAt: string;
+  details: string;
+  restaurant?: {
+    name?: string;
+  };
+}
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState<SystemStats | null>(null);
   const [backupHistory, setBackupHistory] = useState<BackupHistory[]>([]);
+  const [bugReports, setBugReports] = useState<BugReport[]>([]);
+  const [restaurantReports, setRestaurantReports] = useState<RestaurantReport[]>([]);
 
   // Fetch system stats
   const fetchStats = async () => {
@@ -61,6 +83,30 @@ export default function AdminDashboard() {
     }
   };
 
+  // Fetch bug reports
+  const fetchBugReports = async () => {
+    try {
+      const response = await fetch('/api/admin/bug-reports');
+      if (!response.ok) throw new Error('Failed to fetch bug reports');
+      const data = await response.json();
+      setBugReports(data);
+    } catch (error) {
+      setBugReports([]);
+    }
+  };
+
+  // Fetch restaurant reports
+  const fetchRestaurantReports = async () => {
+    try {
+      const response = await fetch('/api/admin/reports');
+      if (!response.ok) throw new Error('Failed to fetch reports');
+      const data = await response.json();
+      setRestaurantReports(data);
+    } catch (error) {
+      setRestaurantReports([]);
+    }
+  };
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       console.log('Admin Page - Unauthenticated');
@@ -73,6 +119,8 @@ export default function AdminDashboard() {
       });
       fetchStats();
       fetchBackupHistory();
+      fetchBugReports();
+      fetchRestaurantReports();
     }
   }, [status, router, session]);
 
@@ -239,7 +287,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-2 lg:max-w-none">
+        <div className="mt-12 max-w-lg mx-auto grid gap-5 lg:grid-cols-4 lg:max-w-none">
           {/* Backup Card */}
           <div className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white">
             <div className="flex-1 p-6 flex flex-col justify-between">
@@ -334,6 +382,80 @@ export default function AdminDashboard() {
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? 'Sending...' : 'Send Test Email'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bug Reports Card */}
+          <div className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white">
+            <div className="flex-1 p-6 flex flex-col justify-between">
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <ExclamationCircleIcon className="h-6 w-6 text-red-600" />
+                  <h3 className="ml-2 text-xl font-semibold text-gray-900">Recent Bug Reports</h3>
+                </div>
+                <p className="mt-3 text-base text-gray-500">
+                  Latest issues reported by users.
+                </p>
+                {bugReports.length === 0 ? (
+                  <div className="mt-4 text-gray-500 text-sm">No bug reports found.</div>
+                ) : (
+                  <ul className="mt-4 divide-y divide-gray-200">
+                    {bugReports.slice(0, 3).map((bug) => (
+                      <li key={bug.id} className="py-2">
+                        <div className="font-medium text-gray-900 truncate" title={bug.title}>{bug.title}</div>
+                        <div className="text-xs text-gray-500 truncate" title={bug.description}>{bug.description}</div>
+                        <div className="text-xs text-gray-400">{bug.email || '-'} &middot; {new Date(bug.createdAt).toLocaleString()}</div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="mt-6">
+                <button
+                  onClick={() => router.push('/admin/bug-reports')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  View All
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Restaurant Reports Card */}
+          <div className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white">
+            <div className="flex-1 p-6 flex flex-col justify-between">
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
+                  <h3 className="ml-2 text-xl font-semibold text-gray-900">Recent Restaurant Reports</h3>
+                </div>
+                <p className="mt-3 text-base text-gray-500">
+                  Latest incorrect info reports from users.
+                </p>
+                {restaurantReports.length === 0 ? (
+                  <div className="mt-4 text-gray-500 text-sm">No reports found.</div>
+                ) : (
+                  <ul className="mt-4 divide-y divide-gray-200">
+                    {restaurantReports.slice(0, 3).map((report) => (
+                      <li key={report.id} className="py-2">
+                        <div className="font-medium text-gray-900 truncate" title={report.restaurant?.name || report.restaurantId}>
+                          {report.restaurant?.name ? report.restaurant.name : `Restaurant ID: ${report.restaurantId}`}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate" title={report.details}>{report.details}</div>
+                        <div className="text-xs text-gray-400">{new Date(report.createdAt).toLocaleString()}</div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="mt-6">
+                <button
+                  onClick={() => router.push('/admin/reports')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                >
+                  View All
                 </button>
               </div>
             </div>

@@ -31,6 +31,8 @@ model Restaurant {
   updatedAt         DateTime    @updatedAt
   comments          Comment[]
   reports           Report[]
+  brandId           String?
+  brand             Brand?      @relation(fields: [brandId], references: [id])
 }
 
 model Comment {
@@ -68,6 +70,26 @@ model Report {
   resolvedBy   String?
 
   @@index([restaurantId])
+}
+
+model BugReport {
+  id                String   @id @default(cuid())
+  title             String
+  description       String
+  stepsToReproduce  String?
+  expectedBehavior  String?
+  actualBehavior    String?
+  browser           String?
+  device            String?
+  email             String?
+  screenshotUrl     String?
+  createdAt         DateTime @default(now())
+}
+
+model Brand {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  restaurants Restaurant[]
 }
 
 enum CuisineType {

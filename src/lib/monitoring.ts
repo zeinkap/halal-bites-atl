@@ -48,7 +48,7 @@ export async function checkBackupStatus(): Promise<BackupStatus> {
 }
 
 async function sendBackupAlert(status: BackupStatus) {
-  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   if (!adminEmail) {
     console.error('Admin email not configured');
     return;

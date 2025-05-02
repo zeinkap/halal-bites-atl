@@ -10,7 +10,7 @@ async function verifyAdmin() {
     return { error: 'Unauthorized', status: 401 };
   }
 
-  const isAdmin = session.user.email === process.env.ADMIN_EMAIL;
+  const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   if (!isAdmin) {
     return { error: 'Forbidden', status: 403 };
   }

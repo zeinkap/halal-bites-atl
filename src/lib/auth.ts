@@ -1,6 +1,8 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -11,36 +13,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  cookies: {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        domain: 'halalbitesatl.org'
-      }
-    },
-    callbackUrl: {
-      name: `__Secure-next-auth.callback-url`,
-      options: {
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        domain: 'halalbitesatl.org'
-      }
-    },
-    csrfToken: {
-      name: `__Host-next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true
-      }
-    }
   },
   callbacks: {
     async signIn({ user }) {

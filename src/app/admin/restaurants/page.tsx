@@ -19,6 +19,8 @@ export default function RestaurantsManagement() {
   const [restaurants, setRestaurants] = useState<AdminRestaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -62,6 +64,23 @@ export default function RestaurantsManagement() {
     }
   };
 
+  // Compute filtered restaurants for search and sorting
+  const filteredRestaurants = restaurants
+    .filter(r => {
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      return (
+        r.name.toLowerCase().includes(term) ||
+        r.address.toLowerCase().includes(term) ||
+        r.cuisineType.replace(/_/g, ' ').toLowerCase().includes(term)
+      );
+    })
+    .sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) return sortAsc ? -1 : 1;
+      if (a.name.toLowerCase() > b.name.toLowerCase()) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
@@ -103,6 +122,21 @@ export default function RestaurantsManagement() {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-2 max-w-md">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Search by name, address, or cuisine..."
+            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-900"
+          />
+        </div>
+        {/* Restaurant Count */}
+        <div className="mb-4 text-gray-700 text-sm">
+          Total Restaurants: <span className="font-semibold">{filteredRestaurants.length}</span>
+        </div>
+
         <div className="mt-8 flex flex-col">
           <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -110,7 +144,20 @@ export default function RestaurantsManagement() {
                 <table className="min-w-full divide-y divide-gray-300">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-1/4">Name</th>
+                      <th
+                        scope="col"
+                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-1/4 cursor-pointer select-none"
+                        onClick={() => setSortAsc((asc) => !asc)}
+                      >
+                        Name
+                        <span className="ml-1 inline-block align-middle">
+                          {sortAsc ? (
+                            <svg className="w-3 h-3 inline" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6l-4 4h8l-4-4z" /></svg>
+                          ) : (
+                            <svg className="w-3 h-3 inline" viewBox="0 0 20 20" fill="currentColor"><path d="M10 14l4-4H6l4 4z" /></svg>
+                          )}
+                        </span>
+                      </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/4">Address</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/6">Cuisine</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Price</th>
@@ -123,7 +170,7 @@ export default function RestaurantsManagement() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
-                    {restaurants.map((restaurant) => (
+                    {filteredRestaurants.map((restaurant) => (
                       <tr key={restaurant.id}>
                         <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 truncate max-w-xs">
                           {restaurant.name}

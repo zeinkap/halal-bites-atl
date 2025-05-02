@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
     console.log('Processing restaurant report submission...');
     const data = await request.json();
     const { restaurantId, restaurantName, reportDetails } = data;
+
+    // Save the report to the database
+    await prisma.report.create({
+      data: {
+        restaurantId,
+        details: reportDetails,
+        // status, createdAt, updatedAt use defaults
+      },
+    });
 
     console.log('Creating email transport...');
     const transporter = nodemailer.createTransport({

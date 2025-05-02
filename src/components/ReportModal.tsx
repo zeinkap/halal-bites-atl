@@ -132,10 +132,6 @@ export default function ReportModal({
                           <textarea
                             {...register('reportDetails', {
                               required: 'Please provide details about the incorrect information',
-                              minLength: {
-                                value: 30,
-                                message: 'Please provide at least 30 characters of details',
-                              },
                               maxLength: {
                                 value: 500,
                                 message: 'Please keep your report under 500 characters',
@@ -144,7 +140,7 @@ export default function ReportModal({
                             id="reportDetails"
                             rows={4}
                             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm text-gray-900 placeholder-gray-500"
-                            placeholder="Please describe what information needs to be corrected (e.g., incorrect address, wrong restaurant features, not in atlanta, etc.). Minimum 30 characters required."
+                            placeholder="Please describe what information needs to be corrected (e.g., incorrect address, wrong restaurant features, not in atlanta, etc.)."
                             data-testid="report-details-input"
                           />
                           {errors.reportDetails && (

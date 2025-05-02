@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { v2 as cloudinary } from 'cloudinary';
+import { prisma } from '@/lib/prisma';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -175,6 +176,21 @@ export async function POST(request: Request) {
     });
 
     console.log('Email sent successfully');
+
+    // Save bug report to database (prisma.bugReport is the correct accessor for the BugReport model)
+    await prisma.bugReport.create({
+      data: {
+        title,
+        description,
+        stepsToReproduce,
+        expectedBehavior,
+        actualBehavior,
+        browser,
+        device,
+        email,
+        screenshotUrl: screenshotUrl || null,
+      },
+    });
 
     return NextResponse.json({ message: 'Bug report submitted successfully' });
   } catch (error) {
