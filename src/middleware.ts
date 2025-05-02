@@ -50,15 +50,15 @@ export function middleware(request: NextRequest) {
   const cookies = request.cookies;
    
   // Preserve existing cookies with new security attributes
-  cookies.getAll().forEach(cookie => {
-    response.cookies.set({
-      name: cookie.name,
-      value: cookie.value,
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax'
-    });
-  });
+  // cookies.getAll().forEach(cookie => {
+  //   response.cookies.set({
+  //     name: cookie.name,
+  //     value: cookie.value,
+  //     httpOnly: true,
+  //     secure: true,
+  //     sameSite: 'lax'
+  //   });
+  // });
 
   return response;
 }
