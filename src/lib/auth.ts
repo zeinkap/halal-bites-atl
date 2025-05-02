@@ -14,11 +14,14 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user }) {
-      // Only allow admin email to sign in
+      // Enhanced logging for debugging production issues
       console.log('Auth - Sign In:', {
         userEmail: user.email,
         adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
-        isMatch: user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL
+        isMatch: user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+        nodeEnv: process.env.NODE_ENV,
+        nextauthSecret: process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET',
+        nextauthUrl: process.env.NEXTAUTH_URL,
       });
       return user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
     },
