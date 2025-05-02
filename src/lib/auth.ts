@@ -20,17 +20,16 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: process.env.NEXT_PUBLIC_DOMAIN
+        domain: 'halalbitesatl.org'
       }
     },
     callbackUrl: {
       name: `__Secure-next-auth.callback-url`,
       options: {
-        httpOnly: true,
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: process.env.NEXT_PUBLIC_DOMAIN
+        domain: 'halalbitesatl.org'
       }
     },
     csrfToken: {
