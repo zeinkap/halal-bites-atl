@@ -63,9 +63,14 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
+      console.log('Admin Page - Unauthenticated');
       router.push('/');
     } else if (status === 'authenticated') {
-      console.log('Session:', session); // Debug session
+      console.log('Admin Page - Session:', {
+        email: session?.user?.email,
+        expectedEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+        fullSession: session
+      });
       fetchStats();
       fetchBackupHistory();
     }

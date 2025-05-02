@@ -45,16 +45,28 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }) {
       // Only allow admin email to sign in
-      return user.email === process.env.ADMIN_EMAIL;
+      console.log('Auth - Sign In:', {
+        userEmail: user.email,
+        adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL,
+        isMatch: user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL
+      });
+      return user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
     },
     async session({ session, token }) {
       // Send properties to the client
+      console.log('Auth - Session Callback:', {
+        sessionEmail: session?.user?.email,
+        tokenEmail: token.email
+      });
       if (session.user) {
         session.user.email = token.email;
       }
       return session;
     },
     async jwt({ token }) {
+      console.log('Auth - JWT Callback:', {
+        tokenEmail: token.email
+      });
       return token;
     },
   },

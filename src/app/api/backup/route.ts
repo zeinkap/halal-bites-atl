@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     // Check if user is admin
-    const isAdmin = session.user.email === process.env.ADMIN_EMAIL;
+    const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
