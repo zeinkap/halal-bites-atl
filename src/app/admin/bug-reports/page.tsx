@@ -42,7 +42,7 @@ export default function AdminBugReportsPage() {
       if (!response.ok) throw new Error("Failed to fetch bug reports");
       const data = await response.json();
       setBugReports(data);
-    } catch (error) {
+    } catch {
       setBugReports([]);
     } finally {
       setIsLoading(false);

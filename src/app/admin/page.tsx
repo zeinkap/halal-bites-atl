@@ -90,7 +90,7 @@ export default function AdminDashboard() {
       if (!response.ok) throw new Error('Failed to fetch bug reports');
       const data = await response.json();
       setBugReports(data);
-    } catch (error) {
+    } catch {
       setBugReports([]);
     }
   };
@@ -102,7 +102,7 @@ export default function AdminDashboard() {
       if (!response.ok) throw new Error('Failed to fetch reports');
       const data = await response.json();
       setRestaurantReports(data);
-    } catch (error) {
+    } catch {
       setRestaurantReports([]);
     }
   };

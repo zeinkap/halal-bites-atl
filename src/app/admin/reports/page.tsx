@@ -41,7 +41,7 @@ export default function AdminReportsPage() {
       if (!response.ok) throw new Error("Failed to fetch reports");
       const data = await response.json();
       setReports(data);
-    } catch (error) {
+    } catch {
       setReports([]);
     } finally {
       setIsLoading(false);
