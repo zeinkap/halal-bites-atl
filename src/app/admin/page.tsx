@@ -65,10 +65,11 @@ export default function AdminDashboard() {
     if (status === 'unauthenticated') {
       router.push('/');
     } else if (status === 'authenticated') {
+      console.log('Session:', session); // Debug session
       fetchStats();
       fetchBackupHistory();
     }
-  }, [status, router]);
+  }, [status, router, session]);
 
   const handleBackup = async () => {
     try {

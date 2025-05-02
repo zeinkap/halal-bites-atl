@@ -8,10 +8,28 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
     async signIn({ user }) {
       // Only allow admin email to sign in
       return user.email === process.env.ADMIN_EMAIL;
     },
+    async session({ session, token }) {
+      // Send properties to the client
+      if (session.user) {
+        session.user.email = token.email;
+      }
+      return session;
+    },
+    async jwt({ token }) {
+      return token;
+    },
+  },
+  pages: {
+    signIn: '/secret-login',
+    error: '/secret-login',
   },
 }; 

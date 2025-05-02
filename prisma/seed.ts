@@ -1347,38 +1347,17 @@ async function main() {
       zabihaVerifiedBy: null
     });
     
-    await upsertRestaurant('Desi Spice', {
-      name: 'Desi Spice',
+    await upsertRestaurant('Desi Spice Indian Cuisine', {
+      name: 'Desi Spice Indian Cuisine',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '1248 Clairmont Rd, Decatur, GA 30030',
+      address: 'Promenade, 931 Monroe Dr NE 2nd fl suit c202, Atlanta, GA 30308',
       description: 'Authentic Indian and Pakistani cuisine with a modern twist.',
-      priceRange: PriceRange.LOW,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
-      isZabiha: false,
-      imageUrl: '/images/logo.png',
-      zabihaChicken: false,
-      zabihaLamb: false,
-      zabihaBeef: false,
-      zabihaGoat: false,
-      zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
-
-    await upsertRestaurant('Pita Palace Mediterranean Grill', {
-      name: 'Pita Palace Mediterranean Grill',
-      cuisineType: CuisineType.MIDDLE_EASTERN,
-      address: '4800 Briarcliff Rd NE, Atlanta, GA 30345',
-      description: 'Mediterranean grill offering fresh pitas, shawarma, and falafel.',
       priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: false,
       hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
       isZabiha: false,
       imageUrl: '/images/logo.png',
       zabihaChicken: false,
@@ -1422,27 +1401,6 @@ async function main() {
       hasHighChair: true,
       servesAlcohol: false,
       isFullyHalal: true,
-      imageUrl: '/images/logo.png',
-      zabihaChicken: false,
-      zabihaLamb: false,
-      zabihaBeef: false,
-      zabihaGoat: false,
-      zabihaVerified: null,
-      zabihaVerifiedBy: null
-    });
-
-    await upsertRestaurant('Chai Pani', {
-      name: 'Chai Pani',
-      cuisineType: CuisineType.INDIAN_PAKISTANI,
-      address: '406 W Ponce de Leon Ave, Decatur, GA 30030',
-      description: 'Modern Indian street food restaurant with creative takes on traditional dishes.',
-      priceRange: PriceRange.MEDIUM,
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: true,
-      servesAlcohol: true,
-      isFullyHalal: false,
       imageUrl: '/images/logo.png',
       zabihaChicken: false,
       zabihaLamb: false,
@@ -1662,8 +1620,8 @@ async function main() {
       zabihaVerifiedBy: null
     });
 
-    await upsertRestaurant('Bezoria Alpharetta ', {
-      name: 'Bezoria Alpharetta ',
+    await upsertRestaurant('Bezoria Alpharetta', {
+      name: 'Bezoria Alpharetta',
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '3325 Old Milton Pkwy, Alpharetta, GA 30022, USA',
       description: 'This family owned location offers online ordering for no wait time, a Drive-Thru pickup window, small event rooms which provide prayer space, a large dining hall, and catering.  Fully halal menu and generous portions!  Owners are active volunteers in the community.',
@@ -1671,6 +1629,48 @@ async function main() {
       hasPrayerRoom: true,
       hasOutdoorSeating: false,
       hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Buzzin Burgers', {
+      name: 'Buzzin Burgers',
+      cuisineType: CuisineType.OTHER,
+      address: '440 Ernest W Barrett Pkwy NW Suite 16, Kennesaw, GA 30144',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null
+    });
+
+    await upsertRestaurant('Shalimar Kabab House', {
+      name: 'Shalimar Kabab House',
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
+      address: '4760 Lawrenceville Hwy, Suit B-4',
+      description: '',
+      priceRange: PriceRange.MEDIUM,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
       servesAlcohol: false,
       isFullyHalal: true,
       isZabiha: false,
