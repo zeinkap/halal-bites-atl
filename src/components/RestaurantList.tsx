@@ -150,6 +150,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLocationSearch = async (auto = false) => {
@@ -194,7 +195,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         setIsLoading(false);
         setLocationLoading(false);
       }
-    }, (err) => {
+    }, () => {
       setLocationError('Unable to retrieve your location.');
       setLocationLoading(false);
       setShowingNearMe(false);

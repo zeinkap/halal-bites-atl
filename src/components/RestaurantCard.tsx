@@ -1,6 +1,6 @@
 import { Restaurant } from '@/types';
 import React, { useState } from 'react';
-import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon, FlagIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, HomeModernIcon, HeartIcon, ChatBubbleLeftIcon, BeakerIcon, FlagIcon } from '@heroicons/react/24/solid';
 import CommentModal from './CommentModal';
 import ReportModal from './ReportModal';
 import Image from 'next/image';

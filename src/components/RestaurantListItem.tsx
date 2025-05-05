@@ -1,5 +1,5 @@
 import { Restaurant } from '@/types';
-import { MapPinIcon, HomeModernIcon, SunIcon, HeartIcon, UserGroupIcon, ChatBubbleLeftIcon, BeakerIcon, CheckBadgeIcon, FlagIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, HomeModernIcon, HeartIcon, ChatBubbleLeftIcon, BeakerIcon, FlagIcon } from '@heroicons/react/24/solid';
 import { useState, lazy, Suspense } from 'react';
 import Image from 'next/image';
 

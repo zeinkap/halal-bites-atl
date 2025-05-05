@@ -527,6 +527,7 @@ The admin dashboard provides a centralized interface for administrative tasks:
 1. **Restaurant Management**
    - View all restaurants with detailed information
    - Edit restaurant details with real-time updates
+   - **Automatic Latitude/Longitude Update:** When editing a restaurant's address in the admin panel, the latitude and longitude are automatically updated using Nominatim geocoding to ensure map and location accuracy.
    - Delete restaurants with cascading deletions (comments and reports)
    - Efficient caching with automatic invalidation
    - Transaction-based operations for data integrity

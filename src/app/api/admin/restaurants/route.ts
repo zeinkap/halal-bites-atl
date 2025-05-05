@@ -100,7 +100,7 @@ export async function PATCH(request: Request) {
     }
 
     // If address is being updated, fetch new lat/lng
-    let updateData = { ...data };
+    const updateData = { ...data };
     if (typeof data.address === 'string' && data.address.trim() !== '') {
       const { lat, lng } = await getLatLng(data.address);
       updateData.latitude = lat;
