@@ -188,7 +188,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         });
         setShowingNearMe(true);
         if (!auto) localStorage.setItem('halal-atl-location-allowed', '1');
-      } catch (err) {
+      } catch {
         setLocationError('Failed to fetch restaurants by location.');
         setShowingNearMe(false);
       } finally {
