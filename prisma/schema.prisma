@@ -18,13 +18,18 @@ model Restaurant {
   hasOutdoorSeating Boolean     @default(false)
   hasHighChair      Boolean     @default(false)
   servesAlcohol     Boolean     @default(false)
-  isFullyHalal      Boolean     @default(false)
+  isFullyHalal       Boolean     @default(false)
   isZabiha          Boolean     @default(false)
+  isPartiallyHalal   Boolean     @default(false)
   imageUrl          String?
   zabihaChicken     Boolean     @default(false)
   zabihaLamb        Boolean     @default(false)
   zabihaBeef        Boolean     @default(false)
   zabihaGoat        Boolean     @default(false)
+  partiallyHalalChicken Boolean   @default(false)
+  partiallyHalalLamb   Boolean    @default(false)
+  partiallyHalalBeef   Boolean    @default(false)
+  partiallyHalalGoat   Boolean    @default(false)
   zabihaVerified    DateTime?   @default(now())
   zabihaVerifiedBy  String?
   createdAt         DateTime    @default(now())
@@ -33,6 +38,8 @@ model Restaurant {
   reports           Report[]
   brandId           String?
   brand             Brand?      @relation(fields: [brandId], references: [id])
+  latitude          Float?
+  longitude         Float?
 }
 
 model Comment {
@@ -104,6 +111,9 @@ enum CuisineType {
   MEXICAN
   THAI
   FAST_FOOD
+  KOREAN
+  BANGLADESHI
+  INDONESIAN
   OTHER
 }
 

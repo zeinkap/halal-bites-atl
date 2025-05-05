@@ -54,6 +54,11 @@ model Restaurant {
   hasHighChair      Boolean     @default(false)
   servesAlcohol     Boolean     @default(false)
   isFullyHalal      Boolean     @default(false)
+  isPartiallyHalal  Boolean     @default(false)
+  partiallyHalalChicken Boolean @default(false)
+  partiallyHalalLamb  Boolean @default(false)
+  partiallyHalalBeef  Boolean @default(false)
+  partiallyHalalGoat  Boolean @default(false)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
   comments          Comment[]
@@ -94,6 +99,9 @@ enum CuisineType {
   MEXICAN
   THAI
   FAST_FOOD
+  KOREAN
+  BANGLADESHI
+  INDONESIAN
   OTHER
 }
 ```
@@ -110,4 +118,7 @@ The CuisineType enum represents the different types of cuisine available in the 
 - MEXICAN: Mexican cuisine
 - THAI: Thai cuisine
 - FAST_FOOD: Fast food restaurants
+- KOREAN: Korean cuisine
+- BANGLADESHI: Bangladeshi cuisine
+- INDONESIAN: Indonesian cuisine
 - OTHER: Other cuisines not covered by the above categories 

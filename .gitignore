@@ -80,3 +80,5 @@ coverage/
 # Cache directories
 .cache/
 .next/cache/
+
+prod-backup-*.sql

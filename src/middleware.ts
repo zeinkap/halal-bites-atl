@@ -9,12 +9,13 @@ export function middleware(request: NextRequest) {
   
   const cspHeader = `
     default-src 'self';
-    script-src 'self' ${isDev ? "'unsafe-eval'" : ""} 'unsafe-inline' https://*.googletagmanager.com https://www.google-analytics.com;
+    script-src 'self' ${isDev ? "'unsafe-eval'" : ""} 'unsafe-inline' https://*.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https://*.google-analytics.com https://*.googletagmanager.com;
-    connect-src 'self' ${isDev ? "* 'unsafe-eval'" : ""} https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
+    connect-src 'self' ${isDev ? "* 'unsafe-eval'" : ""} https://*.google-analytics.com https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
     font-src 'self';
     object-src 'none';
+    frame-src 'self' https://buymeacoffee.com;
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'none';

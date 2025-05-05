@@ -26,6 +26,20 @@ async function verifyAdmin() {
   return null;
 }
 
+// Helper to fetch lat/lng from Nominatim
+async function getLatLng(address: string): Promise<{ lat: number | null, lng: number | null }> {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'halal-restaurants-atl/1.0 (admin@halalbitesatl.com)' }
+  });
+  const data = await res.json();
+  if (data.length > 0) {
+    const { lat, lon } = data[0];
+    return { lat: parseFloat(lat), lng: parseFloat(lon) };
+  }
+  return { lat: null, lng: null };
+}
+
 // Get all restaurants with comments count and reports count
 export async function GET() {
   try {
@@ -85,9 +99,17 @@ export async function PATCH(request: Request) {
       );
     }
 
+    // If address is being updated, fetch new lat/lng
+    let updateData = { ...data };
+    if (typeof data.address === 'string' && data.address.trim() !== '') {
+      const { lat, lng } = await getLatLng(data.address);
+      updateData.latitude = lat;
+      updateData.longitude = lng;
+    }
+
     const restaurant = await prisma.restaurant.update({
       where: { id },
-      data
+      data: updateData
     });
 
     // Clear Redis cache to ensure fresh data

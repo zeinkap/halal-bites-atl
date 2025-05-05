@@ -28,6 +28,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Outdoor seating options
   - Zabiha (hand-cut) certification status
   - High chair availability for families
+  - **Partially Halal support**: Mark restaurants as 'Partially Halal' and specify which meats (chicken, lamb, beef, goat) are halal on the menu
 - 📱 Responsive design:
   - Mobile-first approach
   - Clean, modern interface
@@ -49,6 +50,20 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Submit bug reports with screenshots
   - Automatic email notifications for reports
   - Image attachments for better context
+
+## Halal Status & Meat Types
+
+Restaurants can be marked as:
+
+- **Fully Halal**: All menu items are halal
+- **Zabiha**: Hand-cut zabiha meat is served (with details for chicken, lamb, beef, goat)
+- **Partially Halal**: Only some meats are halal. You can specify which of the following are halal:
+  - Chicken
+  - Lamb
+  - Beef
+  - Goat
+
+This information is visible in the restaurant cards and list, and can be set when adding or editing a restaurant (admin panel included).
 
 ## Tech Stack
 
@@ -340,6 +355,29 @@ To verify data is actually in the Prod database, run this query:
 
 Run these commands to migrate and seed prod database:
 `npm run migrate-prod && npm run seed-prod`
+
+### Backing Up the Production Database
+
+Before running migrations or seeding in production, it is highly recommended to back up your database. If you are using PostgreSQL, you can use the following command (requires `pg_dump` to be installed):
+
+```sh
+pg_dump "<your_production_database_url>" > prod-backup-$(date +%Y%m%d-%H%M%S).sql
+```
+
+For example, with Neon:
+
+```sh
+pg_dump "postgresql://neondb_owner:YOUR_PASSWORD@YOUR_HOST/neondb?sslmode=require" > prod-backup-$(date +%Y%m%d-%H%M%S).sql
+```
+
+This will create a timestamped SQL backup file in your current directory.
+
+**Restoring from backup:**
+To restore your database from a backup file, use:
+
+```sh
+psql "<your_production_database_url>" < prod-backup-YYYYMMDD-HHMMSS.sql
+```
 
 ## Troubleshooting
 

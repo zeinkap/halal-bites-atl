@@ -13,6 +13,11 @@ export interface Restaurant {
   servesAlcohol: boolean;
   isFullyHalal: boolean;
   isZabiha: boolean;
+  isPartiallyHalal: boolean;
+  partiallyHalalChicken: boolean;
+  partiallyHalalLamb: boolean;
+  partiallyHalalBeef: boolean;
+  partiallyHalalGoat: boolean;
   imageUrl?: string | null;
   zabihaChicken: boolean;
   zabihaLamb: boolean;
@@ -23,4 +28,6 @@ export interface Restaurant {
   createdAt: Date;
   updatedAt: Date;
   commentCount: number;
+  latitude?: number | null;
+  longitude?: number | null;
 } 

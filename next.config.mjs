@@ -9,8 +9,15 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
     ],
-    domains: ['maps.googleapis.com', 'lh3.googleusercontent.com'],
   },
   poweredByHeader: false,
   async headers() {

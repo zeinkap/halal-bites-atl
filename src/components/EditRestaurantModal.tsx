@@ -33,13 +33,30 @@ export default function EditRestaurantModal({
     zabihaLamb: restaurant.zabihaLamb,
     zabihaBeef: restaurant.zabihaBeef,
     zabihaGoat: restaurant.zabihaGoat,
+    isPartiallyHalal: restaurant.isPartiallyHalal,
+    partiallyHalalChicken: restaurant.partiallyHalalChicken,
+    partiallyHalalLamb: restaurant.partiallyHalalLamb,
+    partiallyHalalBeef: restaurant.partiallyHalalBeef,
+    partiallyHalalGoat: restaurant.partiallyHalalGoat,
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Validation for partially halal meat types
+    if (formData.isPartiallyHalal) {
+      if (!formData.partiallyHalalChicken && !formData.partiallyHalalLamb && !formData.partiallyHalalBeef && !formData.partiallyHalalGoat) {
+        setError('Please select at least one Partially Halal meat type');
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      setError(null);
+    }
 
     try {
       const response = await fetch(`/api/admin/restaurants?id=${restaurant.id}`, {
@@ -246,6 +263,18 @@ export default function EditRestaurantModal({
                   Zabiha
                 </label>
               </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isPartiallyHalal"
+                  checked={formData.isPartiallyHalal}
+                  onChange={(e) => setFormData({ ...formData, isPartiallyHalal: e.target.checked })}
+                  className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
+                />
+                <label htmlFor="isPartiallyHalal" className="ml-3 block text-base text-yellow-700">
+                  Partially Halal
+                </label>
+              </div>
             </div>
           </div>
 
@@ -303,6 +332,68 @@ export default function EditRestaurantModal({
                   </label>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Partially Halal Meat Options */}
+          {formData.isPartiallyHalal && (
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-yellow-700">
+                Partially Halal Meat Options <span className="text-red-500">*</span>
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="partiallyHalalChicken"
+                    checked={formData.partiallyHalalChicken}
+                    onChange={(e) => setFormData({ ...formData, partiallyHalalChicken: e.target.checked })}
+                    className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <label htmlFor="partiallyHalalChicken" className="ml-3 block text-base text-yellow-700">
+                    Chicken
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="partiallyHalalLamb"
+                    checked={formData.partiallyHalalLamb}
+                    onChange={(e) => setFormData({ ...formData, partiallyHalalLamb: e.target.checked })}
+                    className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <label htmlFor="partiallyHalalLamb" className="ml-3 block text-base text-yellow-700">
+                    Lamb
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="partiallyHalalBeef"
+                    checked={formData.partiallyHalalBeef}
+                    onChange={(e) => setFormData({ ...formData, partiallyHalalBeef: e.target.checked })}
+                    className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <label htmlFor="partiallyHalalBeef" className="ml-3 block text-base text-yellow-700">
+                    Beef
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="partiallyHalalGoat"
+                    checked={formData.partiallyHalalGoat}
+                    onChange={(e) => setFormData({ ...formData, partiallyHalalGoat: e.target.checked })}
+                    className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <label htmlFor="partiallyHalalGoat" className="ml-3 block text-base text-yellow-700">
+                    Goat
+                  </label>
+                </div>
+              </div>
+              {error && (
+                <div className="text-red-600 text-sm font-medium mt-2">{error}</div>
+              )}
             </div>
           )}
 

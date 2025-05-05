@@ -6,6 +6,7 @@ import Script from "next/script";
 import { metadata } from "./metadata";
 import { Toaster } from 'react-hot-toast';
 import { Providers } from './providers';
+import Footer from '@/components/Footer';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <ScrollToTop />
+          <Footer />
           <Toaster 
             position="bottom-center"
             toastOptions={{

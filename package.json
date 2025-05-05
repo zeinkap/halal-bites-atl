@@ -11,6 +11,7 @@
     "seed": "ts-node prisma/seed.ts",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
+    "clear-redis-cache": "ts-node scripts/clear-redis-cache.ts",
     "migrate-prod": "dotenv -e .env.production -- npx prisma migrate deploy",
     "seed-prod": "dotenv -e .env.production -- npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
   },

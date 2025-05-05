@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { CuisineType, PriceRange } from '@prisma/client';
 import { Redis } from '@upstash/redis';
@@ -12,22 +12,59 @@ const CACHE_TTL = 60 * 5; // 5 minutes
 const RESTAURANTS_CACHE_KEY = 'restaurants:all';
 
 // Get all restaurants
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    // Try to get from cache first
-    const cachedData = await redis.get(RESTAURANTS_CACHE_KEY);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
+    // Parse query params for proximity search
+    const { searchParams } = new URL(req.url);
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    const radius = searchParams.get('radius'); // in kilometers
+
+    // Try to get from cache first (skip cache if proximity search)
+    if (!lat && !lng) {
+      const cachedData = await redis.get(RESTAURANTS_CACHE_KEY);
+      if (cachedData) {
+        return NextResponse.json(cachedData);
+      }
     }
 
     // If not in cache, get from database
     await prisma.$connect();
     const restaurants = await prisma.restaurant.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { comments: true }
-        }
+      select: {
+        id: true,
+        name: true,
+        cuisineType: true,
+        address: true,
+        description: true,
+        priceRange: true,
+        hasPrayerRoom: true,
+        hasOutdoorSeating: true,
+        hasHighChair: true,
+        servesAlcohol: true,
+        isFullyHalal: true,
+        isZabiha: true,
+        isPartiallyHalal: true,
+        partiallyHalalChicken: true,
+        partiallyHalalLamb: true,
+        partiallyHalalBeef: true,
+        partiallyHalalGoat: true,
+        imageUrl: true,
+        zabihaChicken: true,
+        zabihaLamb: true,
+        zabihaBeef: true,
+        zabihaGoat: true,
+        zabihaVerified: true,
+        zabihaVerifiedBy: true,
+        createdAt: true,
+        updatedAt: true,
+        brandId: true,
+        latitude: true,
+        longitude: true,
+        comments: false,
+        reports: false,
+        _count: true
       }
     });
 
@@ -36,16 +73,50 @@ export async function GET() {
       const { _count, ...rest } = restaurant;
       return {
         ...rest,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
         commentCount: _count.comments
       };
     });
 
-    // Store in cache
-    await redis.set(RESTAURANTS_CACHE_KEY, restaurantsWithCommentCount, {
-      ex: CACHE_TTL
-    });
+    // If lat/lng provided, sort/filter by proximity
+    let result = restaurantsWithCommentCount;
+    if (lat && lng) {
+      const userLat = parseFloat(lat);
+      const userLng = parseFloat(lng);
+      const rad = radius ? parseFloat(radius) : null;
+      // Haversine formula
+      function getDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+        const toRad = (v: number) => (v * Math.PI) / 180;
+        const R = 6371; // Earth radius in km
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+      result = result
+        .map(r => {
+          const distance = (r.latitude != null && r.longitude != null)
+            ? getDistanceKm(userLat, userLng, r.latitude, r.longitude)
+            : null;
+          return { ...r, distance };
+        })
+        .filter(r => r.distance !== null && (!rad || r.distance <= rad))
+        .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+    }
 
-    return NextResponse.json(restaurantsWithCommentCount);
+    // Store in cache (only if not proximity search)
+    if (!lat && !lng) {
+      await redis.set(RESTAURANTS_CACHE_KEY, restaurantsWithCommentCount, {
+        ex: CACHE_TTL
+      });
+    }
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching restaurants:', error);
     // Return an empty array instead of an error object to prevent frontend mapping errors
@@ -83,11 +154,16 @@ export async function POST(request: Request) {
         hasHighChair: data.hasHighChair || false,
         servesAlcohol: data.servesAlcohol || false,
         isFullyHalal: data.isFullyHalal || false,
+        isPartiallyHalal: data.isPartiallyHalal || false,
         imageUrl: data.imageUrl || '/images/logo.png',
         zabihaChicken: data.zabihaChicken || false,
         zabihaLamb: data.zabihaLamb || false,
         zabihaBeef: data.zabihaBeef || false,
         zabihaGoat: data.zabihaGoat || false,
+        partiallyHalalChicken: data.partiallyHalalChicken || false,
+        partiallyHalalLamb: data.partiallyHalalLamb || false,
+        partiallyHalalBeef: data.partiallyHalalBeef || false,
+        partiallyHalalGoat: data.partiallyHalalGoat || false,
         zabihaVerified: data.zabihaVerified || null,
         zabihaVerifiedBy: data.zabihaVerifiedBy || null
       }
@@ -130,11 +206,16 @@ export async function PATCH(request: Request) {
       hasHighChair,
       servesAlcohol,
       isFullyHalal,
+      isPartiallyHalal,
       // New Zabiha fields
       zabihaChicken,
       zabihaLamb,
       zabihaBeef,
       zabihaGoat,
+      partiallyHalalChicken,
+      partiallyHalalLamb,
+      partiallyHalalBeef,
+      partiallyHalalGoat,
       zabihaVerified,
       zabihaVerifiedBy
     } = body;
@@ -175,11 +256,16 @@ export async function PATCH(request: Request) {
         hasHighChair: hasHighChair !== undefined ? hasHighChair : undefined,
         servesAlcohol: servesAlcohol !== undefined ? servesAlcohol : undefined,
         isFullyHalal: isFullyHalal !== undefined ? isFullyHalal : undefined,
+        isPartiallyHalal: isPartiallyHalal !== undefined ? isPartiallyHalal : undefined,
         // Add new Zabiha fields
         zabihaChicken: zabihaChicken !== undefined ? zabihaChicken : undefined,
         zabihaLamb: zabihaLamb !== undefined ? zabihaLamb : undefined,
         zabihaBeef: zabihaBeef !== undefined ? zabihaBeef : undefined,
         zabihaGoat: zabihaGoat !== undefined ? zabihaGoat : undefined,
+        partiallyHalalChicken: partiallyHalalChicken !== undefined ? partiallyHalalChicken : undefined,
+        partiallyHalalLamb: partiallyHalalLamb !== undefined ? partiallyHalalLamb : undefined,
+        partiallyHalalBeef: partiallyHalalBeef !== undefined ? partiallyHalalBeef : undefined,
+        partiallyHalalGoat: partiallyHalalGoat !== undefined ? partiallyHalalGoat : undefined,
         zabihaVerified: zabihaVerified || undefined,
         zabihaVerifiedBy: zabihaVerifiedBy || undefined
       },

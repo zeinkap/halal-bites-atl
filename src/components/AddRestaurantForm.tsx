@@ -36,6 +36,11 @@ interface FormData {
   zabihaVerified?: Date | null;
   zabihaVerifiedBy?: string;
   image?: File;
+  isPartiallyHalal: boolean;
+  partiallyHalalChicken: boolean;
+  partiallyHalalLamb: boolean;
+  partiallyHalalBeef: boolean;
+  partiallyHalalGoat: boolean;
 }
 
 const initialFormState: FormData = {
@@ -56,7 +61,12 @@ const initialFormState: FormData = {
   zabihaGoat: false,
   zabihaVerified: undefined,
   zabihaVerifiedBy: '',
-  image: undefined
+  image: undefined,
+  isPartiallyHalal: false,
+  partiallyHalalChicken: false,
+  partiallyHalalLamb: false,
+  partiallyHalalBeef: false,
+  partiallyHalalGoat: false,
 };
 
 const MAX_NAME_LENGTH = 100;
@@ -278,6 +288,11 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
         return 'Please select at least one Zabiha meat type';
       }
     }
+    if (formData.isPartiallyHalal) {
+      if (!formData.partiallyHalalChicken && !formData.partiallyHalalLamb && !formData.partiallyHalalBeef && !formData.partiallyHalalGoat) {
+        return 'Please select at least one Partially Halal meat type';
+      }
+    }
     return null;
   };
 
@@ -332,7 +347,11 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Error response:', errorData);
-        throw new Error(errorData.error || 'Failed to add restaurant');
+        let userFriendlyError = errorData.error || 'Failed to add restaurant';
+        if (userFriendlyError.includes('Unique constraint failed on the fields: (`name`)')) {
+          userFriendlyError = 'A restaurant with this name already exists. Please choose a different name.';
+        }
+        throw new Error(userFriendlyError);
       }
 
       const restaurantName = formData.name;
@@ -739,8 +758,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         data-testid="restaurant-fully-halal-checkbox"
                         className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         checked={formData.isFullyHalal}
-                        onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked })}
-                        disabled={formData.servesAlcohol}
+                        onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : formData.isPartiallyHalal })}
+                        disabled={formData.servesAlcohol || formData.isPartiallyHalal}
                       />
                     </div>
                     <div className="ml-3">
@@ -749,9 +768,82 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       {formData.servesAlcohol && (
                         <p className="text-xs text-orange-600 mt-1">Cannot be fully halal if alcohol is served</p>
                       )}
+                      {formData.isPartiallyHalal && (
+                        <p className="text-xs text-orange-600 mt-1">Cannot select both Fully Halal and Partially Halal</p>
+                      )}
+                    </div>
+                  </label>
+
+                  {/* Partially Halal */}
+                  <label className="relative flex items-start p-3 rounded-lg border border-blue-200 hover:border-blue-400 cursor-pointer transition-colors">
+                    <div className="flex items-center h-5">
+                      <input
+                        type="checkbox"
+                        name="isPartiallyHalal"
+                        id="isPartiallyHalal"
+                        data-testid="restaurant-partially-halal-checkbox"
+                        className="h-4 w-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 transition-colors"
+                        checked={formData.isPartiallyHalal}
+                        onChange={(e) => setFormData({ ...formData, isPartiallyHalal: e.target.checked, isFullyHalal: e.target.checked ? false : formData.isFullyHalal })}
+                        disabled={formData.isFullyHalal}
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <span className="text-sm font-semibold text-gray-900">Partially Halal</span>
+                      <p className="text-xs text-gray-500 mt-0.5">Some meats on the menu are halal</p>
+                      {formData.isFullyHalal && (
+                        <p className="text-xs text-orange-600 mt-1">Cannot select both Fully Halal and Partially Halal</p>
+                      )}
                     </div>
                   </label>
                 </div>
+
+                {/* Partially Halal Details */}
+                {formData.isPartiallyHalal && (
+                  <div className="space-y-4 mt-4 p-4 bg-white rounded-lg border border-blue-100">
+                    <div className="text-sm font-medium text-gray-700 mb-2">
+                      Halal Meat Types Available: <span className="text-red-500">*</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                        <input
+                          type="checkbox"
+                          className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                          checked={formData.partiallyHalalChicken}
+                          onChange={(e) => setFormData({ ...formData, partiallyHalalChicken: e.target.checked })}
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Chicken</span>
+                      </label>
+                      <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                        <input
+                          type="checkbox"
+                          className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                          checked={formData.partiallyHalalLamb}
+                          onChange={(e) => setFormData({ ...formData, partiallyHalalLamb: e.target.checked })}
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Lamb</span>
+                      </label>
+                      <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                        <input
+                          type="checkbox"
+                          className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                          checked={formData.partiallyHalalBeef}
+                          onChange={(e) => setFormData({ ...formData, partiallyHalalBeef: e.target.checked })}
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Beef</span>
+                      </label>
+                      <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
+                        <input
+                          type="checkbox"
+                          className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                          checked={formData.partiallyHalalGoat}
+                          onChange={(e) => setFormData({ ...formData, partiallyHalalGoat: e.target.checked })}
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Goat</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
 
                 {formData.isZabiha && (
                   <div className="space-y-4 mt-4 p-4 bg-white rounded-lg border border-orange-100">
