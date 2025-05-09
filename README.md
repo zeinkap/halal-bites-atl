@@ -497,33 +497,29 @@ Both report types trigger email notifications:
 
 ## Authentication & Admin Features
 
-The application uses NextAuth.js with Google OAuth for secure authentication:
+### Custom Admin Authentication
 
-### Authentication Features
-- Google OAuth integration for secure sign-in
-- Protected admin routes and API endpoints
-- Session management with NextAuth.js
-- Admin-only access control
-- Secure admin access via `/secret-login` route
+Admin access is protected by a custom authentication system. There is no third-party OAuth or NextAuth.js integration. Instead, a secure login form is available at `/admin-login`:
 
-### Admin Dashboard (/admin)
-The admin dashboard provides a centralized interface for administrative tasks:
+- Only users who enter the correct admin email (configured in the environment variables) and password can access the admin dashboard.
+- All admin routes and API endpoints are protected and require authentication.
+- Unauthorized users are automatically redirected to the home page.
 
-#### Access Control
-- Protected route with authentication checks
-- Only accessible to configured admin email
-- Secure login through `/secret-login` page
-- Automatic redirection for unauthorized users
-- Loading states during authentication checks
+#### How to Access the Admin Interface
+1. Navigate to `/admin-login` in your browser.
+2. Enter the admin email and password (as configured in your environment variables).
+3. Upon successful authentication, you will be redirected to the admin dashboard.
+4. Unauthorized users will be redirected to the home page.
 
-#### How to Access Admin Interface
-1. Navigate to `/secret-login` in your browser
-2. Sign in with your Google account
-3. Only emails configured as `NEXT_PUBLIC_ADMIN_EMAIL` in environment variables will be granted access
-4. Upon successful authentication, you'll be redirected to the admin dashboard
-5. Unauthorized users will be redirected to the home page
+#### Environment Variable Configuration
+Set the following in your `.env` file:
 
-#### Features
+```
+NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
+ADMIN_PASSWORD="your_secure_admin_password"
+```
+
+#### Admin Dashboard Features
 1. **Restaurant Management**
    - View all restaurants with detailed information
    - Edit restaurant details with real-time updates
@@ -546,15 +542,7 @@ The admin dashboard provides a centralized interface for administrative tasks:
    - Instant feedback on email delivery
    - Error handling with detailed messages
 
-#### Implementation
-```typescript
-// Example admin route protection
-if (!session?.user?.email || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-  return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-}
-```
-
-### Admin Capabilities
+#### Admin Capabilities
 - Access to protected admin dashboard
 - Manage restaurant data with immediate updates
 - Handle user reports

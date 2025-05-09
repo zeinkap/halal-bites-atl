@@ -1,32 +1,27 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { isAdminAuthenticated } from '@/lib/admin-auth';
 
-// Helper function to verify admin access
-async function verifyAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+// Helper function to verify admin access using custom admin cookie
+async function verifyAdminCustom() {
+  const cookieStore = await cookies();
+  const reqObj = { headers: { cookie: cookieStore.toString() } };
+  if (!isAdminAuthenticated(reqObj)) {
     return { error: 'Unauthorized', status: 401 };
   }
-
-  const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  if (!isAdmin) {
-    return { error: 'Forbidden', status: 403 };
-  }
-
   return null;
 }
 
 // Get all reports with restaurant details
-export async function GET(request: Request) {
+export async function GET(req: Request) {
   try {
-    const adminCheck = await verifyAdmin();
+    const adminCheck = await verifyAdminCustom();
     if (adminCheck) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
 
     const reports = await prisma.report.findMany({
@@ -53,16 +48,16 @@ export async function GET(request: Request) {
 }
 
 // Update a report's status
-export async function PATCH(request: Request) {
+export async function PATCH(req: Request) {
   try {
-    const adminCheck = await verifyAdmin();
+    const adminCheck = await verifyAdminCustom();
     if (adminCheck) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
-    const data = await request.json();
+    const data = await req.json();
     const { status, resolvedBy } = data;
 
     if (!id) {
@@ -101,7 +96,7 @@ export async function PATCH(request: Request) {
 // Delete a report
 export async function DELETE(request: Request) {
   try {
-    const adminCheck = await verifyAdmin();
+    const adminCheck = await verifyAdminCustom();
     if (adminCheck) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }

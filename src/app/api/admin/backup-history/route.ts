@@ -1,20 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { isAdminAuthenticated } from '@/lib/admin-auth';
 
 export async function GET() {
   try {
-    // Verify admin access
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    // Verify admin access using custom admin cookie
+    const cookieStore = await cookies();
+    const reqObj = { headers: { cookie: cookieStore.toString() } };
+    if (!isAdminAuthenticated(reqObj)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Get backup history

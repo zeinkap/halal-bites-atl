@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     console.log('Processing restaurant report submission...');
     const data = await request.json();
-    const { restaurantId, restaurantName, reportDetails } = data;
+    const { restaurantId, restaurantName, reportDetails, email } = data;
 
     // Save the report to the database
     await prisma.report.create({
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
         <p><strong>Restaurant ID:</strong> ${restaurantId}</p>
         <p><strong>Report Details:</strong></p>
         <p>${reportDetails}</p>
+        <p><strong>User Email:</strong> ${email ? email : 'Not provided'}</p>
       `,
     });
 

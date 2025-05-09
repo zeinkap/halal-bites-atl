@@ -70,7 +70,7 @@ async function main() {
         const { lat, lng } = await getLatLng(data.address);
         console.log(`Geocoding result for address: '${data.address}' => lat: ${lat}, lng: ${lng}`);
         await prisma.restaurant.upsert({
-          where: { name: data.name },
+          where: { name_address_unique: { name: data.name, address: data.address } },
           update: { ...(dataWithBrandId as any), ...brandConnect, latitude: lat, longitude: lng },
           create: { ...(dataWithBrandId as any), id, ...brandConnect, latitude: lat, longitude: lng },
         });
@@ -2534,7 +2534,7 @@ async function main() {
 
     await upsertRestaurant('Karachi Broast & Grill - Roswell', {
       name: 'Karachi Broast & Grill - Roswell',
-      cuisineType: CuisineType.INDONESIAN,
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '11235 Alpharetta Hwy #140, Roswell, GA 30076',
       description: 'Counter-serve restaurant offering multicultural fast food & hearty plates in simple surroundings.',
       priceRange: PriceRange.LOW,
@@ -2564,7 +2564,7 @@ async function main() {
 
     await upsertRestaurant('Karachi Broast & Grill - Marietta', {
       name: 'Karachi Broast & Grill - Marietta',
-      cuisineType: CuisineType.INDONESIAN,
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '1475 Terrell Mill Road SE Apt 110, Marietta, GA 30067',
       description: 'Counter-serve restaurant offering multicultural fast food & hearty plates in simple surroundings.',
       priceRange: PriceRange.LOW,
@@ -2594,7 +2594,7 @@ async function main() {
 
     await upsertRestaurant('Karachi Broast & Grill - Norcross', {
       name: 'Karachi Broast & Grill - Norcross',
-      cuisineType: CuisineType.INDONESIAN,
+      cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '5775 Jimmy Carter Blvd STE 180, Norcross, GA 30071',
       description: 'Counter-serve restaurant offering multicultural fast food & hearty plates in simple surroundings.',
       priceRange: PriceRange.LOW,
@@ -3102,8 +3102,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('Kay’s Pizza BBQ & Wings حلال', {
-      name: 'Kay’s Pizza BBQ & Wings حلال',
+    await upsertRestaurant("Kay's Pizza BBQ & Wings حلال", {
+      name: "Kay's Pizza BBQ & Wings حلال",
       cuisineType: CuisineType.FAST_FOOD,
       address: '4786 Sugarloaf Pkwy, Lawrenceville, GA 30044',
       description: '',

@@ -6,6 +6,8 @@ import { CuisineType } from '@prisma/client';
 import RestaurantListItem from './RestaurantListItem';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { formatCuisineName } from '@/utils/formatCuisineName';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -203,6 +205,24 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
     });
   };
 
+  // Helper to clear near me mode and fetch all restaurants
+  const handleClearNearMe = async () => {
+    setLocationError(null);
+    setShowingNearMe(false);
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/restaurants');
+      if (!response.ok) throw new Error('Failed to fetch restaurants');
+      const data = await response.json();
+      setRestaurants(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to fetch restaurants');
+      setRestaurants([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -213,20 +233,106 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
 
   return (
     <div className="w-full" data-testid="restaurant-list-container">
-      <h1 className="text-4xl font-extrabold tracking-tight text-center sm:text-left mb-1 bg-gradient-to-r from-orange-500 via-orange-400 to-green-500 bg-clip-text text-transparent drop-shadow-md">
+      <h1 className="text-4xl font-extrabold tracking-tight text-center mb-1 bg-gradient-to-r from-orange-500 via-orange-400 to-green-500 bg-clip-text text-transparent drop-shadow-md">
         Halal Bites ATL
       </h1>
       <div className="mb-8 bg-white z-10 p-4 shadow-sm" data-testid="restaurant-list-searchbar-section">
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-          {/* Search input and location controls */}
-          <div className="flex-1 flex flex-col gap-2 sm:flex-row sm:gap-2 items-center">
+        {/* Desktop: Search input row */}
+        <div className="hidden sm:flex justify-center mb-2 w-full">
+          <div className="relative w-full max-w-2xl">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, cuisine, feature or zip code"
+              className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400 text-sm"
+              data-testid="search-input"
+            />
+            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                aria-label="Clear search"
+                tabIndex={0}
+              >
+                <XMarkIcon className="h-5 w-5 text-gray-400" />
+              </button>
+            )}
+          </div>
+        </div>
+        {/* Desktop: Controls row below search */}
+        <div className="hidden sm:flex w-full justify-center mt-2">
+          <div className="flex flex-row items-center gap-x-3 max-w-2xl w-full justify-center">
+            <MapPinIcon className="h-5 w-5 text-orange-500 flex-shrink-0" />
+            <label htmlFor="radius-select" className="text-xs sm:text-sm text-gray-700 whitespace-nowrap flex-shrink-0">Distance:</label>
+            <select
+              id="radius-select"
+              value={radiusMiles}
+              onChange={e => setRadiusMiles(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 min-w-[110px]"
+              data-testid="radius-select"
+              title="Search radius"
+            >
+              <option value="3">3 mi</option>
+              <option value="5">5 mi</option>
+              <option value="10">10 mi</option>
+              <option value="all">All</option>
+            </select>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleLocationSearch(false)}
+              disabled={locationLoading}
+              data-testid="location-search-button"
+              title="Search by your current location"
+              className="min-w-[128px] w-32 flex items-center justify-center"
+            >
+              <MapPinIcon className="h-4 w-4 mr-1" />
+              {locationLoading ? 'Locating...' : 'Near Me'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              data-testid="filters-button"
+              className="min-w-[128px] w-32 flex items-center justify-center"
+            >
+              <AdjustmentsHorizontalIcon className="h-5 w-5" />
+              <span className="font-semibold tracking-wide">Filters</span>
+            </Button>
+            <div className="text-xs text-gray-500 flex items-center justify-center gap-2">
+              {showingNearMe && !locationError && (
+                <>
+                  <span className="text-green-600">Showing results near you.</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearNearMe}
+                    className="ml-2 px-2 py-1"
+                    aria-label="Clear Near Me"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              {locationError && (
+                <span className="text-red-600">{locationError}</span>
+              )}
+            </div>
+          </div>
+        </div>
+        {/* Mobile: search and controls (unchanged) */}
+        <div className="flex flex-col sm:hidden gap-4 mb-4">
+          <div className="flex-1 flex flex-col gap-2 items-center">
             {/* Search input */}
             <div className="relative flex-grow min-w-[280px] max-w-full overflow-hidden">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, cuisine, city, or zip code"
+                placeholder="Search by name, cuisine, feature or zip code"
                 className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400 text-xs sm:text-sm"
                 data-testid="search-input"
               />
@@ -243,109 +349,75 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 </button>
               )}
             </div>
-            {/* Minimal Radius and Near Me controls - improved mobile grouping */}
-            <div className="w-full sm:w-auto">
-              {/* Mobile layout */}
-              <div className="bg-orange-50 rounded-xl p-4 flex flex-col items-center w-full max-w-xs mx-auto mb-2 shadow-sm sm:hidden">
-                <div className="flex flex-row items-center gap-2 w-full justify-start overflow-x-auto">
+            {/* Two-column grid for controls */}
+            <div className="w-full">
+              <div className="bg-orange-50 rounded-xl p-4 grid grid-cols-1 gap-3 w-full max-w-xs mx-auto mb-2 shadow-sm sm:hidden">
+                {/* Distance select */}
+                <div className="col-span-1 flex items-center gap-2 w-full">
                   <MapPinIcon className="h-5 w-5 text-orange-500 flex-shrink-0" />
                   <label htmlFor="radius-select" className="text-xs text-gray-700 flex-shrink-0">Distance:</label>
                   <select
                     id="radius-select"
                     value={radiusMiles}
                     onChange={e => setRadiusMiles(e.target.value)}
-                    className="px-2 py-2 rounded-lg border border-gray-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 flex-shrink-0"
-                    style={{ minWidth: 70 }}
+                    className="px-2 py-2 rounded-lg border border-gray-300 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 flex-1 min-w-[60px]"
                   >
                     <option value="3">3 mi</option>
                     <option value="5">5 mi</option>
                     <option value="10">10 mi</option>
                     <option value="all">All</option>
                   </select>
-                  <button
-                    type="button"
+                </div>
+                {/* Near Me button */}
+                <div className="col-span-1 flex items-center w-full">
+                  <Button
+                    variant="primary"
+                    size="sm"
                     onClick={() => handleLocationSearch(false)}
-                    className="flex items-center justify-center gap-1 px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg shadow-md hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-xs flex-shrink-0"
                     disabled={locationLoading}
-                    style={{ minWidth: 80 }}
+                    className="w-full flex items-center justify-center"
                   >
                     <MapPinIcon className="h-4 w-4 mr-1" />
                     {locationLoading ? 'Locating...' : 'Near Me'}
-                  </button>
+                  </Button>
                 </div>
-                <div className="mt-2 w-full text-center">
+                {/* Instruction text above Filters button */}
+                <div className="col-span-2 w-full text-center mb-1">
                   <div className="text-xs text-gray-500">Choose distance and tap Near Me.</div>
+                </div>
+                {/* Filters button, spans both columns */}
+                <div className="col-span-2 mt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="w-full flex items-center justify-center gap-2"
+                    data-testid="filters-button-mobile"
+                    type="button"
+                  >
+                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                    <span>Filters</span>
+                  </Button>
+                </div>
+                {/* Status and errors */}
+                <div className="col-span-2 mt-2 w-full text-center">
                   {showingNearMe && !locationError && (
-                    <div className="text-xs text-green-600 mt-1">Showing results near you.</div>
+                    <div className="flex items-center justify-center gap-2 text-xs text-green-600 mt-1">
+                      <span>Showing results near you.</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClearNearMe}
+                        className="px-2 py-1"
+                        aria-label="Clear Near Me"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
                   {locationError && (
                     <div className="text-xs text-red-600 mt-1">{locationError}</div>
                   )}
-                </div>
-                {/* Mobile Filters Button */}
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center justify-center gap-2 px-5 py-2 bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-full shadow-md hover:from-orange-500 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 text-xs font-semibold tracking-wide w-full mt-3 sm:hidden transition-all duration-150 active:scale-95 cursor-pointer"
-                  data-testid="filters-button-mobile"
-                  type="button"
-                >
-                  <AdjustmentsHorizontalIcon className="h-5 w-5" />
-                  <span>Filters</span>
-                </button>
-              </div>
-              {/* Desktop/tablet layout */}
-              <div className="hidden sm:flex flex-col gap-y-1 w-full sm:max-w-md">
-                {/* Controls row */}
-                <div className="flex flex-row items-end gap-x-2 w-full">
-                  <MapPinIcon className="h-5 w-5 text-orange-500" />
-                  <label htmlFor="radius-select" className="text-xs sm:text-sm text-gray-700 whitespace-nowrap">Distance:</label>
-                  <select
-                    id="radius-select"
-                    value={radiusMiles}
-                    onChange={e => setRadiusMiles(e.target.value)}
-                    className="px-2 py-1 rounded-lg border border-gray-300 bg-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900"
-                    style={{ minWidth: 80 }}
-                    data-testid="radius-select"
-                    title="Search radius"
-                  >
-                    <option value="3">3 mi</option>
-                    <option value="5">5 mi</option>
-                    <option value="10">10 mi</option>
-                    <option value="all">All</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => handleLocationSearch(false)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg shadow-md hover:from-emerald-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 text-xs sm:text-sm whitespace-nowrap justify-center"
-                    disabled={locationLoading}
-                    data-testid="location-search-button"
-                    title="Search by your current location"
-                  >
-                    <MapPinIcon className="h-4 w-4 mr-1" />
-                    {locationLoading ? 'Locating...' : 'Near Me'}
-                  </button>
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-full shadow-md hover:from-orange-500 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 text-xs sm:text-sm whitespace-nowrap justify-center transition-all duration-150 active:scale-95 cursor-pointer"
-                    data-testid="filters-button"
-                  >
-                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
-                    <span className="font-semibold tracking-wide">Filters</span>
-                  </button>
-                </div>
-                {/* Helper/success/error messages row */}
-                <div className="flex flex-row justify-between items-center mt-1 min-h-[20px] w-full">
-                  <div className="text-xs text-gray-500 flex-1 text-left">
-                    Select a distance and click Near Me to use your location.
-                  </div>
-                  <div className="flex-1 text-right">
-                    {showingNearMe && !locationError && (
-                      <span className="text-xs text-green-600">Showing results near you.</span>
-                    )}
-                    {locationError && (
-                      <span className="text-xs text-red-600">{locationError}</span>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
@@ -353,7 +425,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         </div>
 
         {showFilters && (
-          <div className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4" data-testid="filters-panel">
+          <Card className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4" data-testid="filters-panel">
             <div>
               <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
                 Sort By
@@ -417,77 +489,86 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Features
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.isZabiha}
-                    onChange={() => handleFeatureChange('isZabiha')}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">Zabiha</span>
-                </label>
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.hasPrayerRoom}
-                    onChange={() => handleFeatureChange('hasPrayerRoom')}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">Prayer Space</span>
-                </label>
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.hasHighChair}
-                    onChange={() => handleFeatureChange('hasHighChair')}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">High Chairs</span>
-                </label>
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.hasOutdoorSeating}
-                    onChange={() => handleFeatureChange('hasOutdoorSeating')}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">Outdoor Seating</span>
-                </label>
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.isFullyHalal}
-                    onChange={() => handleFeatureChange('isFullyHalal')}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">Fully Halal</span>
-                </label>
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.servesAlcohol}
-                    onChange={() => handleFeatureChange('servesAlcohol')}
-                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">No Alcohol</span>
-                </label>
-                <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatures.isPartiallyHalal}
-                    onChange={() => handleFeatureChange('isPartiallyHalal')}
-                    className="rounded border-yellow-400 text-gray-700 focus:ring-yellow-500 h-4 w-4"
-                  />
-                  <span className="text-xs text-gray-700">Partially Halal</span>
-                </label>
+              {/* Two-column flexbox for mobile, grid for desktop */}
+              <div className="flex flex-col sm:grid sm:grid-cols-3 gap-2">
+                <div className="flex flex-row gap-2 sm:contents">
+                  <div className="flex-1 flex flex-col gap-2">
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.isZabiha}
+                        onChange={() => handleFeatureChange('isZabiha')}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">Zabiha</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.hasHighChair}
+                        onChange={() => handleFeatureChange('hasHighChair')}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">High Chairs</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.isFullyHalal}
+                        onChange={() => handleFeatureChange('isFullyHalal')}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">Fully Halal</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.isPartiallyHalal}
+                        onChange={() => handleFeatureChange('isPartiallyHalal')}
+                        className="rounded border-yellow-400 text-gray-700 focus:ring-yellow-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">Partially Halal</span>
+                    </label>
+                  </div>
+                  <div className="flex-1 flex flex-col gap-2">
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.hasPrayerRoom}
+                        onChange={() => handleFeatureChange('hasPrayerRoom')}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">Prayer Space</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.hasOutdoorSeating}
+                        onChange={() => handleFeatureChange('hasOutdoorSeating')}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">Outdoor Seating</span>
+                    </label>
+                    <label className="flex items-center space-x-2 p-1 min-h-[28px] w-full rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer bg-white text-xs">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.servesAlcohol}
+                        onChange={() => handleFeatureChange('servesAlcohol')}
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs text-gray-700">No Alcohol</span>
+                    </label>
+                  </div>
+                </div>
+                {/* On desktop, use grid-cols-3 for more columns */}
+                <div className="hidden sm:block" />
               </div>
             </div>
 
             {/* Clear All Filters Button */}
-            <button
-              type="button"
-              className="mt-2 w-full px-1 py-0.5 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-xs"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 setSelectedCuisine('all');
                 setSelectedPriceRange('all');
@@ -506,8 +587,8 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               data-testid="clear-filters-button"
             >
               Clear All Filters
-            </button>
-          </div>
+            </Button>
+          </Card>
         )}
 
         {/* Results count */}
@@ -527,11 +608,11 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
       {isLoading ? (
         <div className="space-y-4" data-testid="restaurant-list-loading-section">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse" data-testid="restaurant-list-loading-item">
+            <Card key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse" data-testid="restaurant-list-loading-item">
               <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
               <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
               <div className="h-4 bg-gray-200 rounded w-full"></div>
-            </div>
+            </Card>
           ))}
         </div>
       ) : displayedRestaurants.length > 0 ? (

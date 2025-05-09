@@ -1,8 +1,9 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Button } from '../../../components/ui/Button';
+import { Badge } from '../../../components/ui/Badge';
 
 interface BugReport {
   id: string;
@@ -16,21 +17,17 @@ interface BugReport {
   email?: string;
   screenshotUrl?: string;
   createdAt: string;
+  status?: string;
 }
 
 export default function AdminBugReportsPage() {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const [bugReports, setBugReports] = useState<BugReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/");
-    } else if (status === "authenticated") {
-      fetchBugReports();
-    }
-  }, [status, router]);
+    fetchBugReports();
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,18 +46,10 @@ export default function AdminBugReportsPage() {
     }
   };
 
-  if (status === "loading" || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
         <div className="text-xl text-gray-700">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!session?.user?.email || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12 flex items-center justify-center">
-        <div className="text-xl text-red-600">Access Denied</div>
       </div>
     );
   }
@@ -69,12 +58,7 @@ export default function AdminBugReportsPage() {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center mb-4">
-          <a
-            href="/admin"
-            className="inline-block px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors text-sm font-medium shadow"
-          >
-            Back to Dashboard
-          </a>
+          <Button variant="neutral" onClick={() => router.push('/admin')} className="inline-block px-4 py-2 text-sm font-medium">Back to Dashboard</Button>
         </div>
         <div className="mb-8 flex justify-center">
           <h2 className="text-3xl font-bold text-gray-900 text-center">Bug Reports</h2>
@@ -89,6 +73,7 @@ export default function AdminBugReportsPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Browser</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Screenshot</th>
@@ -101,6 +86,16 @@ export default function AdminBugReportsPage() {
                     <td className="px-4 py-2 text-sm text-gray-900 max-w-xs truncate" title={bug.title}>{bug.title}</td>
                     <td className="px-4 py-2 text-sm text-gray-500 max-w-xs truncate" title={bug.description}>{bug.description}</td>
                     <td className="px-4 py-2 text-sm text-gray-500">{bug.email || '-'}</td>
+                    <td className="px-4 py-2 text-sm">
+                      <Badge color={
+                        (bug.status || 'open') === 'rejected' ? 'pink' :
+                        (bug.status || 'open') === 'open' ? 'yellow' :
+                        (bug.status || 'open') === 'resolved' ? 'green' :
+                        'gray'
+                      } size="sm">
+                        {bug.status || 'open'}
+                      </Badge>
+                    </td>
                     <td className="px-4 py-2 text-sm text-gray-500">{bug.browser || '-'}</td>
                     <td className="px-4 py-2 text-sm text-gray-500">{bug.device || '-'}</td>
                     <td className="px-4 py-2 text-sm text-gray-500">

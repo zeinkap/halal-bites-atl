@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 const siteConfig = {
   name: "Halal Bites ATL",
-  description: "Discover the best halal restaurants and Muslim-owned cafes in Atlanta. Your comprehensive guide to authentic halal dining experiences in the ATL area.",
+  description: "Discover the best halal restaurants and cafes in Atlanta. Your comprehensive guide to authentic halal dining experiences in the ATL area.",
   url: "https://halalbitesatl.org",
   ogImage: "https://halalbitesatl.org/og-image.jpg",
   keywords: [

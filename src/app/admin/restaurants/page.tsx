@@ -1,11 +1,11 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import EditRestaurantModal from '@/components/EditRestaurantModal';
 import { type Restaurant } from '@prisma/client';
+import { Button } from '../../../components/ui/Button';
 
 // Extend the Prisma Restaurant type for admin view
 interface AdminRestaurant extends Restaurant {
@@ -14,7 +14,6 @@ interface AdminRestaurant extends Restaurant {
 }
 
 export default function RestaurantsManagement() {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const [restaurants, setRestaurants] = useState<AdminRestaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,12 +22,8 @@ export default function RestaurantsManagement() {
   const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/');
-    } else if (status === 'authenticated') {
-      fetchRestaurants();
-    }
-  }, [status, router]);
+    fetchRestaurants();
+  }, []);
 
   const fetchRestaurants = async () => {
     try {
@@ -81,25 +76,12 @@ export default function RestaurantsManagement() {
       return 0;
     });
 
-  if (status === 'loading' || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900">Loading...</h2>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session?.user?.email || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-red-600">Access Denied</h2>
-            <p className="mt-2 text-gray-600">You do not have permission to view this page.</p>
           </div>
         </div>
       </div>
@@ -114,12 +96,7 @@ export default function RestaurantsManagement() {
             <h2 className="text-3xl font-bold text-gray-900">Restaurant Management</h2>
             <p className="mt-2 text-lg text-gray-600">Manage all restaurants in the system</p>
           </div>
-          <button
-            onClick={() => router.push('/admin')}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Back to Dashboard
-          </button>
+          <Button variant="neutral" onClick={() => router.push('/admin')} className="px-4 py-2 text-sm font-medium">Back to Dashboard</Button>
         </div>
 
         {/* Search Bar */}
@@ -195,7 +172,9 @@ export default function RestaurantsManagement() {
                           {restaurant.reportCount}
                         </td>
                         <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 whitespace-nowrap">
-                          <button
+                          <Button
+                            variant="info"
+                            size="sm"
                             onClick={() => {
                               const restaurantData = {
                                 ...restaurant,
@@ -207,13 +186,15 @@ export default function RestaurantsManagement() {
                             className="text-blue-600 hover:text-blue-900 mr-4"
                           >
                             Edit
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
                             onClick={() => handleDelete(restaurant.id)}
                             className="text-red-600 hover:text-red-900"
                           >
                             Delete
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     ))}

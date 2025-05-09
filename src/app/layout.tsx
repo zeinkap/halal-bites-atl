@@ -1,12 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import ScrollToTop from "@/components/ScrollToTop";
 import Script from "next/script";
 import { metadata } from "./metadata";
-import { Toaster } from 'react-hot-toast';
-import { Providers } from './providers';
-import Footer from '@/components/Footer';
+import { ModalProvider } from '@/components/ui/ModalContext';
+import AppShell from '../components/AppShell';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,11 +17,7 @@ const geistMono = Geist_Mono({
 
 export { metadata };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -46,36 +39,11 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white`}
       >
-        <Providers>
-          <Navbar />
-          {children}
-          <ScrollToTop />
-          <Footer />
-          <Toaster 
-            position="bottom-center"
-            toastOptions={{
-              duration: 3000,
-              style: {
-                background: '#333',
-                color: '#fff',
-              },
-              success: {
-                iconTheme: {
-                  primary: '#22c55e',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
-        </Providers>
+        <ModalProvider>
+          <AppShell>{children}</AppShell>
+        </ModalProvider>
       </body>
     </html>
   );

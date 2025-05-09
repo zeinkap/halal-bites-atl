@@ -1,9 +1,13 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState, useRef, useEffect } from 'react';
-import { XMarkIcon, ExclamationTriangleIcon, PhotoIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, PhotoIcon, ChevronDownIcon, ChevronUpIcon, CheckCircleIcon } from './ui/icons';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
+import { CloseButton, Button } from './ui/Button';
+import { Card } from './ui/Card';
+import { Badge } from './ui/Badge';
+import { useModalContext } from './ui/ModalContext';
 
 interface BugReportModalProps {
   isOpen: boolean;
@@ -28,12 +32,14 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { setAnyModalOpen } = useModalContext();
 
   const {
     register,
     handleSubmit,
     formState: { errors, dirtyFields },
     reset,
+    watch,
   } = useForm<BugReportFormData>({
     defaultValues: {
       title: '',
@@ -46,6 +52,8 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
       email: '',
     },
   });
+
+  const descriptionValue = watch('description', '');
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -153,6 +161,11 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
     }
   };
 
+  useEffect(() => {
+    setAnyModalOpen(isOpen);
+    return () => setAnyModalOpen(false);
+  }, [isOpen, setAnyModalOpen]);
+
   return (
     <>
       <Transition appear show={isOpen} as={Fragment}>
@@ -180,26 +193,23 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <div className="flex justify-between items-start mb-4 ">
-                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 flex items-center gap-2">
+                <Dialog.Panel className="w-full max-w-2xl p-0 bg-transparent shadow-none">
+                  <Card className="w-full max-w-2xl p-0">
+                    <Card.Header className="sticky top-0 z-10 bg-white">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
                       <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
-                      Report Issue with Website
-                    </Dialog.Title>
-                    <button
-                      type="button"
-                      className="text-gray-400 hover:text-gray-500 cursor-pointer p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                      onClick={handleClose}
-                      data-testid="close-bug-report-modal"
-                    >
-                      <XMarkIcon className="h-6 w-6" />
-                    </button>
+                          <Card.Title>Report Issue with Website</Card.Title>
+                        </div>
+                    <CloseButton onClick={handleClose} data-testid="close-bug-report-modal" />
                   </div>
-
+                    </Card.Header>
+                    <Card.Content>
+                      {isSubmitting === false && showConfirmDialog === false && (
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-testid="bug-report-form">
                     <div>
                       <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                        What&apos;s not working? *
+                        What&apos;s not working? <span className="text-red-500" aria-hidden="true">*</span>
                       </label>
                       <input
                         type="text"
@@ -218,16 +228,26 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
 
                     <div>
                       <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                        Tell us more about the issue *
+                        Tell us more about the issue <span className="text-red-500" aria-hidden="true">*</span>
                       </label>
                       <textarea
                         id="description"
-                        {...register('description', { required: 'Please provide more details about the issue' })}
+                              {...register('description', { required: 'Please provide more details about the issue', maxLength: { value: 1000, message: 'Please keep your description under 1000 characters' } })}
                         rows={3}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm placeholder:text-gray-400 text-gray-900"
                         placeholder="What were you trying to do? What happened instead?"
                         data-testid="bug-report-description"
-                      />
+                              maxLength={1000}
+                              onChange={e => {
+                                e.target.value = e.target.value.slice(0, 1000);
+                              }}
+                            />
+                            <div className="flex justify-between items-center mt-1">
+                              <span className="text-xs text-gray-400">Max 1000 characters</span>
+                              <Badge color={errors.description ? 'orange' : 'gray'} size="xs" className="ml-2">
+                                {descriptionValue.length}/1000
+                              </Badge>
+                            </div>
                       {errors.description && (
                         <p className="mt-1 text-sm text-red-600" data-testid="description-error">
                           {errors.description.message}
@@ -381,25 +401,37 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                       </div>
                     )}
 
-                    <div className="mt-6 flex justify-end gap-3">
-                      <button
-                        type="button"
+                          <div className="mt-6 flex justify-end gap-3 sticky bottom-0 bg-white pt-2 pb-1 z-10">
+                      <Button
+                        variant="outline"
+                              size="sm"
                         onClick={handleClose}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
                         data-testid="bug-report-cancel"
                       >
                         Cancel
-                      </button>
-                      <button
-                        type="submit"
+                      </Button>
+                      <Button
+                        variant="primary"
+                              size="sm"
                         disabled={isSubmitting}
-                        className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 min-w-[100px]"
                         data-testid="bug-report-submit"
                       >
                         {isSubmitting ? 'Submitting...' : 'Submit Report'}
-                      </button>
+                      </Button>
                     </div>
                   </form>
+                      )}
+
+                      {/* Success State */}
+                      {isSubmitting && (
+                        <div className="py-8 text-center animate-fade-in">
+                          <CheckCircleIcon className="mx-auto h-10 w-10 text-green-500 mb-2" aria-hidden="true" />
+                          <div className="text-green-600 text-2xl mb-2 font-semibold">Thank you!</div>
+                          <div className="text-gray-700">Your bug report has been submitted. We will look into it soon.</div>
+                        </div>
+                      )}
+                    </Card.Content>
+                  </Card>
                 </Dialog.Panel>
               </Transition.Child>
             </div>
@@ -457,20 +489,18 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                     </div>
                   </div>
                   <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                    <button
-                      type="button"
-                      className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:min-w-[100px]"
+                    <Button
+                      variant="outline"
                       onClick={handleConfirmClose}
                     >
                       Yes, Discard
-                    </button>
-                    <button
-                      type="button"
-                      className="inline-flex w-full justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500 sm:w-auto sm:min-w-[100px]"
+                    </Button>
+                    <Button
+                      variant="primary"
                       onClick={handleCancelClose}
                     >
                       No, Keep Editing
-                    </button>
+                    </Button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

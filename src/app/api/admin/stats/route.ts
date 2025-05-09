@@ -1,34 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { isAdminAuthenticated } from '@/lib/admin-auth';
 
 export async function GET() {
   try {
-    // Verify admin access
-    const session = await getServerSession(authOptions);
-    console.log('Admin Stats - Session:', {
-      exists: !!session,
-      email: session?.user?.email,
-      expectedEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL
-    });
-
-    if (!session?.user?.email) {
-      console.log('Admin Stats - No session email');
+    // Verify admin access using custom admin cookie
+    const cookieStore = await cookies();
+    const reqObj = { headers: { cookie: cookieStore.toString() } };
+    if (!isAdminAuthenticated(reqObj)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-    console.log('Admin Stats - Is Admin:', {
-      isAdmin,
-      userEmail: session.user.email,
-      adminEmail: process.env.NEXT_PUBLIC_ADMIN_EMAIL
-    });
-
-    if (!isAdmin) {
-      console.log('Admin Stats - Not admin');
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Get total restaurants count

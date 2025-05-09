@@ -1,34 +1,33 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { StarIcon, XMarkIcon, PhotoIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
+import React from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { StarIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
-import ImageWithLightbox from './ImageWithLightbox';
+import {
+  initialCommentState,
+  MAX_COMMENT_LENGTH,
+  validateCommentForm,
+  CommentItem
+} from './comment-helpers';
+import { Card } from './ui/Card';
+import { Button, CloseButton } from './ui/Button';
+import { useModalContext } from './ui/ModalContext';
 
-interface Comment {
-  id: string;
-  content: string;
-  authorName: string;
-  rating: number;
-  imageUrl?: string;
-  createdAt: string;
-}
-
-interface CommentModalProps {
+export default function CommentModal({
+  isOpen,
+  onClose,
+  restaurantId,
+  restaurantName,
+  onCommentAdded,
+}: {
   isOpen: boolean;
   onClose: () => void;
   restaurantId: string;
   restaurantName: string;
   onCommentAdded?: () => void;
-}
-
-const initialCommentState = {
-  content: '',
-  authorName: '',
-  rating: 0
-};
-
-export default function CommentModal({ isOpen, onClose, restaurantId, restaurantName, onCommentAdded }: CommentModalProps) {
-  const [comments, setComments] = useState<Comment[]>([]);
+}) {
+  // TODO: Replace with proper Comment type
+  const [comments, setComments] = useState<Array<{ id: string; content: string; authorName: string; createdAt: string; rating: number; imageUrl?: string }>>([]);
   const [newComment, setNewComment] = useState(initialCommentState);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -39,6 +38,16 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
   const [isVisible, setIsVisible] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const { setAnyModalOpen } = useModalContext();
+
+  // Focus name field on open
+  useEffect(() => {
+    if (isOpen && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [isOpen]);
 
   // Track form changes
   useEffect(() => {
@@ -47,23 +56,22 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
       newComment.authorName !== initialCommentState.authorName ||
       newComment.rating !== initialCommentState.rating ||
       selectedImage !== null;
-
     setHasChanges(hasFormChanges);
   }, [newComment, selectedImage]);
 
+  // Fetch comments
   const fetchComments = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`/api/comments?restaurantId=${restaurantId}`);
       if (!response.ok) throw new Error('Failed to fetch comments');
       const data = await response.json();
-      // Sort comments by createdAt in descending order (newest first)
-      const sortedComments = [...data].sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const sortedComments = [...data].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setComments(sortedComments);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error('Error fetching comments:', error);
       toast.error('Failed to load comments');
     } finally {
       setIsLoading(false);
@@ -74,83 +82,35 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
     if (isOpen) {
       setIsVisible(true);
       fetchComments();
-      setHasChanges(false); // Reset changes flag when modal opens
+      setHasChanges(false);
     } else {
       setIsVisible(false);
     }
   }, [isOpen, restaurantId, fetchComments]);
 
-  const handleClose = () => {
-    if (hasChanges) {
-      setShowConfirmDialog(true);
-    } else {
-      closeModal();
-    }
-  };
+  useEffect(() => {
+    setAnyModalOpen(isOpen);
+    return () => setAnyModalOpen(false);
+  }, [isOpen, setAnyModalOpen]);
 
-  const closeModal = () => {
-    setIsVisible(false);
-    setNewComment(initialCommentState);
-    setSelectedImage(null);
-    setImagePreview(null);
-    setImageError(null);
-    setShowConfirmDialog(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    setTimeout(onClose, 300); // Wait for animation to complete
-  };
+  // Average rating
+  const avgRating = useMemo(() => {
+    if (!comments.length) return 0;
+    return (
+      Math.round(
+        (comments.reduce((sum, c) => sum + (c.rating || 0), 0) / comments.length) * 10
+      ) / 10
+    );
+  }, [comments]);
 
-  const handleConfirmClose = () => {
-    closeModal();
-  };
-
-  const handleCancelClose = () => {
-    setShowConfirmDialog(false);
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageError(null);
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setImageError('Image size must be less than 5MB');
-        setSelectedImage(null);
-        setImagePreview(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        return;
-      }
-      if (!file.type.startsWith('image/')) {
-        setImageError('Invalid file type. Please upload an image.');
-        setSelectedImage(null);
-        setImagePreview(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-        return;
-      }
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate rating before proceeding
-    if (!newComment.rating) {
-      toast.error('Please select a rating before submitting');
-      return;
-    }
+  // Handle form submit
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const errors = validateCommentForm(newComment);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setIsSubmitting(true);
-
     try {
       const formData = new FormData();
       formData.append('content', newComment.content);
@@ -167,52 +127,109 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
       });
 
       if (!response.ok) throw new Error('Failed to add comment');
-      
       const newCommentData = await response.json();
-      setComments(prevComments => [newCommentData, ...prevComments]);
-      setNewComment({ content: '', authorName: '', rating: 0 });
+      setComments((prev) => [newCommentData, ...prev]);
+      setNewComment(initialCommentState);
       setSelectedImage(null);
       setImagePreview(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-
-      // Show success toast
-      toast.success('Comment added successfully!', {
-        id: 'comment-success-toast',
-        duration: 3000,
-      });
-
-      // Call the callback to refresh parent data
+      setFormErrors({});
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      toast.success('Comment added successfully!');
       onCommentAdded?.();
-
-      // Reset form and close modal
       setIsVisible(false);
-      setTimeout(() => {
-        onClose();
-      }, 300);
+      setTimeout(onClose, 300);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.error('Error adding comment:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to add comment. Please try again.';
-      
-      // Show error toast
-      toast.error(errorMessage, {
-        id: 'comment-error-toast',
-        duration: 3000,
-      });
+      toast.error('Failed to add comment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Keyboard submit (Ctrl+Enter/Cmd+Enter)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && isOpen) {
+        handleSubmit();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+    // eslint-disable-next-line
+  }, [isOpen, newComment, selectedImage]);
+
+  // Image upload
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageError(null);
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError('Image size must be less than 5MB');
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        setImageError('Invalid file type. Please upload an image.');
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Modal focus trap
+  const modalRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusable?.[0];
+    const last = focusable?.[focusable.length - 1];
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !focusable) return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', trap);
+    return () => document.removeEventListener('keydown', trap);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
+    <>
     <div 
+        ref={modalRef}
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-300 ease-in-out ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
-      onClick={handleClose}
+        aria-modal="true"
+        role="dialog"
+        tabIndex={-1}
+        onClick={() => {
+          if (hasChanges) setShowConfirmDialog(true);
+          else {
+            setIsVisible(false);
+            setTimeout(onClose, 300);
+          }
+        }}
       data-testid="comment-modal-backdrop"
     >
       {/* Confirmation Dialog */}
@@ -222,81 +239,105 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
           onClick={(e) => e.stopPropagation()}
           data-testid="confirm-dialog-backdrop"
         >
-          <div 
-            className="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4 transform transition-all"
-            data-testid="confirm-dialog"
-          >
-            <div className="flex items-start gap-4">
+          <Card className="max-w-md w-full mx-4 transform transition-all" data-testid="confirm-dialog">
+            <Card.Header className="flex items-start gap-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
                 <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
               </div>
               <div>
-                <h3 
-                  className="text-lg font-semibold text-gray-900"
-                  data-testid="confirm-dialog-title"
-                >
+                <Card.Title className="text-lg font-semibold text-gray-900" data-testid="confirm-dialog-title">
                   Discard Changes?
-                </h3>
-                <p 
-                  className="mt-2 text-sm text-gray-600"
-                  data-testid="confirm-dialog-message"
-                >
+                </Card.Title>
+                <Card.Description className="mt-2 text-sm text-gray-600" data-testid="confirm-dialog-message">
                   You have unsaved changes. Are you sure you want to close this form? Your changes will be lost.
-                </p>
+                </Card.Description>
                 <div className="mt-4 flex gap-3">
-                  <button
+                  <Button
                     type="button"
-                    onClick={handleCancelClose}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 cursor-pointer"
+                      onClick={() => setShowConfirmDialog(false)}
+                      variant="primary"
+                      size="sm"
                     data-testid="confirm-dialog-keep-editing"
                   >
                     No, Keep Editing
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
-                    onClick={handleConfirmClose}
-                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
+                      onClick={() => {
+                        setShowConfirmDialog(false);
+                        setIsVisible(false);
+                        setTimeout(onClose, 300);
+                      }}
+                      variant="outline"
+                      size="sm"
                     data-testid="confirm-dialog-discard"
                   >
                     Yes, Discard
-                  </button>
+                  </Button>
                 </div>
               </div>
-            </div>
-          </div>
+            </Card.Header>
+          </Card>
         </div>
       )}
-
-      <div 
-        className={`bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out ${
+        <Card
+          className={`max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}
-        onClick={e => e.stopPropagation()}
-        data-testid="comment-modal-panel"
-      >
-        <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10 shadow-sm" data-testid="comment-modal-header">
+          }`}
+          data-testid="comment-modal-panel"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Sticky Header */}
+        <Card.Header className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-10 shadow-sm" data-testid="comment-modal-header">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900" data-testid="comment-modal-title">
+              <Card.Title className="text-xl font-bold text-gray-900" data-testid="comment-modal-title">
                 Comments for {restaurantName}
-              </h2>
+              </Card.Title>
               <p className="text-sm text-gray-600 mt-1" data-testid="comment-modal-subtitle">
-                This site is community-driven - we encourage you to share your experiences and help others discover great halal restaurants!
+                  {comments.length} comment{comments.length !== 1 && 's'} • Avg. rating:{' '}
+                  <span className="inline-flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon
+                        key={i}
+                        className={`h-4 w-4 ${i < Math.round(avgRating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                      />
+                    ))}
+                    <span className="ml-1 font-semibold">{avgRating || '-'}</span>
+                  </span>
               </p>
             </div>
-            <button
-              onClick={handleClose}
-              data-testid="close-comment-modal-button"
-              className="text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
-            >
-              <XMarkIcon className="h-6 w-6" />
-            </button>
+              <CloseButton onClick={() => {
+                if (hasChanges) setShowConfirmDialog(true);
+                else {
+                  setIsVisible(false);
+                  setTimeout(onClose, 300);
+                }
+              }} />
           </div>
-        </div>
-
-        <div className="p-4 space-y-6">
-          {/* Add Comment Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 bg-gray-50 p-4 rounded-lg" data-testid="comment-form">
+        </Card.Header>
+        <Card.Content className="p-4 space-y-6">
+            {/* Comments List */}
+            <div className="space-y-4" data-testid="comments-list">
+              {isLoading ? (
+                <p className="text-center text-gray-500" data-testid="comments-loading">
+                  Loading comments...
+                </p>
+              ) : comments.length === 0 ? (
+                <p className="text-center text-gray-500" data-testid="no-comments-message">
+                  No comments yet. Be the first to comment!
+                </p>
+              ) : (
+                comments.map((comment) => <CommentItem key={comment.id} comment={comment} />)
+              )}
+            </div>
+            {/* Sticky Add Comment Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4 bg-gray-50 p-4 rounded-lg"
+              data-testid="comment-form"
+              autoComplete="off"
+            >
             <div>
               <label htmlFor="authorName" className="block text-sm font-medium text-gray-700">
                 Your Name <span className="text-red-500">*</span>
@@ -306,12 +347,21 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                 id="authorName"
                 data-testid="comment-author-input"
                 required
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-black"
+                  ref={nameInputRef}
+                  className={`mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-black ${
+                    formErrors.authorName ? 'border-red-500' : ''
+                  }`}
                 value={newComment.authorName}
                 onChange={(e) => setNewComment({ ...newComment, authorName: e.target.value })}
+                  aria-invalid={!!formErrors.authorName}
+                  aria-describedby={formErrors.authorName ? 'authorName-error' : undefined}
               />
+                {formErrors.authorName && (
+                  <p className="mt-1 text-sm text-red-600" id="authorName-error">
+                    {formErrors.authorName}
+                  </p>
+                )}
             </div>
-
             <div>
               <label htmlFor="rating" className="block text-sm font-medium text-gray-700">
                 Rating <span className="text-red-500">*</span>
@@ -325,14 +375,23 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                     onClick={() => setNewComment({ ...newComment, rating: star })}
                     className={`${
                       star <= newComment.rating ? 'text-yellow-400' : 'text-gray-300'
-                    } hover:text-yellow-400 focus:outline-none cursor-pointer`}
+                      } hover:text-yellow-400 focus:outline-none cursor-pointer transition-transform duration-100 active:scale-110`}
+                      aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          setNewComment({ ...newComment, rating: star });
+                        }
+                      }}
                   >
                     <StarIcon className="h-5 w-5" />
                   </button>
                 ))}
               </div>
+                {formErrors.rating && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.rating}</p>
+                )}
             </div>
-
             <div>
               <label htmlFor="comment" className="block text-sm font-medium text-gray-700">
                 Your Comment <span className="text-red-500">*</span>
@@ -342,12 +401,26 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                 data-testid="comment-content-input"
                 required
                 rows={3}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-black"
+                  maxLength={MAX_COMMENT_LENGTH}
+                  className={`mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-black ${
+                    formErrors.content ? 'border-red-500' : ''
+                  }`}
                 value={newComment.content}
-                onChange={(e) => setNewComment({ ...newComment, content: e.target.value })}
+                  onChange={(e) =>
+                    setNewComment({ ...newComment, content: e.target.value })
+                  }
+                  aria-invalid={!!formErrors.content}
+                  aria-describedby={formErrors.content ? 'comment-error' : undefined}
               />
+                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                  <span>{newComment.content.length}/{MAX_COMMENT_LENGTH}</span>
+                  {formErrors.content && (
+                    <span className="text-red-600" id="comment-error">
+                      {formErrors.content}
+                    </span>
+                  )}
+                </div>
             </div>
-
             {/* Image Upload */}
             <div data-testid="image-upload-section">
               <label className="block text-sm font-medium text-gray-700">
@@ -362,15 +435,15 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                   className="hidden"
                   data-testid="comment-image-input"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium flex items-center gap-2"
+                    variant="outline"
+                    size="sm"
                   data-testid="image-upload-button"
                 >
-                  <PhotoIcon className="h-5 w-5" />
                   Choose Image
-                </button>
+                </Button>
                 {imagePreview && (
                   <div className="relative w-20 h-20" data-testid="image-preview-container">
                     <Image
@@ -380,7 +453,7 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                       fill
                       className="object-cover rounded-lg"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         setSelectedImage(null);
@@ -390,11 +463,13 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                           fileInputRef.current.value = '';
                         }
                       }}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        variant="danger"
+                        size="icon"
+                        className="absolute -top-2 -right-2"
                       data-testid="remove-image-button"
                     >
                       <XMarkIcon className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -407,98 +482,28 @@ export default function CommentModal({ isOpen, onClose, restaurantId, restaurant
                 </p>
               )}
             </div>
-
-            <button
+            <Button
               type="submit"
               data-testid="submit-comment-button"
-              disabled={isSubmitting}
-              className="w-full px-4 py-2 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-lg text-sm font-medium hover:from-blue-500 hover:to-blue-600 transform transition-all duration-200 ease-in-out hover:scale-[1.02] shadow-sm cursor-pointer disabled:opacity-50 relative"
+                disabled={isSubmitting || Object.keys(formErrors).length > 0}
+                variant="primary"
+                size="md"
+                className="w-full relative"
             >
               {isSubmitting ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  <span className="flex items-center justify-center">
+                    <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
                   Adding...
-                </div>
+                  </span>
               ) : (
                 'Add Comment'
               )}
-            </button>
+            </Button>
           </form>
-
-          {/* Comments List */}
-          <div className="space-y-4" data-testid="comments-list">
-            {isLoading ? (
-              <p className="text-center text-gray-500" data-testid="comments-loading">Loading comments...</p>
-            ) : comments.length === 0 ? (
-              <p className="text-center text-gray-500" data-testid="no-comments-message">No comments yet. Be the first to comment!</p>
-            ) : (
-              comments.map((comment) => (
-                <div 
-                  key={comment.id} 
-                  data-testid={`comment-container-${comment.id}`}
-                  className="bg-gray-50 p-4 rounded-lg transform transition-all duration-300 ease-in-out opacity-100 translate-y-0"
-                >
-                  <div className="flex items-center justify-between">
-                    <h4 
-                      className="font-medium text-gray-900"
-                      data-testid={`comment-author-${comment.id}`}
-                    >
-                      {comment.authorName}
-                    </h4>
-                    <div 
-                      className="flex items-center"
-                      data-testid={`comment-rating-${comment.id}`}
-                    >
-                      {[...Array(5)].map((_, i) => (
-                        <StarIcon
-                          key={i}
-                          data-testid={`comment-star-${comment.id}-${i + 1}`}
-                          className={`h-4 w-4 ${
-                            i < comment.rating ? 'text-yellow-400' : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p 
-                    className="mt-2 text-gray-600"
-                    data-testid={`comment-content-${comment.id}`}
-                  >
-                    {comment.content}
-                  </p>
-                  {comment.imageUrl && (
-                    <div 
-                      className="mt-3 relative w-full sm:w-1/2 mx-auto aspect-[4/3] max-h-[300px]" 
-                      data-testid={`comment-image-container-${comment.id}`}
-                    >
-                      <ImageWithLightbox
-                        src={comment.imageUrl}
-                        alt={`Image from ${comment.authorName}`}
-                        width={600}
-                        height={450}
-                        className="object-contain rounded-lg w-full h-full"
-                        data-testid={`comment-image-${comment.id}`}
-                      />
-                    </div>
-                  )}
-                  <p 
-                    className="mt-2 text-sm text-gray-500"
-                    data-testid={`comment-date-${comment.id}`}
-                  >
-                    {new Date(comment.createdAt).toLocaleString(undefined, {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
     </div>
+    </>
   );
 } 
+

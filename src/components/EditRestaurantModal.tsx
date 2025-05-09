@@ -1,8 +1,10 @@
 'use client';
 
 import { type Restaurant, CuisineType, PriceRange } from '@prisma/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { CloseButton } from './ui/Button';
+import { useModalContext } from './ui/ModalContext';
 
 interface EditRestaurantModalProps {
   restaurant: Restaurant;
@@ -42,6 +44,13 @@ export default function EditRestaurantModal({
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { setAnyModalOpen } = useModalContext();
+
+  useEffect(() => {
+    setAnyModalOpen(isOpen);
+    return () => setAnyModalOpen(false);
+  }, [isOpen, setAnyModalOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,12 +98,7 @@ export default function EditRestaurantModal({
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Edit Restaurant</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
+          <CloseButton onClick={onClose} />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

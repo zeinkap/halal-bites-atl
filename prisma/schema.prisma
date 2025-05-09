@@ -9,9 +9,9 @@ datasource db {
 
 model Restaurant {
   id                String      @id @default(cuid())
-  name              String      @unique
+  name              String
   cuisineType       CuisineType
-  address           String      @unique
+  address           String
   description       String?
   priceRange        PriceRange
   hasPrayerRoom     Boolean     @default(false)
@@ -40,6 +40,7 @@ model Restaurant {
   brand             Brand?      @relation(fields: [brandId], references: [id])
   latitude          Float?
   longitude         Float?
+  @@unique([name, address], name: "name_address_unique")
 }
 
 model Comment {

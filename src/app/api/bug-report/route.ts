@@ -61,8 +61,6 @@ export async function POST(request: Request) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const stepsToReproduce = formData.get('stepsToReproduce') as string;
-    const expectedBehavior = formData.get('expectedBehavior') as string;
-    const actualBehavior = formData.get('actualBehavior') as string;
     const browser = formData.get('browser') as string;
     const device = formData.get('device') as string;
     const email = formData.get('email') as string;
@@ -76,6 +74,7 @@ export async function POST(request: Request) {
     });
 
     let screenshotUrl = '';
+    let screenshotAttachment: { filename: string; content: Buffer; contentType: string; contentDisposition: 'attachment' } | null = null;
 
     // Upload screenshot to Cloudinary if present
     if (screenshot) {
@@ -90,6 +89,14 @@ export async function POST(request: Request) {
         const buffer = Buffer.from(bytes);
         
         console.log('Screenshot converted to buffer, size:', buffer.length);
+        
+        // Prepare attachment for email
+        screenshotAttachment = {
+          filename: screenshot.name,
+          content: buffer,
+          contentType: screenshot.type,
+          contentDisposition: 'attachment',
+        };
         
         // Convert buffer to base64
         const base64Image = `data:${screenshot.type};base64,${buffer.toString('base64')}`;
@@ -121,12 +128,6 @@ export async function POST(request: Request) {
       Steps to Reproduce:
       ${stepsToReproduce}
       
-      Expected Behavior:
-      ${expectedBehavior}
-      
-      Actual Behavior:
-      ${actualBehavior}
-      
       Technical Details:
       ----------------
       Browser: ${browser}
@@ -144,12 +145,6 @@ export async function POST(request: Request) {
       <h3>Steps to Reproduce:</h3>
       <p>${stepsToReproduce.split('\n').join('<br>')}</p>
       
-      <h3>Expected Behavior:</h3>
-      <p>${expectedBehavior}</p>
-      
-      <h3>Actual Behavior:</h3>
-      <p>${actualBehavior}</p>
-      
       <h3>Technical Details:</h3>
       <hr>
       <p><strong>Browser:</strong> ${browser}</p>
@@ -165,6 +160,10 @@ export async function POST(request: Request) {
     console.log('Creating email transporter...');
     const transporter = createTransporter();
     
+    if (screenshotAttachment) {
+      console.log('Screenshot attachment object:', screenshotAttachment);
+    }
+
     console.log('Sending email...');
     // Send email
     await transporter.sendMail({
@@ -173,6 +172,7 @@ export async function POST(request: Request) {
       subject: `Bug Report: ${title}`,
       text: emailContent,
       html: htmlContent,
+      attachments: screenshotAttachment ? [screenshotAttachment] : [],
     });
 
     console.log('Email sent successfully');
@@ -183,8 +183,6 @@ export async function POST(request: Request) {
         title,
         description,
         stepsToReproduce,
-        expectedBehavior,
-        actualBehavior,
         browser,
         device,
         email,

@@ -1,6 +1,9 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
-import { XMarkIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { Fragment, useEffect } from 'react';
+import { CloseButton } from './ui/Button';
+import { HeartIcon } from './ui/icons';
+import { Card } from './ui/Card';
+import { useModalContext } from './ui/ModalContext';
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -8,6 +11,13 @@ interface DonationModalProps {
 }
 
 export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
+  const { setAnyModalOpen } = useModalContext();
+
+  useEffect(() => {
+    setAnyModalOpen(isOpen);
+    return () => setAnyModalOpen(false);
+  }, [isOpen, setAnyModalOpen]);
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose} data-testid="donation-modal-backdrop">
@@ -34,23 +44,21 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all" data-testid="donation-modal">
-                <div className="flex justify-between items-center mb-4" data-testid="donation-modal-header">
-                  <Dialog.Title as="h3" className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <HeartIcon className="h-6 w-6 text-yellow-500" />
-                    Support Halal Bites ATL
-                  </Dialog.Title>
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-gray-500 cursor-pointer p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              <Dialog.Panel className="w-full max-w-md p-0 bg-transparent shadow-none" data-testid="donation-modal">
+                <Card className="w-full max-w-md p-0">
+                  <Card.Header className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <HeartIcon className="h-6 w-6 text-amber-500" aria-hidden="true" />
+                      <Card.Title>Support Halal Bites ATL</Card.Title>
+                    </div>
+                  <CloseButton
                     onClick={onClose}
                     aria-label="Close donation modal"
                     data-testid="donation-modal-close"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
-                </div>
-                <div className="mb-4 text-gray-700 text-base">
+                  />
+                  </Card.Header>
+                  <Card.Content className="pb-0">
+                    <div className="mb-3 text-gray-700 text-base">
                   Halal Bites ATL is a community-driven project. Donations help cover website hosting, research time, and expansion. <b>JazakAllah Khair</b> for your support!
                 </div>
                 <div className="flex justify-center">
@@ -62,8 +70,11 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                     style={{ width: '320px', height: '400px', border: 'none', background: 'transparent' }}
                     allow="payment"
                     data-testid="donation-widget-iframe"
+                        aria-label="Donation widget"
                   ></iframe>
                 </div>
+                  </Card.Content>
+                </Card>
               </Dialog.Panel>
             </Transition.Child>
           </div>

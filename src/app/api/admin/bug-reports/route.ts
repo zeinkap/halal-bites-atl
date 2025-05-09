@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { isAdminAuthenticated } from '@/lib/admin-auth';
+
+// Helper function to verify admin access using custom admin cookie
+async function verifyAdminCustom() {
+  const cookieStore = await cookies();
+  const reqObj = { headers: { cookie: cookieStore.toString() } };
+  if (!isAdminAuthenticated(reqObj)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return null;
+}
 
 export async function GET() {
   // Verify admin access
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email || session.user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const session = await verifyAdminCustom();
+  if (session) {
+    return session;
   }
 
   const bugReports = await prisma.bugReport.findMany({

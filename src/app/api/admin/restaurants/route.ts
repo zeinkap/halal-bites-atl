@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { isAdminAuthenticated } from '@/lib/admin-auth';
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
@@ -11,18 +11,13 @@ const redis = new Redis({
 
 const RESTAURANTS_CACHE_KEY = 'restaurants:all';
 
-// Helper function to verify admin access
-async function verifyAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+// Helper function to verify admin access using custom admin cookie
+async function verifyAdminCustom() {
+  const cookieStore = await cookies();
+  const reqObj = { headers: { cookie: cookieStore.toString() } };
+  if (!isAdminAuthenticated(reqObj)) {
     return { error: 'Unauthorized', status: 401 };
   }
-
-  const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  if (!isAdmin) {
-    return { error: 'Forbidden', status: 403 };
-  }
-
   return null;
 }
 
@@ -43,7 +38,7 @@ async function getLatLng(address: string): Promise<{ lat: number | null, lng: nu
 // Get all restaurants with comments count and reports count
 export async function GET() {
   try {
-    const adminCheck = await verifyAdmin();
+    const adminCheck = await verifyAdminCustom();
     if (adminCheck) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
@@ -83,7 +78,7 @@ export async function GET() {
 // Update a restaurant
 export async function PATCH(request: Request) {
   try {
-    const adminCheck = await verifyAdmin();
+    const adminCheck = await verifyAdminCustom();
     if (adminCheck) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
@@ -128,7 +123,7 @@ export async function PATCH(request: Request) {
 // Delete a restaurant
 export async function DELETE(request: Request) {
   try {
-    const adminCheck = await verifyAdmin();
+    const adminCheck = await verifyAdminCustom();
     if (adminCheck) {
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
