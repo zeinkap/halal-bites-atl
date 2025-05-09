@@ -10,7 +10,6 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
   BuildingStorefrontIcon,
-  ExclamationCircleIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../../components/ui/Button';

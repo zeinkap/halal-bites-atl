@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs';
 import { serialize, parse } from 'cookie';
 
 const COOKIE_NAME = 'admin_session';
