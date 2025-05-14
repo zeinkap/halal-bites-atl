@@ -5,7 +5,6 @@ import { toast } from 'react-hot-toast';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { CloseButton, Button } from './ui/Button';
 import { Card } from './ui/Card';
-import { Badge } from './ui/Badge';
 import { CheckCircleIcon } from './ui/icons';
 import React from 'react';
 import { useModalContext } from './ui/ModalContext';
@@ -31,7 +30,6 @@ export default function ReportModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [charCount, setCharCount] = useState(0);
   const [email, setEmail] = useState('');
 
   const {
@@ -66,7 +64,6 @@ export default function ReportModal({
   const closeModal = () => {
     setShowConfirmDialog(false);
     reset();
-    setCharCount(0);
     setEmail('');
     onClose();
   };
@@ -184,7 +181,6 @@ export default function ReportModal({
                                         aria-describedby="report-details-help"
                                         maxLength={500}
                                         onChange={e => {
-                                          setCharCount(e.target.value.length);
                                           field.onChange(e);
                                         }}
                                       />

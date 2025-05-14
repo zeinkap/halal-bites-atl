@@ -1,5 +1,6 @@
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, User, Session } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { JWT } from 'next-auth/jwt';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,7 +14,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async signIn({ user }: { user: any }) {
+    async signIn({ user }: { user: User }) {
       // Enhanced logging for debugging production issues
       console.log('Auth - Sign In:', {
         userEmail: user.email,
@@ -25,18 +26,18 @@ export const authOptions: NextAuthOptions = {
       });
       return user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
     },
-    async session({ session, token }: { session: any, token: any }) {
+    async session({ session, token }: { session: Session, token: JWT }) {
       // Send properties to the client
       console.log('Auth - Session Callback:', {
-        sessionEmail: session?.user?.email,
+        sessionEmail: session.user?.email,
         tokenEmail: token.email
       });
       if (session.user) {
-        session.user.email = token.email;
+        session.user.email = token.email as string;
       }
       return session;
     },
-    async jwt({ token }: { token: any }) {
+    async jwt({ token }: { token: JWT }) {
       console.log('Auth - JWT Callback:', {
         tokenEmail: token.email
       });

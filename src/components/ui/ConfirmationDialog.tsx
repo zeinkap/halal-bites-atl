@@ -33,7 +33,6 @@ export function ConfirmationDialog({
   onCancel,
   confirmText = 'Yes, Discard',
   cancelText = 'No, Keep Editing',
-  danger = true,
   testIds = {},
   children,
 }: ConfirmationDialogProps) {

@@ -95,10 +95,6 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
     closeForm();
   };
 
-  const handleCancelClose = () => {
-    setShowConfirmDialog(false);
-  };
-
   // Image upload handler
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

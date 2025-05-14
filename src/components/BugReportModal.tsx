@@ -120,10 +120,6 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
     closeModal();
   };
 
-  const handleCancelClose = () => {
-    setShowConfirmDialog(false);
-  };
-
   const onSubmit = async (formData: BugReportFormData) => {
     try {
       setIsSubmitting(true);
