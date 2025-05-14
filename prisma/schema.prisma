@@ -8,38 +8,39 @@ datasource db {
 }
 
 model Restaurant {
-  id                String      @id @default(cuid())
-  name              String
-  cuisineType       CuisineType
-  address           String
-  description       String?
-  priceRange        PriceRange
-  hasPrayerRoom     Boolean     @default(false)
-  hasOutdoorSeating Boolean     @default(false)
-  hasHighChair      Boolean     @default(false)
-  servesAlcohol     Boolean     @default(false)
-  isFullyHalal       Boolean     @default(false)
-  isZabiha          Boolean     @default(false)
-  isPartiallyHalal   Boolean     @default(false)
-  imageUrl          String?
-  zabihaChicken     Boolean     @default(false)
-  zabihaLamb        Boolean     @default(false)
-  zabihaBeef        Boolean     @default(false)
-  zabihaGoat        Boolean     @default(false)
-  partiallyHalalChicken Boolean   @default(false)
-  partiallyHalalLamb   Boolean    @default(false)
-  partiallyHalalBeef   Boolean    @default(false)
-  partiallyHalalGoat   Boolean    @default(false)
-  zabihaVerified    DateTime?   @default(now())
-  zabihaVerifiedBy  String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  comments          Comment[]
-  reports           Report[]
-  brandId           String?
-  brand             Brand?      @relation(fields: [brandId], references: [id])
-  latitude          Float?
-  longitude         Float?
+  id                    String      @id @default(cuid())
+  name                  String
+  cuisineType           CuisineType
+  address               String
+  description           String?
+  priceRange            PriceRange
+  hasPrayerRoom         Boolean     @default(false)
+  hasOutdoorSeating     Boolean     @default(false)
+  isZabiha              Boolean     @default(false)
+  hasHighChair          Boolean     @default(false)
+  servesAlcohol         Boolean     @default(false)
+  isFullyHalal          Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  imageUrl              String?
+  zabihaBeef            Boolean     @default(false)
+  zabihaChicken         Boolean     @default(false)
+  zabihaGoat            Boolean     @default(false)
+  zabihaLamb            Boolean     @default(false)
+  zabihaVerified        DateTime?   @default(now())
+  zabihaVerifiedBy      String?
+  brandId               String?
+  isPartiallyHalal      Boolean     @default(false)
+  partiallyHalalBeef    Boolean     @default(false)
+  partiallyHalalChicken Boolean     @default(false)
+  partiallyHalalGoat    Boolean     @default(false)
+  partiallyHalalLamb    Boolean     @default(false)
+  latitude              Float?
+  longitude             Float?
+  comments              Comment[]
+  reports               Report[]
+  brand                 Brand?      @relation(fields: [brandId], references: [id])
+
   @@unique([name, address], name: "name_address_unique")
 }
 
@@ -53,6 +54,7 @@ model Comment {
   updatedAt    DateTime   @updatedAt
   imageUrl     String?
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  hearts       Int        @default(0)
 
   @@index([restaurantId])
 }
@@ -69,53 +71,53 @@ model Backup {
 model Report {
   id           String     @id @default(cuid())
   restaurantId String
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
   details      String
-  status       String     @default("pending") // pending, resolved, rejected
+  status       String     @default("pending")
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
   resolvedAt   DateTime?
   resolvedBy   String?
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
 
   @@index([restaurantId])
 }
 
 model BugReport {
-  id                String   @id @default(cuid())
-  title             String
-  description       String
-  stepsToReproduce  String?
-  expectedBehavior  String?
-  actualBehavior    String?
-  browser           String?
-  device            String?
-  email             String?
-  screenshotUrl     String?
-  createdAt         DateTime @default(now())
+  id               String   @id @default(cuid())
+  title            String
+  description      String
+  stepsToReproduce String?
+  expectedBehavior String?
+  actualBehavior   String?
+  browser          String?
+  device           String?
+  email            String?
+  screenshotUrl    String?
+  createdAt        DateTime @default(now())
 }
 
 model Brand {
-  id          String      @id @default(cuid())
-  name        String      @unique
+  id          String       @id @default(cuid())
+  name        String       @unique
   restaurants Restaurant[]
 }
 
 enum CuisineType {
   MIDDLE_EASTERN
-  MEDITERRANEAN
   INDIAN_PAKISTANI
   TURKISH
   PERSIAN
+  MEDITERRANEAN
   AFGHAN
   CAFE
-  CHINESE
+  OTHER
   MEXICAN
+  CHINESE
   THAI
   FAST_FOOD
   KOREAN
   BANGLADESHI
   INDONESIAN
-  OTHER
 }
 
 enum PriceRange {

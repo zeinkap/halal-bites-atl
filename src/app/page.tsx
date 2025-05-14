@@ -7,7 +7,7 @@ import RestaurantList from '@/components/RestaurantList';
 // Separate component for search functionality
 function SearchWrapper() {
   const searchParams = useSearchParams();
-  const search = searchParams.get('search') || '';
+  const search = searchParams?.get('search') || '';
   
   return (
     <RestaurantList initialSearch={search} />

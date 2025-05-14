@@ -20,6 +20,7 @@ export default function RestaurantsManagement() {
   const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortAsc, setSortAsc] = useState(true);
+  const [showAllColumns, setShowAllColumns] = useState(false);
 
   useEffect(() => {
     fetchRestaurants();
@@ -98,7 +99,17 @@ export default function RestaurantsManagement() {
           </div>
           <Button variant="neutral" onClick={() => router.push('/admin')} className="px-4 py-2 text-sm font-medium">Back to Dashboard</Button>
         </div>
-
+        {/* Show More Columns Toggle */}
+        <div className="mb-2">
+          <Button
+            variant="info"
+            size="sm"
+            onClick={() => setShowAllColumns((v) => !v)}
+            className="mb-2"
+          >
+            {showAllColumns ? 'Show Fewer Columns' : 'Show More Columns'}
+          </Button>
+        </div>
         {/* Search Bar */}
         <div className="mb-2 max-w-md">
           <input
@@ -113,19 +124,14 @@ export default function RestaurantsManagement() {
         <div className="mb-4 text-gray-700 text-sm">
           Total Restaurants: <span className="font-semibold">{filteredRestaurants.length}</span>
         </div>
-
         <div className="mt-8 flex flex-col">
           <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+              <div className="overflow-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-300">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th
-                        scope="col"
-                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-1/4 cursor-pointer select-none"
-                        onClick={() => setSortAsc((asc) => !asc)}
-                      >
+                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-1/4 cursor-pointer select-none" onClick={() => setSortAsc((asc) => !asc)}>
                         Name
                         <span className="ml-1 inline-block align-middle">
                           {sortAsc ? (
@@ -141,6 +147,33 @@ export default function RestaurantsManagement() {
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/6">Halal Status</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Comments</th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Reports</th>
+                      {showAllColumns && (
+                        <>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">ID</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Description</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Has Prayer Room</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Outdoor Seating</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">High Chair</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Alcohol</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Fully Halal</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Image</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Beef</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Chicken</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Goat</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Lamb</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Verified</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Verified By</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Brand ID</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partially Halal</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Beef</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Chicken</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Goat</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Lamb</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Created At</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Updated At</th>
+                        </>
+                      )}
                       <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 w-28">
                         <span className="sr-only">Actions</span>
                       </th>
@@ -163,7 +196,7 @@ export default function RestaurantsManagement() {
                         </td>
                         <td className="px-3 py-4 text-sm text-gray-500">
                           {restaurant.isFullyHalal ? 'Fully Halal' : ''} 
-                          {restaurant.isZabiha ? ' (Zabiha)' : ''}
+                          {restaurant.isZabiha ? ' (Zabihah)' : ''}
                         </td>
                         <td className="px-3 py-4 text-sm text-gray-500 text-center">
                           {restaurant.commentCount}
@@ -171,6 +204,33 @@ export default function RestaurantsManagement() {
                         <td className="px-3 py-4 text-sm text-gray-500 text-center">
                           {restaurant.reportCount}
                         </td>
+                        {showAllColumns && (
+                          <>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.id}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.description}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.hasPrayerRoom ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.hasOutdoorSeating ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.hasHighChair ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.servesAlcohol ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isZabiha ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isFullyHalal ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.imageUrl ? <img src={restaurant.imageUrl} alt="img" className="w-12 h-12 object-cover rounded" /> : '-'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaBeef ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaChicken ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaGoat ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaLamb ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaVerified ? new Date(restaurant.zabihaVerified).toLocaleDateString() : '-'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaVerifiedBy || '-'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.brandId || '-'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isPartiallyHalal ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalBeef ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalChicken ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalGoat ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalLamb ? 'Yes' : 'No'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleString() : '-'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.updatedAt ? new Date(restaurant.updatedAt).toLocaleString() : '-'}</td>
+                          </>
+                        )}
                         <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 whitespace-nowrap">
                           <Button
                             variant="info"

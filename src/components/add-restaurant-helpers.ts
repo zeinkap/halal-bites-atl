@@ -76,16 +76,16 @@ export function validateForm(formData: FormData): string | null {
   }
   if (formData.isZabiha) {
     if (!formData.zabihaVerified) {
-      return 'Verification Date is required for Zabiha Certified restaurants';
+      return 'Verification Date is required for Zabihah Certified restaurants';
     }
     if (formData.zabihaVerified && formData.zabihaVerified > new Date()) {
       return 'Verification Date cannot be in the future';
     }
     if (!formData.zabihaVerifiedBy?.trim()) {
-      return 'Verified By is required for Zabiha Certified restaurants';
+      return 'Verified By is required for Zabihah Certified restaurants';
     }
     if (!formData.zabihaChicken && !formData.zabihaLamb && !formData.zabihaBeef && !formData.zabihaGoat) {
-      return 'Please select at least one Zabiha meat type';
+      return 'Please select at least one Zabihah meat type';
     }
   }
   if (formData.isPartiallyHalal) {

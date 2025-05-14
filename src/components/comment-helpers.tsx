@@ -40,7 +40,7 @@ export function validateCommentForm(newComment: typeof initialCommentState) {
   return errors;
 }
 
-export const CommentItem = React.memo(function CommentItem({ comment }: { comment: { id: string; content: string; authorName: string; createdAt: string; rating: number; imageUrl?: string } }) {
+export const CommentItem = React.memo(function CommentItem({ comment }: { comment: { id: string; content: string; authorName: string; createdAt: string; rating: number; imageUrl?: string; hearts?: number } }) {
   return (
     <div
       className="bg-gray-50 p-4 rounded-lg flex gap-3 items-start border border-gray-100 animate-fade-in"

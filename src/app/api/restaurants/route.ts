@@ -139,6 +139,36 @@ export async function POST(request: Request) {
       );
     }
 
+    // Geocode address using Nominatim, fallback to Google Maps if needed
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    try {
+      // Try Nominatim first
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(data.address)}`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'halal-restaurants-atl/1.0 (your-email@example.com)' }
+      });
+      const geo = await res.json();
+      if (geo.length > 0) {
+        latitude = parseFloat(geo[0].lat);
+        longitude = parseFloat(geo[0].lon);
+      } else {
+        // Fallback to Google Maps Geocoding API
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (apiKey) {
+          const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(data.address)}&key=${apiKey}`;
+          const googleRes = await fetch(googleUrl);
+          const googleData = await googleRes.json();
+          if (googleData.status === 'OK' && googleData.results.length > 0) {
+            latitude = googleData.results[0].geometry.location.lat;
+            longitude = googleData.results[0].geometry.location.lng;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Geocoding failed:', e);
+    }
+
     // Create restaurant in database
     const restaurant = await prisma.restaurant.create({
       data: {
@@ -165,7 +195,9 @@ export async function POST(request: Request) {
         partiallyHalalBeef: data.partiallyHalalBeef || false,
         partiallyHalalGoat: data.partiallyHalalGoat || false,
         zabihaVerified: data.zabihaVerified || null,
-        zabihaVerifiedBy: data.zabihaVerifiedBy || null
+        zabihaVerifiedBy: data.zabihaVerifiedBy || null,
+        latitude,
+        longitude
       }
     });
 
@@ -207,7 +239,7 @@ export async function PATCH(request: Request) {
       servesAlcohol,
       isFullyHalal,
       isPartiallyHalal,
-      // New Zabiha fields
+      // New Zabihah fields
       zabihaChicken,
       zabihaLamb,
       zabihaBeef,
@@ -257,7 +289,7 @@ export async function PATCH(request: Request) {
         servesAlcohol: servesAlcohol !== undefined ? servesAlcohol : undefined,
         isFullyHalal: isFullyHalal !== undefined ? isFullyHalal : undefined,
         isPartiallyHalal: isPartiallyHalal !== undefined ? isPartiallyHalal : undefined,
-        // Add new Zabiha fields
+        // Add new Zabihah fields
         zabihaChicken: zabihaChicken !== undefined ? zabihaChicken : undefined,
         zabihaLamb: zabihaLamb !== undefined ? zabihaLamb : undefined,
         zabihaBeef: zabihaBeef !== undefined ? zabihaBeef : undefined,

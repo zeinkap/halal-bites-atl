@@ -13,7 +13,7 @@ import { generateRandomAtlantaAddress } from './address-generator';
  * @property features - Object containing boolean flags for various restaurant features:
  *                     - hasPrayerRoom: Whether the restaurant has a prayer space
  *                     - hasOutdoorSeating: Whether outdoor seating is available
- *                     - isZabiha: Whether they serve zabiha (hand-cut) halal meat
+ *                     - isZabiha: Whether they serve Zabihah (hand-cut) halal meat
  *                     - hasHighChair: Whether they provide high chairs for children
  *                     - servesAlcohol: Whether alcohol is served
  *                     - isFullyHalal: Whether the entire menu is halal
@@ -41,7 +41,7 @@ export interface TestRestaurant {
  * BASIC: Standard test restaurant with all features enabled
  * - Uses dynamic name generation to ensure uniqueness
  * - Sets Middle Eastern cuisine and low price range
- * - Enables most positive features (prayer space, zabiha, etc.)
+ * - Enables most positive features (prayer space, Zabihah, etc.)
  * 
  * DUPLICATE: Used for testing duplicate restaurant validation
  * - Also uses dynamic name generation

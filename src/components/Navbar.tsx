@@ -43,7 +43,7 @@ export default function Navbar() {
                   sizes="(max-width: 768px) 48px, 56px"
                 />
               </div>
-              <p className="text-xs sm:text-sm text-gray-600 max-w-[160px] sm:max-w-[200px] text-left leading-tight">
+              <p className="text-xs sm:text-sm text-gray-600 max-w-[160px] sm:max-w-[200px] text-left leading-tight font-normal">
                 Discover the best halal restaurants & cafes in Atlanta
               </p>
             </Button>

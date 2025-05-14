@@ -8,7 +8,7 @@ import { Toaster } from 'react-hot-toast';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith('/admin');
+  const isAdmin = pathname ? pathname.startsWith('/admin') : false;
 
   return (
     <>

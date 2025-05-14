@@ -1,26 +1,23 @@
-'use client';
-
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Restaurant } from '@/types';
 import { CuisineType } from '@prisma/client';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
-import { useRouter } from 'next/navigation';
-import RestaurantFeatureFilters from './RestaurantFeatureFilters';
 import RestaurantSearchBar from './RestaurantSearchBar';
 import RestaurantFilterControls from './RestaurantFilterControls';
+import RestaurantFeatureFilters from './RestaurantFeatureFilters';
 import RestaurantListLoadingSkeleton from './RestaurantListLoadingSkeleton';
-import RestaurantListItems from './RestaurantListItems';
 import RestaurantResultsCount from './RestaurantResultsCount';
+import RestaurantListItems from './RestaurantListItems';
 
 const ITEMS_PER_PAGE = 10;
 
-interface RestaurantListProps {
+interface RestaurantsPageProps {
   initialSearch?: string;
 }
 
-export default function RestaurantList({ initialSearch = '' }: RestaurantListProps) {
+const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' }) => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [displayedRestaurants, setDisplayedRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +61,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
   const [locationError, setLocationError] = useState<string | null>(null);
   const [radiusMiles, setRadiusMiles] = useState<string>('5'); // Default to 5 miles
   const [showingNearMe, setShowingNearMe] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -84,7 +80,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         setIsLoading(false);
       }
     };
-
     fetchRestaurants();
   }, []);
 
@@ -98,7 +93,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         restaurant.cuisineType.toLowerCase().includes(searchQuery.toLowerCase()) ||
         restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
         restaurant.address.match(/\b\d{5}\b/)?.[0]?.includes(searchQuery);
-      
       // Check if restaurant matches selected features
       const matchesFeatures = Object.entries(selectedFeatures).every(([feature, isSelected]) => {
         if (!isSelected) return true; // Skip if feature is not selected
@@ -108,7 +102,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         }
         return restaurant[feature as keyof typeof selectedFeatures];
       });
-      
       return matchesCuisine && matchesPriceRange && matchesSearch && matchesFeatures;
     }).sort((a, b) => {
       switch (sortBy) {
@@ -124,9 +117,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
           return 0;
       }
     });
-
     setFilteredCount(filteredRestaurants.length);
-
     // Update displayed restaurants based on pagination
     const startIndex = 0;
     const endIndex = page * ITEMS_PER_PAGE;
@@ -152,7 +143,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
   // On mount, check if user previously allowed location and auto-fetch
   useEffect(() => {
     if (typeof window !== 'undefined' && 'permissions' in navigator) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      navigator.permissions.query({ name: 'geolocation' as PermissionName }).then((result) => {
         if (result.state === 'granted') {
           handleLocationSearch(true); // true = auto
         }
@@ -239,34 +230,20 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
 
   return (
     <div className="w-full" data-testid="restaurant-list-container">
-      <Button
-        variant="ghost"
-        className="mx-auto block p-0 bg-transparent hover:bg-transparent focus:bg-transparent shadow-none"
-        onClick={() => {
-          router.push('/');
-          window.location.reload();
-        }}
-        aria-label="Refresh Home Page"
-      >
-        <h1 className="text-4xl font-extrabold tracking-tight text-center mb-1 bg-gradient-to-r from-orange-500 via-orange-400 to-green-500 bg-clip-text text-transparent drop-shadow-md">
-          Halal Bites ATL
-        </h1>
-      </Button>
+      <RestaurantSearchBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        radiusMiles={radiusMiles}
+        setRadiusMiles={setRadiusMiles}
+        locationLoading={locationLoading}
+        handleLocationSearch={() => handleLocationSearch(false)}
+        showingNearMe={showingNearMe}
+        locationError={locationError}
+        handleClearNearMe={handleClearNearMe}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+      />
       <div className="mb-8 bg-white z-10 p-4 shadow-sm" data-testid="restaurant-list-searchbar-section">
-        <RestaurantSearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          radiusMiles={radiusMiles}
-          setRadiusMiles={setRadiusMiles}
-          locationLoading={locationLoading}
-          handleLocationSearch={() => handleLocationSearch(false)}
-          showingNearMe={showingNearMe}
-          locationError={locationError}
-          handleClearNearMe={handleClearNearMe}
-          showFilters={showFilters}
-          setShowFilters={setShowFilters}
-        />
-
         {showFilters && (
           <Card className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4" data-testid="filters-panel">
             <RestaurantFilterControls
@@ -279,8 +256,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
               restaurants={restaurants}
               formatCuisineName={formatCuisineName as (cuisine: string) => string}
             />
-
-            {/* Features Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Features
@@ -290,8 +265,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                 onFeatureChange={handleFeatureChange}
               />
             </div>
-
-            {/* Clear All Filters Button */}
             <Button
               variant="outline"
               size="sm"
@@ -316,26 +289,16 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
             </Button>
           </Card>
         )}
-
-        {/* Results count */}
         <RestaurantResultsCount isLoading={isLoading} filteredCount={filteredCount} />
       </div>
-
       {/* Restaurant List */}
       {isLoading ? (
         <RestaurantListLoadingSkeleton count={3} />
       ) : displayedRestaurants.length > 0 ? (
-        <>
-          <RestaurantListItems
-            restaurants={displayedRestaurants}
-            lastRestaurantRef={lastRestaurantRef}
-          />
-          {hasMore && (
-            <div className="flex justify-center p-4" data-testid="restaurant-list-has-more-spinner">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          )}
-        </>
+        <RestaurantListItems
+          restaurants={displayedRestaurants}
+          lastRestaurantRef={lastRestaurantRef}
+        />
       ) : (
         <div className="text-center py-12" data-testid="restaurant-list-no-results">
           <p className="text-gray-600">No restaurants found matching your criteria.</p>
@@ -343,4 +306,6 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
       )}
     </div>
   );
-} 
+};
+
+export default RestaurantsPage; 

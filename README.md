@@ -26,7 +26,7 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
 - 🏪 Detailed restaurant information:
   - Prayer space availability
   - Outdoor seating options
-  - Zabiha (hand-cut) certification status
+  - Zabihah (hand-cut) certification status
   - High chair availability for families
   - **Partially Halal support**: Mark restaurants as 'Partially Halal' and specify which meats (chicken, lamb, beef, goat) are halal on the menu
 - 📱 Responsive design:
@@ -50,13 +50,14 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Submit bug reports with screenshots
   - Automatic email notifications for reports
   - Image attachments for better context
+- **Automatic geocoding:** Restaurant addresses are geocoded using Nominatim (OpenStreetMap) for latitude/longitude. If Nominatim fails, Google Maps Geocoding API is used as a fallback to ensure accurate map locations.
 
 ## Halal Status & Meat Types
 
 Restaurants can be marked as:
 
 - **Fully Halal**: All menu items are halal
-- **Zabiha**: Hand-cut zabiha meat is served (with details for chicken, lamb, beef, goat)
+- **Zabihah**: Hand-cut Zabihah meat is served (with details for chicken, lamb, beef, goat)
 - **Partially Halal**: Only some meats are halal. You can specify which of the following are halal:
   - Chicken
   - Lamb
@@ -523,7 +524,7 @@ ADMIN_PASSWORD="your_secure_admin_password"
 1. **Restaurant Management**
    - View all restaurants with detailed information
    - Edit restaurant details with real-time updates
-   - **Automatic Latitude/Longitude Update:** When editing a restaurant's address in the admin panel, the latitude and longitude are automatically updated using Nominatim geocoding to ensure map and location accuracy.
+   - **Automatic Latitude/Longitude Update:** When editing a restaurant's address in the admin panel, the latitude and longitude are automatically updated using Nominatim geocoding (OpenStreetMap). If Nominatim fails to find a result, the system automatically falls back to the Google Maps Geocoding API to ensure map and location accuracy.
    - Delete restaurants with cascading deletions (comments and reports)
    - Efficient caching with automatic invalidation
    - Transaction-based operations for data integrity

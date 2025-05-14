@@ -1,10 +1,13 @@
 'use client';
 
 import { type Restaurant, CuisineType, PriceRange } from '@prisma/client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { CloseButton } from './ui/Button';
+import { Button } from './ui/Button';
 import { useModalContext } from './ui/ModalContext';
+import { useLoadScript } from '@react-google-maps/api';
+import type { Libraries } from '@react-google-maps/api/dist/utils/make-load-script-url';
 
 interface EditRestaurantModalProps {
   restaurant: Restaurant;
@@ -12,6 +15,8 @@ interface EditRestaurantModalProps {
   onClose: () => void;
   onSave: () => void;
 }
+
+const libraries: Libraries = ['places'];
 
 export default function EditRestaurantModal({
   restaurant,
@@ -47,10 +52,49 @@ export default function EditRestaurantModal({
 
   const { setAnyModalOpen } = useModalContext();
 
+  const [addressSuggestions, setAddressSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const placesService = useRef<google.maps.places.PlacesService | null>(null);
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    libraries,
+  });
+
   useEffect(() => {
     setAnyModalOpen(isOpen);
     return () => setAnyModalOpen(false);
   }, [isOpen, setAnyModalOpen]);
+
+  useEffect(() => {
+    if (isLoaded && !placesService.current) {
+      const tempNode = document.createElement('div');
+      placesService.current = new google.maps.places.PlacesService(tempNode);
+    }
+  }, [isLoaded]);
+
+  const handleAddressChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, address: value }));
+    if (!isLoaded || !value) {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const autocompleteService = new window.google.maps.places.AutocompleteService();
+    autocompleteService.getPlacePredictions({ input: value }, (predictions) => {
+      setAddressSuggestions(predictions || []);
+      setShowSuggestions(!!predictions && predictions.length > 0);
+    });
+  };
+
+  const handleAddressSelect = (suggestion: google.maps.places.AutocompletePrediction) => {
+    if (!placesService.current) return;
+    placesService.current.getDetails({ placeId: suggestion.place_id }, (place, status) => {
+      if (status === window.google.maps.places.PlacesServiceStatus.OK && place && place.formatted_address) {
+        setFormData((prev) => ({ ...prev, address: place.formatted_address }));
+        setShowSuggestions(false);
+      }
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,14 +166,36 @@ export default function EditRestaurantModal({
               <label className="block text-base font-medium text-gray-900 mb-2">
                 Address
               </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base placeholder-gray-500 text-gray-900"
-                placeholder="Enter full address"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => handleAddressChange(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base placeholder-gray-500 text-gray-900"
+                  placeholder="Enter full address"
+                  required
+                />
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-auto">
+                    {addressSuggestions.map((suggestion) => (
+                      <Button
+                        key={suggestion.place_id}
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="w-full text-left px-4 py-3 text-sm hover:bg-green-50 focus:bg-green-50 focus:outline-none transition-colors border-b border-gray-100 last:border-0"
+                        onClick={() => handleAddressSelect(suggestion)}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900">{suggestion.structured_formatting.main_text}</span>
+                          <span className="text-gray-500 text-xs mt-0.5">{suggestion.structured_formatting.secondary_text}</span>
+                        </div>
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div>
               <label className="block text-base font-medium text-gray-900 mb-2">
@@ -149,35 +215,47 @@ export default function EditRestaurantModal({
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-900">Cuisine & Price</h3>
             <div>
-              <label className="block text-base font-medium text-gray-900 mb-2">
-                Cuisine Type
+              <label htmlFor="cuisineType" className="block text-sm font-medium text-gray-700 mb-1">
+                Cuisine Type <span className="text-red-500">*</span>
               </label>
               <select
+                id="cuisineType"
+                name="cuisineType"
+                data-testid="cuisine-type-select"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors text-gray-900"
                 value={formData.cuisineType}
                 onChange={(e) => setFormData({ ...formData, cuisineType: e.target.value as CuisineType })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base text-gray-900"
                 required
               >
-                {Object.values(CuisineType).map((type) => (
-                  <option key={type} value={type} className="text-gray-900">
-                    {type.replace(/_/g, ' ')}
-                  </option>
-                ))}
+                <option value="" className="text-gray-400">Select cuisine type</option>
+                {(() => {
+                  const types = Object.values(CuisineType);
+                  const sorted = [...types.filter(t => t !== 'OTHER').sort((a, b) => a.localeCompare(b)), 'OTHER'] as CuisineType[];
+                  return sorted.map((type) => (
+                    <option key={type} value={type}>
+                      {type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                    </option>
+                  ));
+                })()}
               </select>
             </div>
             <div>
-              <label className="block text-base font-medium text-gray-900 mb-2">
-                Price Range
+              <label htmlFor="priceRange" className="block text-sm font-medium text-gray-700 mb-1">
+                Price Range <span className="text-red-500">*</span>
               </label>
               <select
+                id="priceRange"
+                name="priceRange"
+                data-testid="price-range-select"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors text-gray-900"
                 value={formData.priceRange}
                 onChange={(e) => setFormData({ ...formData, priceRange: e.target.value as PriceRange })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base text-gray-900"
                 required
               >
+                <option value="" className="text-gray-400">Select price range</option>
                 {Object.values(PriceRange).map((range) => (
-                  <option key={range} value={range} className="text-gray-900">
-                    {range}
+                  <option key={range} value={range}>
+                    {range === 'LOW' ? '$' : range === 'MEDIUM' ? '$$' : range === 'HIGH' ? '$$$' : range}
                   </option>
                 ))}
               </select>
@@ -229,7 +307,14 @@ export default function EditRestaurantModal({
                   type="checkbox"
                   id="servesAlcohol"
                   checked={formData.servesAlcohol}
-                  onChange={(e) => setFormData({ ...formData, servesAlcohol: e.target.checked })}
+                  onChange={(e) => {
+                    const servesAlcohol = e.target.checked;
+                    setFormData({
+                      ...formData,
+                      servesAlcohol,
+                      isFullyHalal: servesAlcohol ? false : formData.isFullyHalal
+                    });
+                  }}
                   className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
                 />
                 <label htmlFor="servesAlcohol" className="ml-3 block text-base text-gray-900">
@@ -248,8 +333,9 @@ export default function EditRestaurantModal({
                   type="checkbox"
                   id="isFullyHalal"
                   checked={formData.isFullyHalal}
-                  onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked })}
+                  onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : formData.isPartiallyHalal })}
                   className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  disabled={formData.servesAlcohol || formData.isPartiallyHalal}
                 />
                 <label htmlFor="isFullyHalal" className="ml-3 block text-base text-gray-900">
                   Fully Halal
@@ -264,7 +350,7 @@ export default function EditRestaurantModal({
                   className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
                 />
                 <label htmlFor="isZabiha" className="ml-3 block text-base text-gray-900">
-                  Zabiha
+                  Zabihah
                 </label>
               </div>
               <div className="flex items-center">
@@ -282,10 +368,10 @@ export default function EditRestaurantModal({
             </div>
           </div>
 
-          {/* Zabiha Meat Options */}
+          {/* Zabihah Meat Options */}
           {formData.isZabiha && (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-gray-900">Zabiha Meat Options</h3>
+              <h3 className="text-xl font-semibold text-gray-900">Zabihah Meat Options</h3>
               <div className="space-y-3">
                 <div className="flex items-center">
                   <input

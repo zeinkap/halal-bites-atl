@@ -8,6 +8,7 @@ import { Card } from './ui/Card';
 import { Button, CloseButton } from './ui/Button';
 import type { Libraries } from '@react-google-maps/api/dist/utils/make-load-script-url';
 import { useModalContext } from './ui/ModalContext';
+import { ConfirmationDialog } from './ui/ConfirmationDialog';
 
 import type { FormData } from './add-restaurant-helpers';
 import {
@@ -252,6 +253,13 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
   return (
     <>
+      <ConfirmationDialog
+        open={showConfirmDialog}
+        title="Discard Changes?"
+        message="You have unsaved changes. Are you sure you want to close this form? Your changes will be lost."
+        onConfirm={handleConfirmClose}
+        onCancel={() => setShowConfirmDialog(false)}
+      />
       {/* Modal Backdrop */}
       <div
         className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity duration-300 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'
@@ -259,51 +267,6 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
         onClick={handleClose}
         data-testid="add-restaurant-modal-backdrop"
       >
-        {/* Confirmation Dialog */}
-        {showConfirmDialog && (
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
-            onClick={(e) => e.stopPropagation()}
-            data-testid="confirm-dialog-backdrop"
-          >
-            <Card className="max-w-md w-full mx-4 transform transition-all" data-testid="confirm-dialog">
-              <Card.Header className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                  <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
-                </div>
-                <div>
-                  <Card.Title className="text-lg font-semibold text-gray-900" data-testid="confirm-dialog-title">
-                    Discard Changes?
-                  </Card.Title>
-                  <Card.Description className="mt-2 text-sm text-gray-600" data-testid="confirm-dialog-message">
-                    You have unsaved changes. Are you sure you want to close this form? Your changes will be lost.
-                  </Card.Description>
-                  <div className="mt-4 flex gap-3">
-                    <Button
-                      type="button"
-                      onClick={handleConfirmClose}
-                      variant="neutral"
-                      size="sm"
-                      data-testid="confirm-dialog-discard"
-                    >
-                      Yes, Discard
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleCancelClose}
-                      variant="primary"
-                      size="sm"
-                      data-testid="confirm-dialog-keep-editing"
-                    >
-                      No, Keep Editing
-                    </Button>
-                  </div>
-                </div>
-              </Card.Header>
-            </Card>
-          </div>
-        )}
-
         {/* Main Modal Card */}
         <Card
           className={`w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all duration-300 ease-in-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
@@ -334,7 +297,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
           </Card.Header>
 
           {/* Scrollable Content */}
-          <div ref={modalContentRef} className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div ref={modalContentRef} className="flex-1 overflow-y-auto max-h-[70vh] p-6 space-y-6">
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4" data-testid="form-error">
@@ -355,7 +318,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
             <form id="restaurant-form" onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
               {/* Basic Information Section */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-base font-semibold text-gray-900 mb-2">Basic Information</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h3>
                 {/* Name */}
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -366,7 +329,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     name="name"
                     id="name"
                     data-testid="restaurant-name-input"
-                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-base h-12 py-3 px-4 transition-colors placeholder-gray-500 text-gray-900 mb-4"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Enter restaurant name"
@@ -393,11 +356,15 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       required
                     >
                       <option value="" className="text-gray-400">Select cuisine type</option>
-                      {Object.values(CuisineType).map((type) => (
-                        <option key={type} value={type}>
-                          {type.replace(/_/g, ' ').toLowerCase().replace(/^\w|\s\w/g, l => l.toUpperCase())}
-                        </option>
-                      ))}
+                      {(() => {
+                        const types = Object.values(CuisineType);
+                        const sorted = [...types.filter(t => t !== 'OTHER').sort((a, b) => a.localeCompare(b)), 'OTHER'] as CuisineType[];
+                        return sorted.map((type) => (
+                          <option key={type} value={type}>
+                            {type.replace(/_/g, ' ').toLowerCase().replace(/^\w|\s\w/g, l => l.toUpperCase())}
+                          </option>
+                        ));
+                      })()}
                     </select>
                     {error && error.toLowerCase().includes('cuisine') && (
                       <p className="mt-1 text-xs text-red-600">{error}</p>
@@ -439,7 +406,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       name="address"
                       id="address"
                       data-testid="restaurant-address-input"
-                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900 pl-10"
+                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-base h-12 py-3 pl-10 pr-4 transition-colors placeholder-gray-500 text-gray-900 mb-4"
                       value={formData.address}
                       onChange={(e) => {
                         setFormData((prev) => ({ ...prev, address: e.target.value }));
@@ -449,7 +416,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       placeholder="Start typing the restaurant address..."
                       required
                     />
-                    <MapPinIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <MapPinIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   </div>
                   {showSuggestions && addressSuggestions.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-auto">
@@ -478,49 +445,49 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
               {/* Features Section */}
               <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                <h3 className="text-base font-semibold text-gray-900 mb-2">Restaurant Features</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Restaurant Features</h3>
                 {/* Two-column flexbox for mobile, grid for desktop */}
                 <div className="flex flex-col sm:grid sm:grid-cols-2 gap-4">
                   <div className="flex flex-row gap-4 sm:contents">
                     <div className="flex-1 flex flex-col gap-4">
-                      {/* Prayer Space */}
-                      <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
-                        <input
-                          type="checkbox"
-                          name="hasPrayerRoom"
-                          className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
-                          checked={formData.hasPrayerRoom}
-                          onChange={(e) => setFormData({ ...formData, hasPrayerRoom: e.target.checked })}
-                        />
+                  {/* Prayer Space */}
+                  <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      name="hasPrayerRoom"
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
+                      checked={formData.hasPrayerRoom}
+                      onChange={(e) => setFormData({ ...formData, hasPrayerRoom: e.target.checked })}
+                    />
                         <span className="ml-3 text-sm text-gray-900">Prayer Space</span>
-                      </label>
-                      {/* Zabiha Status */}
-                      <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
-                        <input
-                          type="checkbox"
-                          name="isZabiha"
-                          className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
-                          checked={formData.isZabiha}
-                          onChange={(e) => setFormData({ ...formData, isZabiha: e.target.checked })}
-                        />
-                        <span className="ml-3 text-sm text-gray-900">Zabiha Certified (hand-cut)</span>
-                      </label>
-                      {/* Serves Alcohol */}
-                      <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
-                        <input
-                          type="checkbox"
-                          name="servesAlcohol"
-                          className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
-                          checked={formData.servesAlcohol}
-                          onChange={(e) => {
-                            const servesAlcohol = e.target.checked;
-                            setFormData({
-                              ...formData,
-                              servesAlcohol,
-                              isFullyHalal: servesAlcohol ? false : formData.isFullyHalal
-                            });
-                          }}
-                        />
+                  </label>
+                  {/* Zabihah Status */}
+                  <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      name="isZabiha"
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
+                      checked={formData.isZabiha}
+                      onChange={(e) => setFormData({ ...formData, isZabiha: e.target.checked })}
+                    />
+                        <span className="ml-3 text-sm text-gray-900">Zabihah Certified (hand-cut)</span>
+                  </label>
+                  {/* Serves Alcohol */}
+                  <label className="relative flex items-start p-3 rounded-lg border border-gray-200 hover:border-orange-500 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      name="servesAlcohol"
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
+                      checked={formData.servesAlcohol}
+                      onChange={(e) => {
+                        const servesAlcohol = e.target.checked;
+                        setFormData({
+                          ...formData,
+                          servesAlcohol,
+                          isFullyHalal: servesAlcohol ? false : formData.isFullyHalal
+                        });
+                      }}
+                    />
                         <span className="ml-3 text-sm text-gray-900">Serves Alcohol</span>
                       </label>
                     </div>
@@ -546,31 +513,31 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                           onChange={(e) => setFormData({ ...formData, hasHighChair: e.target.checked })}
                         />
                         <span className="ml-3 text-sm text-gray-900">High Chairs</span>
-                      </label>
-                      {/* Fully Halal Menu */}
-                      <label className={`relative flex items-start p-3 rounded-lg border border-gray-200 ${!formData.servesAlcohol ? 'hover:border-orange-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'} transition-colors`}>
-                        <input
-                          type="checkbox"
-                          name="isFullyHalal"
-                          className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          checked={formData.isFullyHalal}
-                          onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : formData.isPartiallyHalal })}
-                          disabled={formData.servesAlcohol || formData.isPartiallyHalal}
-                        />
+                  </label>
+                  {/* Fully Halal Menu */}
+                  <label className={`relative flex items-start p-3 rounded-lg border border-gray-200 ${!formData.servesAlcohol ? 'hover:border-orange-500 cursor-pointer' : 'opacity-50 cursor-not-allowed'} transition-colors`}>
+                    <input
+                      type="checkbox"
+                      name="isFullyHalal"
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      checked={formData.isFullyHalal}
+                      onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : formData.isPartiallyHalal })}
+                      disabled={formData.servesAlcohol || formData.isPartiallyHalal}
+                    />
                         <span className="ml-3 text-sm text-gray-900">Fully Halal Menu</span>
-                      </label>
-                      {/* Partially Halal */}
-                      <label className="relative flex items-start p-3 rounded-lg border border-blue-200 hover:border-blue-400 cursor-pointer transition-colors">
-                        <input
-                          type="checkbox"
-                          name="isPartiallyHalal"
-                          className="h-4 w-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 transition-colors"
-                          checked={formData.isPartiallyHalal}
-                          onChange={(e) => setFormData({ ...formData, isPartiallyHalal: e.target.checked, isFullyHalal: e.target.checked ? false : formData.isFullyHalal })}
-                          disabled={formData.isFullyHalal}
-                        />
+                  </label>
+                  {/* Partially Halal */}
+                  <label className="relative flex items-start p-3 rounded-lg border border-blue-200 hover:border-blue-400 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      name="isPartiallyHalal"
+                      className="h-4 w-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 transition-colors"
+                      checked={formData.isPartiallyHalal}
+                      onChange={(e) => setFormData({ ...formData, isPartiallyHalal: e.target.checked, isFullyHalal: e.target.checked ? false : formData.isFullyHalal })}
+                      disabled={formData.isFullyHalal}
+                    />
                         <span className="ml-3 text-sm text-gray-900">Partially Halal</span>
-                      </label>
+                  </label>
                     </div>
                   </div>
                   {/* On desktop, use grid-cols-2 for more columns */}
@@ -623,13 +590,13 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                   </div>
                 )}
 
-                {/* Zabiha Details */}
+                {/* Zabihah Details */}
                 {formData.isZabiha && (
                   <div className="space-y-4 mt-4 p-4 bg-white rounded-lg border border-orange-100">
-                    <div className="text-sm font-medium text-gray-700">Zabiha Details</div>
-                    {/* Zabiha Meat Types */}
+                    <div className="text-sm font-medium text-gray-700">Zabihah Details</div>
+                    {/* Zabihah Meat Types */}
                     <div className="space-y-2">
-                      <div className="text-sm font-medium text-gray-700">Available Zabiha Meat: <span className="text-red-500">*</span></div>
+                      <div className="text-sm font-medium text-gray-700">Available Zabihah Meat: <span className="text-red-500">*</span></div>
                       <div className="grid grid-cols-2 gap-2">
                         <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                           <input
@@ -669,7 +636,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         </label>
                       </div>
                     </div>
-                    {/* Zabiha Verification */}
+                    {/* Zabihah Verification */}
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-gray-700">Verification Details:</div>
                       <div className="space-y-3">
@@ -712,7 +679,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                 )}
                 {/* Description Section */}
                 <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-900 mb-2">Additional Information</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Additional Information</h3>
                   <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5">
                       Description
@@ -737,7 +704,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
                 {/* Image Upload Section */}
                 <div className="bg-gray-50 rounded-xl p-4 space-y-4">
-                  <h3 className="text-base font-semibold text-gray-900 mb-2">Restaurant Image</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Restaurant Image</h3>
                   <div className="flex items-center justify-center w-full">
                     <label
                       htmlFor="image-upload"
@@ -801,7 +768,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
 
                 {/* Verification Section */}
                 <div className="bg-orange-50 rounded-xl p-4">
-                  <label htmlFor="halalVerification" className="flex items-start cursor-pointer">
+                  <label htmlFor="halalVerification" className="flex items-start cursor-pointer text-base">
                     <input
                       id="halalVerification"
                       name="halalVerification"
@@ -827,13 +794,14 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
               </div>
 
               {/* Sticky Footer */}
-              <div className="bg-white border-t border-gray-100 px-6 py-1.5 rounded-b-2xl flex justify-end gap-3">
+              <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-1.5 rounded-b-2xl flex justify-end gap-3 z-10">
                 <Button
                   type="button"
                   onClick={handleClose}
                   data-testid="cancel-restaurant-button"
                   variant="secondary"
-                  size="md"
+                  size="lg"
+                  className="w-full sm:w-auto h-12 text-base rounded-lg"
                 >
                   Cancel
                 </Button>
@@ -843,8 +811,8 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                   data-testid="submit-restaurant-button"
                   disabled={isSubmitting || !halalVerificationConsent}
                   variant="primary"
-                  size="md"
-                  className="min-w-[100px]"
+                  size="lg"
+                  className="w-full sm:w-auto h-12 text-xs rounded-lg min-w-[100px]"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center">

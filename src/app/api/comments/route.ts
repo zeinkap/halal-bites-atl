@@ -156,4 +156,42 @@ export async function DELETE(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// PATCH: Heart or un-heart a comment
+export async function PATCH(request: Request) {
+  try {
+    const { id, action } = await request.json();
+    if (!id || !['increment', 'decrement'].includes(action)) {
+      return NextResponse.json(
+        { error: 'Comment ID and valid action (increment|decrement) are required' },
+        { status: 400 }
+      );
+    }
+    // Fetch current hearts
+    const comment = await prisma.comment.findUnique({ where: { id } });
+    if (!comment) {
+      return NextResponse.json(
+        { error: 'Comment not found' },
+        { status: 404 }
+      );
+    }
+    let newHearts = comment.hearts;
+    if (action === 'increment') {
+      newHearts += 1;
+    } else if (action === 'decrement') {
+      newHearts = Math.max(0, newHearts - 1);
+    }
+    const updated = await prisma.comment.update({
+      where: { id },
+      data: { hearts: newHearts },
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error('Error updating comment hearts:', error);
+    return NextResponse.json(
+      { error: 'Error updating comment hearts' },
+      { status: 500 }
+    );
+  }
 } 

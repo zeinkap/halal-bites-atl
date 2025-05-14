@@ -194,11 +194,22 @@ export default function AdminDashboardClient() {
             Sign Out
           </Button>
         </div>
-      </div>
+        </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* System Stats */}
         <h2 className="text-lg font-semibold text-gray-800 mb-3">System Stats</h2>
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Button
+            variant="info"
+            size="md"
+            onClick={() => router.push('/admin/restaurants')}
+            className="flex items-center gap-2 shadow-sm"
+            data-testid="manage-restaurants-button"
+          >
+            Manage Restaurants
+          </Button>
+        </div>
         {stats && (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-10">
             <Card className="bg-white shadow-md border-0">
@@ -262,21 +273,21 @@ export default function AdminDashboardClient() {
             <EnvelopeIcon className="h-5 w-5" />
             Send Test Email
           </Button>
-        </div>
+                </div>
 
-        {/* Backup History */}
+                {/* Backup History */}
         <h2 className="text-lg font-semibold text-gray-800 mb-3 mt-10">Recent Backups</h2>
         <Card className="mb-10 bg-white shadow-md border-0">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
-                <tr>
+                              <thead className="bg-gray-50">
+                                <tr>
                   <th className="px-4 py-2 text-left font-semibold text-gray-700">Filename</th>
                   <th className="px-4 py-2 text-left font-semibold text-gray-700">Created</th>
                   <th className="px-4 py-2 text-left font-semibold text-gray-700">Size</th>
                   <th className="px-4 py-2 text-left font-semibold text-gray-700">Status</th>
-                </tr>
-              </thead>
+                                </tr>
+                              </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {backupHistory.length === 0 ? (
                   <tr>
@@ -284,22 +295,22 @@ export default function AdminDashboardClient() {
                   </tr>
                 ) : (
                   backupHistory.map((backup) => (
-                    <tr key={backup.id}>
+                                  <tr key={backup.id}>
                       <td className="px-4 py-2 text-gray-800">{backup.filename}</td>
                       <td className="px-4 py-2 text-gray-700">{new Date(backup.createdAt).toLocaleString()}</td>
                       <td className="px-4 py-2 text-gray-700">{(backup.size / 1024).toFixed(1)} KB</td>
                       <td className="px-4 py-2">
                         <Badge color={backup.status === 'success' ? 'green' : 'orange'} size="sm">
-                          {backup.status}
-                        </Badge>
-                      </td>
-                    </tr>
+                                        {backup.status}
+                                      </Badge>
+                                    </td>
+                                  </tr>
                   ))
                 )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                              </tbody>
+                            </table>
+                          </div>
+          </Card>
 
         {/* Bug Reports */}
         <h2 className="text-lg font-semibold text-gray-800 mb-3 mt-10">Bug Reports</h2>
@@ -342,13 +353,13 @@ export default function AdminDashboardClient() {
                 )}
               </tbody>
             </table>
-          </div>
+              </div>
         </Card>
         <div className="flex justify-end mb-10">
-          <Button variant="neutral" size="sm" onClick={() => router.push('/admin/bug-reports')}>
-            View All
-          </Button>
-        </div>
+                <Button variant="neutral" size="sm" onClick={() => router.push('/admin/bug-reports')}>
+                  View All
+                </Button>
+              </div>
 
         {/* Restaurant Reports */}
         <h2 className="text-lg font-semibold text-gray-800 mb-3 mt-10">Restaurant Reports</h2>
@@ -389,12 +400,12 @@ export default function AdminDashboardClient() {
                 )}
               </tbody>
             </table>
-          </div>
+              </div>
         </Card>
         <div className="flex justify-end mb-10">
-          <Button variant="neutral" size="sm" onClick={() => router.push('/admin/reports')}>
-            View All
-          </Button>
+                <Button variant="neutral" size="sm" onClick={() => router.push('/admin/reports')}>
+                  View All
+                </Button>
         </div>
       </div>
     </div>

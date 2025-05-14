@@ -62,7 +62,7 @@ export async function waitForRestaurantInDB(
  * Handles all form fields including:
  * - Basic info (name, cuisine type, price range, address)
  * - Description (if provided)
- * - Feature checkboxes (prayer space, zabiha, outdoor seating, etc.)
+ * - Feature checkboxes (prayer space, Zabihah, outdoor seating, etc.)
  * 
  * Waits for each field to be properly set before proceeding
  * 
