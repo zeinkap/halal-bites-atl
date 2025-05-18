@@ -43,7 +43,7 @@ export async function PATCH(req: Request) {
       data: { status },
     });
     return NextResponse.json(updated);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update bug report status' }, { status: 500 });
   }
 } 

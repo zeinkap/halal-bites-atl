@@ -15,10 +15,21 @@ interface FeatureRestaurantModalProps {
 
 const libraries: Libraries = ['places'];
 
+type FeatureRestaurantForm = {
+  name: string;
+  address: string;
+  email: string;
+  phone: string;
+  contactName: string;
+  role: string;
+  bestTime: string;
+  hearAbout: string;
+};
+
 export default function FeatureRestaurantModal({ isOpen, onClose }: FeatureRestaurantModalProps) {
   const { setAnyModalOpen } = useModalContext();
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FeatureRestaurantForm>({
     name: '',
     address: '',
     email: '',
@@ -67,6 +78,7 @@ export default function FeatureRestaurantModal({ isOpen, onClose }: FeatureResta
     handleAddressSelect(
       suggestion,
       placesService.current,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (updater: any) => setForm((prev) => ({ ...prev, ...updater(prev) })),
       setShowSuggestions
     );
