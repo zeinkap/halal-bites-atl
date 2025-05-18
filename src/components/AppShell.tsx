@@ -33,8 +33,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
             </>
           }
-          buttonLabel={undefined as any}
-          onButtonClick={() => {}}
           onClose={() => setShowBanner(false)}
         />
       )}

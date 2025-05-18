@@ -15,7 +15,6 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
-import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -73,8 +72,6 @@ export default function AdminDashboardClient() {
   const [backupHistory, setBackupHistory] = useState<BackupHistory[]>([]);
   const [bugReports, setBugReports] = useState<BugReport[]>([]);
   const [restaurantReports, setRestaurantReports] = useState<RestaurantReport[]>([]);
-  const [reportsOverTime, setReportsOverTime] = useState<{ date: string; count: number }[]>([]);
-  const [restaurantsOverTime, setRestaurantsOverTime] = useState<{ date: string; count: number }[]>([]);
 
   // Fetch system stats
   const fetchStats = async () => {
@@ -83,8 +80,6 @@ export default function AdminDashboardClient() {
       if (!response.ok) throw new Error('Failed to fetch stats');
       const data = await response.json();
       setStats(data);
-      setReportsOverTime(data.reportsOverTime || []);
-      setRestaurantsOverTime(data.restaurantsOverTime || []);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
       toast.error('Failed to load system statistics');

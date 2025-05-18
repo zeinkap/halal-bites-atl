@@ -68,7 +68,7 @@ async function main() {
       try {
         const id = createId();
         let brandConnect = {};
-        let dataWithBrandId = { ...data };
+        const dataWithBrandId = { ...data };
         if (brandName) {
           const brand = await prisma.brand.upsert({
             where: { name: brandName },

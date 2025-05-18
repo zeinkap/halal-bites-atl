@@ -67,7 +67,7 @@ export default function FeatureRestaurantModal({ isOpen, onClose }: FeatureResta
     handleAddressSelect(
       suggestion,
       placesService.current,
-      (updater) => setForm((prev) => ({ ...prev, ...updater(prev) })),
+      (updater: any) => setForm((prev) => ({ ...prev, ...updater(prev) })),
       setShowSuggestions
     );
   };
@@ -145,7 +145,7 @@ export default function FeatureRestaurantModal({ isOpen, onClose }: FeatureResta
                     <div>
                       <Card.Title>Feature Your Restaurant</Card.Title>
                       <Card.Description>
-                        Fill out the form below and we'll get in touch to help you get featured on Halal Bites ATL.
+                        Fill out the form below and we&apos;ll get in touch to help you get featured on Halal Bites ATL.
                       </Card.Description>
                     </div>
                     <CloseButton onClick={onClose} aria-label="Close feature restaurant modal" />
