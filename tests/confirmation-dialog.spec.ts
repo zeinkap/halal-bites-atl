@@ -94,8 +94,8 @@ test.describe("Restaurant Form Confirmation Dialog", () => {
       "MIDDLE_EASTERN"
     );
     await page.selectOption('[data-testid="price-range-select"]', "LOW");
-    await page.check('[data-testid="restaurant-prayer-room-checkbox"]');
-    await page.check('[data-testid="restaurant-fully-halal-checkbox"]');
+    await page.check('[data-testid="prayer-room-checkbox"]');
+    await page.check('[data-testid="fully-halal-checkbox"]');
     await page.fill(
       '[data-testid="restaurant-description-input"]',
       "Test description"
@@ -123,10 +123,10 @@ test.describe("Restaurant Form Confirmation Dialog", () => {
       page.locator('[data-testid="price-range-select"]')
     ).toHaveValue("");
     await expect(
-      page.locator('[data-testid="restaurant-prayer-room-checkbox"]')
+      page.locator('[data-testid="prayer-room-checkbox"]')
     ).not.toBeChecked();
     await expect(
-      page.locator('[data-testid="restaurant-fully-halal-checkbox"]')
+      page.locator('[data-testid="fully-halal-checkbox"]')
     ).not.toBeChecked();
     await expect(
       page.locator('[data-testid="restaurant-description-input"]')

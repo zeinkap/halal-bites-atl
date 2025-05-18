@@ -1,5 +1,4 @@
-import pkg from '@prisma/client';
-const { PrismaClient, CuisineType, PriceRange } = pkg;
+import { PrismaClient, CuisineType, PriceRange } from '@prisma/client';
 import { createId } from '@paralleldrive/cuid2';
 
 const prisma = new PrismaClient();

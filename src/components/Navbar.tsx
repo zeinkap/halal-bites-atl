@@ -11,7 +11,11 @@ import AddRestaurantForm from '@/components/AddRestaurantForm';
 import { toast } from 'react-hot-toast';
 import { Button } from './ui/Button';
 
-export default function Navbar() {
+interface NavbarProps {
+  showBanner?: boolean;
+}
+
+export default function Navbar({ showBanner = false }: NavbarProps) {
   const router = useRouter();
   const [showBugReportModal, setShowBugReportModal] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
@@ -19,7 +23,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="bg-orange-50 backdrop-blur-sm shadow-sm sticky top-0 z-40">
+      <nav className={`bg-orange-50 backdrop-blur-sm shadow-sm sticky ${showBanner ? 'top-[52px]' : 'top-0'} z-40`}>
         <div className="container mx-auto px-4 sm:px-6 py-3">
           <div className="flex justify-between items-center">
             <Button

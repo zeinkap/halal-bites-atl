@@ -1,5 +1,6 @@
 import { APIRequestContext, Page, expect } from '@playwright/test';
 import { Restaurant, Comment } from '@prisma/client';
+
 import { TEST_RESTAURANTS, TEST_COMMENTS, TestRestaurant } from './test-data';
 
 /**
@@ -101,28 +102,28 @@ export async function fillRestaurantForm(
   }
 
   // Set features
-  if (data.features.hasPrayerRoom) {
-    await page.locator('[data-testid="restaurant-prayer-room-checkbox"]').check();
+  if (data.hasPrayerRoom) {
+    await page.locator('[data-testid="prayer-room-checkbox"]').check();
   }
   
-  if (data.features.isZabiha) {
-    await page.locator('[data-testid="restaurant-zabiha-checkbox"]').check();
+  if (data.isZabiha) {
+    await page.locator('[data-testid="zabiha-checkbox"]').check();
   }
   
-  if (data.features.hasOutdoorSeating) {
-    await page.locator('[data-testid="restaurant-outdoor-seating-checkbox"]').check();
+  if (data.hasOutdoorSeating) {
+    await page.locator('[data-testid="outdoor-seating-checkbox"]').check();
   }
   
-  if (data.features.hasHighChair) {
-    await page.locator('[data-testid="restaurant-high-chair-checkbox"]').check();
+  if (data.hasHighChair) {
+    await page.locator('[data-testid="high-chair-checkbox"]').check();
   }
 
-  if (data.features.servesAlcohol) {
-    await page.locator('[data-testid="restaurant-alcohol-checkbox"]').check();
+  if (data.servesAlcohol) {
+    await page.locator('[data-testid="alcohol-checkbox"]').check();
   }
 
-  if (!data.features.isFullyHalal) {
-    await page.locator('[data-testid="restaurant-fully-halal-checkbox"]').check();
+  if (!data.isFullyHalal) {
+    await page.locator('[data-testid="fully-halal-checkbox"]').check();
   }
 }
 
@@ -470,7 +471,27 @@ export async function createRestaurantViaAPI(request: APIRequestContext, data: T
       priceRange: data.priceRange,
       address: data.address,
       description: data.description,
-      features: data.features,
+      hasPrayerRoom: data.hasPrayerRoom,
+      hasOutdoorSeating: data.hasOutdoorSeating,
+      isZabiha: data.isZabiha,
+      hasHighChair: data.hasHighChair,
+      servesAlcohol: data.servesAlcohol,
+      isFullyHalal: data.isFullyHalal,
+      imageUrl: data.imageUrl,
+      zabihaBeef: data.zabihaBeef,
+      zabihaChicken: data.zabihaChicken,
+      zabihaGoat: data.zabihaGoat,
+      zabihaLamb: data.zabihaLamb,
+      zabihaVerified: data.zabihaVerified,
+      zabihaVerifiedBy: data.zabihaVerifiedBy,
+      brandId: data.brandId,
+      isPartiallyHalal: data.isPartiallyHalal,
+      partiallyHalalBeef: data.partiallyHalalBeef,
+      partiallyHalalChicken: data.partiallyHalalChicken,
+      partiallyHalalGoat: data.partiallyHalalGoat,
+      partiallyHalalLamb: data.partiallyHalalLamb,
+      latitude: data.latitude,
+      longitude: data.longitude,
     },
   });
 

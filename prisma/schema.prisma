@@ -94,6 +94,7 @@ model BugReport {
   email            String?
   screenshotUrl    String?
   createdAt        DateTime @default(now())
+  status           String   @default("open")
 }
 
 model Brand {

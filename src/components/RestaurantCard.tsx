@@ -73,7 +73,8 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             <div className="space-y-2 sm:space-y-3">
               {/* Header & Address */}
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1 flex items-center gap-2">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1 flex items-center gap-2" 
+                  data-testid={`restaurant-name-${localRestaurant.id}`}>
                   {localRestaurant.name}
                   <Badge color={
                     localRestaurant.priceRange === 'LOW'

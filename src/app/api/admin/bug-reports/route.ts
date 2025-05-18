@@ -25,3 +25,25 @@ export async function GET() {
   });
   return NextResponse.json(bugReports);
 } 
+
+export async function PATCH(req: Request) {
+  // Verify admin access
+  const session = await verifyAdminCustom();
+  if (session) {
+    return session;
+  }
+
+  try {
+    const { id, status } = await req.json();
+    if (!id || !status) {
+      return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
+    }
+    const updated = await prisma.bugReport.update({
+      where: { id },
+      data: { status },
+    });
+    return NextResponse.json(updated);
+  } catch (e) {
+    return NextResponse.json({ error: 'Failed to update bug report status' }, { status: 500 });
+  }
+} 

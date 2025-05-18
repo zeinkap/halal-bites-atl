@@ -25,7 +25,7 @@ export async function verifyAdminPassword(email: string, password: string) {
 
 export function setAdminSessionCookie(email: string) {
   return serialize(COOKIE_NAME, email, {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',

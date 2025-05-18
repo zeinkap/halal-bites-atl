@@ -451,6 +451,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     <input
                       type="checkbox"
                       name="hasPrayerRoom"
+                      data-testid="prayer-room-checkbox"
                       className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
                       checked={formData.hasPrayerRoom}
                       onChange={(e) => setFormData({ ...formData, hasPrayerRoom: e.target.checked })}
@@ -462,6 +463,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     <input
                       type="checkbox"
                       name="isZabiha"
+                      data-testid="zabiha-checkbox"
                       className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
                       checked={formData.isZabiha}
                       onChange={(e) => setFormData({ ...formData, isZabiha: e.target.checked })}
@@ -473,6 +475,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     <input
                       type="checkbox"
                       name="servesAlcohol"
+                      data-testid="alcohol-checkbox"
                       className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
                       checked={formData.servesAlcohol}
                       onChange={(e) => {
@@ -493,6 +496,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         <input
                           type="checkbox"
                           name="hasOutdoorSeating"
+                          data-testid="outdoor-seating-checkbox"
                           className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
                           checked={formData.hasOutdoorSeating}
                           onChange={(e) => setFormData({ ...formData, hasOutdoorSeating: e.target.checked })}
@@ -504,6 +508,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         <input
                           type="checkbox"
                           name="hasHighChair"
+                          data-testid="high-chair-checkbox"
                           className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
                           checked={formData.hasHighChair}
                           onChange={(e) => setFormData({ ...formData, hasHighChair: e.target.checked })}
@@ -515,6 +520,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     <input
                       type="checkbox"
                       name="isFullyHalal"
+                      data-testid="fully-halal-checkbox"
                       className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       checked={formData.isFullyHalal}
                       onChange={(e) => setFormData({ ...formData, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : formData.isPartiallyHalal })}
@@ -527,6 +533,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                     <input
                       type="checkbox"
                       name="isPartiallyHalal"
+                      data-testid="restaurant-partially-halal-checkbox"
                       className="h-4 w-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 transition-colors"
                       checked={formData.isPartiallyHalal}
                       onChange={(e) => setFormData({ ...formData, isPartiallyHalal: e.target.checked, isFullyHalal: e.target.checked ? false : formData.isFullyHalal })}
@@ -549,6 +556,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                         <input
                           type="checkbox"
+                          data-testid="partially-halal-chicken-checkbox"
                           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                           checked={formData.partiallyHalalChicken}
                           onChange={(e) => setFormData({ ...formData, partiallyHalalChicken: e.target.checked })}
@@ -558,6 +566,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                         <input
                           type="checkbox"
+                          data-testid="partially-halal-lamb-checkbox"
                           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                           checked={formData.partiallyHalalLamb}
                           onChange={(e) => setFormData({ ...formData, partiallyHalalLamb: e.target.checked })}
@@ -567,6 +576,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                         <input
                           type="checkbox"
+                          data-testid="partially-halal-beef-checkbox"
                           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                           checked={formData.partiallyHalalBeef}
                           onChange={(e) => setFormData({ ...formData, partiallyHalalBeef: e.target.checked })}
@@ -576,6 +586,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                         <input
                           type="checkbox"
+                          data-testid="partially-halal-goat-checkbox"
                           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                           checked={formData.partiallyHalalGoat}
                           onChange={(e) => setFormData({ ...formData, partiallyHalalGoat: e.target.checked })}
@@ -597,6 +608,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                           <input
                             type="checkbox"
+                            data-testid="zabiha-chicken-checkbox"
                             className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
                             checked={formData.zabihaChicken}
                             onChange={(e) => setFormData({ ...formData, zabihaChicken: e.target.checked })}
@@ -606,6 +618,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                           <input
                             type="checkbox"
+                            data-testid="zabiha-lamb-checkbox"
                             className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
                             checked={formData.zabihaLamb}
                             onChange={(e) => setFormData({ ...formData, zabihaLamb: e.target.checked })}
@@ -615,6 +628,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                           <input
                             type="checkbox"
+                            data-testid="zabiha-beef-checkbox"
                             className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
                             checked={formData.zabihaBeef}
                             onChange={(e) => setFormData({ ...formData, zabihaBeef: e.target.checked })}
@@ -624,6 +638,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                         <label className="inline-flex items-center p-2 bg-gray-50 rounded-lg">
                           <input
                             type="checkbox"
+                            data-testid="zabiha-goat-checkbox"
                             className="rounded border-gray-300 text-orange-600 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
                             checked={formData.zabihaGoat}
                             onChange={(e) => setFormData({ ...formData, zabihaGoat: e.target.checked })}
@@ -643,6 +658,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                           <input
                             type="date"
                             id="zabihaVerified"
+                            data-testid="zabiha-verified-date-input"
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm cursor-pointer text-gray-900 [color-scheme:light]"
                             value={formData.zabihaVerified ? new Date(formData.zabihaVerified).toISOString().split('T')[0] : ''}
                             max={new Date(new Date().setHours(0, 0, 0, 0)).toISOString().split('T')[0]}
@@ -662,6 +678,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                           <input
                             type="text"
                             id="zabihaVerifiedBy"
+                            data-testid="zabiha-verified-by-input"
                             className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm text-gray-900 placeholder:text-gray-500"
                             placeholder="e.g., Restaurant Management, Local Imam"
                             value={formData.zabihaVerifiedBy || ''}
@@ -684,7 +701,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                       id="description"
                       name="description"
                       rows={3}
-                      data-testid="restaurant-description-input"
+                      data-testid="description-input"
                       className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900"
                       placeholder="Tell us about the restaurant's specialties, atmosphere, or any other notable features..."
                       value={formData.description}
@@ -704,6 +721,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                   <div className="flex items-center justify-center w-full">
                     <label
                       htmlFor="image-upload"
+                      data-testid="image-upload-label"
                       className="relative flex flex-col items-center justify-center w-full h-40 sm:h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors p-2 sm:p-0"
                     >
                       {isUploading ? (
@@ -729,6 +747,7 @@ export default function AddRestaurantForm({ isOpen, onClose, onRestaurantAdded }
                             <p className="text-white text-sm mb-2">Click to change image</p>
                             <Button
                               type="button"
+                              data-testid="remove-image-button"
                               onClick={(e) => {
                                 e.preventDefault();
                                 setFormData({ ...formData, image: undefined });

@@ -1,22 +1,11 @@
-import { CuisineType, PriceRange } from '@prisma/client';
 import { generateRandomAtlantaAddress } from './address-generator';
+import { CuisineType, PriceRange } from '@prisma/client';
 
 /**
  * Interface representing a test restaurant's data structure
  * Used for creating consistent test data across test scenarios
- * 
- * @property name - Unique name for the restaurant
- * @property cuisineType - Type of cuisine from predefined CuisineType enum
- * @property priceRange - Price category from predefined PriceRange enum
- * @property address - Physical location of the restaurant
- * @property description - Optional detailed description of the restaurant
- * @property features - Object containing boolean flags for various restaurant features:
- *                     - hasPrayerRoom: Whether the restaurant has a prayer space
- *                     - hasOutdoorSeating: Whether outdoor seating is available
- *                     - isZabiha: Whether they serve Zabihah (hand-cut) halal meat
- *                     - hasHighChair: Whether they provide high chairs for children
- *                     - servesAlcohol: Whether alcohol is served
- *                     - isFullyHalal: Whether the entire menu is halal
+ *
+ * All fields correspond to the Restaurant model in schema.prisma
  */
 export interface TestRestaurant {
   name: string;
@@ -24,14 +13,27 @@ export interface TestRestaurant {
   priceRange: PriceRange;
   address: string;
   description: string;
-  features: {
-    hasPrayerRoom: boolean;
-    hasOutdoorSeating: boolean;
-    isZabiha: boolean;
-    hasHighChair: boolean;
-    servesAlcohol: boolean;
-    isFullyHalal: boolean;
-  };
+  hasPrayerRoom: boolean;
+  hasOutdoorSeating: boolean;
+  isZabiha: boolean;
+  hasHighChair: boolean;
+  servesAlcohol: boolean;
+  isFullyHalal: boolean;
+  imageUrl?: string | null;
+  zabihaBeef: boolean;
+  zabihaChicken: boolean;
+  zabihaGoat: boolean;
+  zabihaLamb: boolean;
+  zabihaVerified?: string | null;
+  zabihaVerifiedBy?: string | null;
+  brandId?: string | null;
+  isPartiallyHalal: boolean;
+  partiallyHalalBeef: boolean;
+  partiallyHalalChicken: boolean;
+  partiallyHalalGoat: boolean;
+  partiallyHalalLamb: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 /**
@@ -53,18 +55,31 @@ export interface TestRestaurant {
 export const TEST_RESTAURANTS: Record<string, TestRestaurant> = {
   BASIC: {
     name: `Test Restaurant ${Date.now()}-${crypto.randomUUID()}`,
-    cuisineType: CuisineType.MIDDLE_EASTERN,
-    priceRange: PriceRange.LOW,
+    cuisineType: CuisineType.THAI,
+    priceRange: PriceRange.HIGH,
     address: generateRandomAtlantaAddress(),
     description: 'A test restaurant description',
-    features: {
-      hasPrayerRoom: true,
-      hasOutdoorSeating: true,
-      isZabiha: true,
-      hasHighChair: true,
-      servesAlcohol: false,
-      isFullyHalal: true
-    }
+    hasPrayerRoom: true,
+    hasOutdoorSeating: true,
+    isZabiha: true,
+    hasHighChair: true,
+    servesAlcohol: false,
+    isFullyHalal: true,
+    imageUrl: 'https://example.com/test-image.jpg',
+    zabihaBeef: true,
+    zabihaChicken: true,
+    zabihaGoat: false,
+    zabihaLamb: false,
+    zabihaVerified: new Date().toISOString(),
+    zabihaVerifiedBy: 'Test Admin',
+    brandId: null,
+    isPartiallyHalal: false,
+    partiallyHalalBeef: false,
+    partiallyHalalChicken: false,
+    partiallyHalalGoat: false,
+    partiallyHalalLamb: false,
+    latitude: 33.7490,
+    longitude: -84.3880
   },
   DUPLICATE: {
     name: `Duplicate Restaurant ${Date.now()}-${crypto.randomUUID()}`,
@@ -72,14 +87,27 @@ export const TEST_RESTAURANTS: Record<string, TestRestaurant> = {
     priceRange: PriceRange.MEDIUM,
     address: generateRandomAtlantaAddress(),
     description: '',
-    features: {
-      hasPrayerRoom: false,
-      hasOutdoorSeating: false,
-      isZabiha: false,
-      hasHighChair: false,
-      servesAlcohol: false,
-      isFullyHalal: false
-    }
+    hasPrayerRoom: false,
+    hasOutdoorSeating: false,
+    isZabiha: false,
+    hasHighChair: false,
+    servesAlcohol: false,
+    isFullyHalal: false,
+    imageUrl: null,
+    zabihaBeef: false,
+    zabihaChicken: false,
+    zabihaGoat: false,
+    zabihaLamb: false,
+    zabihaVerified: null,
+    zabihaVerifiedBy: null,
+    brandId: null,
+    isPartiallyHalal: false,
+    partiallyHalalBeef: false,
+    partiallyHalalChicken: false,
+    partiallyHalalGoat: false,
+    partiallyHalalLamb: false,
+    latitude: null,
+    longitude: null
   }
 } as const;
 
@@ -91,12 +119,14 @@ export const TEST_RESTAURANTS: Record<string, TestRestaurant> = {
  * @property authorName - Name of the comment author
  * @property rating - Numerical rating from 1-5
  * @property imageUrl - Optional URL to an image attached to the comment
+ * @property hearts - Optional number of hearts (likes) for the comment
  */
 export interface TestComment {
   content: string;
   authorName: string;
   rating: number;
   imageUrl?: string;
+  hearts?: number;
 }
 
 /**
@@ -121,16 +151,19 @@ export const TEST_COMMENTS: Record<string, TestComment> = {
   VALID: {
     content: 'Great halal food and excellent service!',
     authorName: 'Test User',
-    rating: 5
+    rating: 5,
+    hearts: 0
   },
   LONG: {
     content: 'This is a very detailed review of the restaurant. The food was amazing, service was great, and the prayer space was clean and spacious. Would definitely recommend to others!',
     authorName: 'Detailed Reviewer',
-    rating: 4
+    rating: 4,
+    hearts: 0
   },
   CRITICAL: {
     content: 'Food was okay but service was slow.',
     authorName: 'Honest Reviewer',
-    rating: 3
+    rating: 3,
+    hearts: 0
   }
 } as const;
