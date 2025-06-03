@@ -3311,6 +3311,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+    
     await upsertRestaurant("Mi Pizza (Norcross حلال)", {
       name: "Mi Pizza (Norcross حلال)",
       cuisineType: CuisineType.FAST_FOOD,
@@ -3340,6 +3341,7 @@ async function main() {
       longitude: null,
     }, 'Mi Pizza');
     await sleep(1200);
+
     await upsertRestaurant("Mi Pizza (Doraville حلال)", {
       name: "Mi Pizza (Doraville حلال)",
       cuisineType: CuisineType.FAST_FOOD,
@@ -3399,6 +3401,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Hook's Catch Seafood and Wings - Atlanta", {
       name: "Hook's Catch Seafood and Wings - Atlanta",
       cuisineType: CuisineType.FAST_FOOD,
@@ -3428,6 +3431,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Desi District", {
       name: "Desi District",
       cuisineType: CuisineType.INDIAN_PAKISTANI,
@@ -3457,6 +3461,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Zafron Restaurant", {
       name: "Zafron Restaurant",
       cuisineType: CuisineType.PERSIAN,
@@ -3486,6 +3491,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("The Halal Guys - Dunwoody", {
       name: "The Halal Guys - Dunwoody",
       cuisineType: CuisineType.FAST_FOOD,
@@ -3515,6 +3521,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Incredible Burger", {
       name: "Incredible Burger",
       cuisineType: CuisineType.FAST_FOOD,
@@ -3544,6 +3551,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Falafel Cafe", {
       name: "Falafel Cafe",
       cuisineType: CuisineType.PERSIAN,
@@ -3573,6 +3581,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Kabobwich", {
       name: "Kabobwich",
       cuisineType: CuisineType.PERSIAN,
@@ -3602,6 +3611,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("DiBar Grill", {
       name: "DiBar Grill",
       cuisineType: CuisineType.PERSIAN,
@@ -3631,6 +3641,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Darbar Halal Restaurant", {
       name: "Darbar Halal Restaurant",
       cuisineType: CuisineType.AFGHAN,
@@ -3660,6 +3671,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Louisiana Famous Fried Chicken-Halal Food", {
       name: "Louisiana Famous Fried Chicken-Halal Food",
       cuisineType: CuisineType.FAST_FOOD,
@@ -3689,6 +3701,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant("Noosh Kitchen", {
       name: "Noosh Kitchen",
       cuisineType: CuisineType.PERSIAN,

@@ -1,8 +1,9 @@
 import React from 'react';
+import type { FormData } from './add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 };
 
 const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (

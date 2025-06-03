@@ -1,9 +1,10 @@
 import React from 'react';
+import type { FormData } from './add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
-  error?: string | null;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  error?: string;
 };
 
 const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, error }) => (

@@ -1,10 +1,11 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from '../../ui/Button';
+import type { FormData } from './add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   isUploading: boolean;
   uploadProgress: number;
   handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

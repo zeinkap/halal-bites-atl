@@ -2,10 +2,11 @@ import React from 'react';
 import { Button } from '../../ui/Button';
 import { MapPinIcon } from '@heroicons/react/24/solid';
 import { handleAddressChange, handleAddressSelect } from '../EditRestaurantModal/edit-restaurant-helpers';
+import type { FormData } from './add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   isLoaded: boolean;
   addressSuggestions: google.maps.places.AutocompletePrediction[];
   setAddressSuggestions: React.Dispatch<React.SetStateAction<google.maps.places.AutocompletePrediction[]>>;

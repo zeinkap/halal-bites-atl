@@ -1,8 +1,9 @@
 import React from 'react';
+import type { FormData } from './add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 };
 
 const ZabihaMeatOptions: React.FC<Props> = ({ formData, setFormData }) => (
@@ -65,8 +66,8 @@ const ZabihaMeatOptions: React.FC<Props> = ({ formData, setFormData }) => (
           id="zabihaVerified"
           data-testid="zabiha-verified-date-input"
           className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm text-gray-900"
-          value={formData.zabihaVerified ? (typeof formData.zabihaVerified === 'string' ? formData.zabihaVerified.substring(0, 10) : (formData.zabihaVerified instanceof Date ? formData.zabihaVerified.toISOString().substring(0, 10) : '')) : ''}
-          onChange={e => setFormData((prev: any) => ({ ...prev, zabihaVerified: e.target.value }))}
+          value={formData.zabihaVerified ? (formData.zabihaVerified instanceof Date ? formData.zabihaVerified.toISOString().substring(0, 10) : '') : ''}
+          onChange={e => setFormData((prev: FormData) => ({ ...prev, zabihaVerified: e.target.value ? new Date(e.target.value) : null }))}
           required={formData.isZabiha}
           max={new Date().toLocaleDateString('en-CA')}
         />

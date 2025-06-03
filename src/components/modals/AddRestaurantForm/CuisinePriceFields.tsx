@@ -1,9 +1,10 @@
 import React from 'react';
 import { CuisineType, PriceRange } from '@prisma/client';
+import type { FormData } from './add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 };
 
 const CuisinePriceFields: React.FC<Props> = ({ formData, setFormData }) => (
