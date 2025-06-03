@@ -527,7 +527,6 @@ async function main() {
     });
     await sleep(1200);
 
-    // Now adding the cafes...
     await upsertRestaurant('Shibam Coffee', {
       name: 'Shibam Coffee',
       cuisineType: CuisineType.CAFE,
@@ -1041,9 +1040,9 @@ async function main() {
     await upsertRestaurant('PONKO Chicken - Alpharetta', {
       name: 'PONKO Chicken - Alpharetta',
       cuisineType: CuisineType.FAST_FOOD,
-      address: '2100 Ray\'s Way, Alpharetta, GA 30009',
-      description: 'Japanese-inspired chicken restaurant.',
-      priceRange: PriceRange.MEDIUM,
+      address: "2100 Ray's Way, Alpharetta, GA 30009",
+      description: '',
+      priceRange: PriceRange.LOW,
       hasPrayerRoom: false,
       hasOutdoorSeating: true,
       hasHighChair: true,
@@ -1065,7 +1064,67 @@ async function main() {
       partiallyHalalGoat: false,
       latitude: null,
       longitude: null,
-    });
+    }, 'PONKO Chicken');
+    await sleep(1200);
+
+    await upsertRestaurant('PONKO Chicken - Duluth', {
+      name: 'PONKO Chicken - Duluth',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '6600 Sugarloaf Pkwy # 300, Duluth, GA 30097',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null,
+      isPartiallyHalal: true,
+      partiallyHalalChicken: true,
+      partiallyHalalLamb: false,
+      partiallyHalalBeef: false,
+      partiallyHalalGoat: false,
+      latitude: null,
+      longitude: null,
+    }, 'PONKO Chicken');
+    await sleep(1200);
+
+    await upsertRestaurant('PONKO Chicken - Midtown', {
+      name: 'PONKO Chicken - Midtown',
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '915 W Peachtree St NW Ste 6, Atlanta, GA 30309',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: true,
+      hasHighChair: true,
+      servesAlcohol: true,
+      isFullyHalal: false,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null,
+      isPartiallyHalal: true,
+      partiallyHalalChicken: true,
+      partiallyHalalLamb: false,
+      partiallyHalalBeef: false,
+      partiallyHalalGoat: false,
+      latitude: null,
+      longitude: null,
+    }, 'PONKO Chicken');
     await sleep(1200);
 
     await upsertRestaurant('Express Burger & Grill', {
@@ -1456,8 +1515,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('Dantanna\'s', {
-      name: 'Dantanna\'s',
+    await upsertRestaurant("Dantanna's", {
+      name: "Dantanna's",
       cuisineType: CuisineType.OTHER,
       address: '3400 Around Lenox Rd NE, Atlanta, GA 30326',
       description: 'Contemporary restaurant & bar featuring a menu of burgers & surf \'n\' turf, plus sports on TV.',
@@ -1516,8 +1575,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('Talkin\' Tacos Buckhead', {
-      name: 'Talkin\' Tacos Buckhead',
+    await upsertRestaurant("Talkin' Tacos Buckhead", {
+      name: "Talkin' Tacos Buckhead",
       cuisineType: CuisineType.MEXICAN,
       address: '2625 Piedmont Rd NE Ste 34A, Atlanta, GA 30324',
       description: 'Mexican street tacos with halal options.',
@@ -1604,8 +1663,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('Asma\'s Cuisine', {
-      name: 'Asma\'s Cuisine',
+    await upsertRestaurant("Asma's Cuisine", {
+      name: "Asma's Cuisine",
       cuisineType: CuisineType.INDIAN_PAKISTANI,
       address: '3099 Breckinridge Blvd #114b, Duluth, GA 30096',
       description: 'Family-owned restaurant serving authentic Pakistani and Indian dishes. Known for their home-style cooking and traditional recipes.',
@@ -1813,8 +1872,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('Ali N\' One Zabiha Halal Kitchen', {
-      name: 'Ali N\' One Zabiha Halal Kitchen',
+    await upsertRestaurant("Ali N' One Zabiha Halal Kitchen", {
+      name: "Ali N' One Zabiha Halal Kitchen",
       cuisineType: CuisineType.FAST_FOOD,
       address: '5382 Buford Hwy NE, Doraville, GA 30340',
       description: '',
@@ -1872,6 +1931,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant('Halal Pizza and cafe', {
       name: 'Halal Pizza and cafe',
       cuisineType: CuisineType.FAST_FOOD,
@@ -1901,6 +1961,7 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
+
     await upsertRestaurant('Bawarchi Biryanis Atlanta', {
       name: 'Bawarchi Biryanis Atlanta',
       cuisineType: CuisineType.INDIAN_PAKISTANI,
@@ -1930,8 +1991,9 @@ async function main() {
       longitude: null,
     });
     await sleep(1200);
-    await upsertRestaurant('Shah\'s Halal Food', {
-      name: 'Shah\'s Halal Food',
+
+    await upsertRestaurant("Shah's Halal Food - Peachtree Corners", {
+      name: "Shah's Halal Food - Peachtree Corners",
       cuisineType: CuisineType.FAST_FOOD,
       address: '5450 Peachtree Pkwy NW, Peachtree Corners, GA 30092',
       description: '',
@@ -1957,7 +2019,67 @@ async function main() {
       partiallyHalalGoat: false,
       latitude: null,
       longitude: null,
-    });
+    }, 'Shah\'s Halal Food');
+    await sleep(1200);
+
+    await upsertRestaurant("Shah's Halal Food - Marietta", {
+      name: "Shah's Halal Food - Marietta",
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '2821 Chastain Meadows Pkwy NW #220, Marietta, GA 30066',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null,
+      isPartiallyHalal: false,
+      partiallyHalalChicken: false,
+      partiallyHalalLamb: false,
+      partiallyHalalBeef: false,
+      partiallyHalalGoat: false,
+      latitude: null,
+      longitude: null,
+    }, 'Shah\'s Halal Food');
+    await sleep(1200);
+
+    await upsertRestaurant("Shah's Halal Food - Lawrenceville", {
+      name: "Shah's Halal Food - Lawrenceville",
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '4850 Sugarloaf Pkwy #208, Lawrenceville, GA 30044',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      isZabiha: false,
+      hasHighChair: true,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null,
+      isPartiallyHalal: false,
+      partiallyHalalChicken: false,
+      partiallyHalalLamb: false,
+      partiallyHalalBeef: false,
+      partiallyHalalGoat: false,
+      latitude: null,
+      longitude: null,
+    }, 'Shah\'s Halal Food');
     await sleep(1200);
     
     await upsertRestaurant('Lahore Grill', {
@@ -2110,8 +2232,8 @@ async function main() {
     }, 'Halal Guys');
     await sleep(1200);
 
-    await upsertRestaurant('Rumi\'s Kitchen - Sandy Springs', {
-      name: 'Rumi\'s Kitchen - Sandy Springs',
+    await upsertRestaurant("Rumi's Kitchen - Sandy Springs", {
+      name: "Rumi's Kitchen - Sandy Springs",
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '6112 Roswell Rd, Atlanta, GA 30328',
       description: 'Upscale Persian restaurant known for their kabobs and rice dishes.',
@@ -2137,11 +2259,11 @@ async function main() {
       partiallyHalalGoat: false,
       latitude: null,
       longitude: null,
-    }, 'Rumi\'s Kitchen');
+    }, "Rumi's Kitchen");
     await sleep(1200);
 
-    await upsertRestaurant('Rumi\'s Kitchen Avalon', {
-      name: 'Rumi\'s Kitchen Avalon',
+    await upsertRestaurant("Rumi's Kitchen Avalon", {
+      name: "Rumi's Kitchen Avalon",
       cuisineType: CuisineType.MIDDLE_EASTERN,
       address: '7105 Avalon Blvd, Alpharetta, GA 30009',
       description: 'Upscale Persian restaurant serving creative Persian cuisine',
@@ -2167,7 +2289,7 @@ async function main() {
       partiallyHalalGoat: false,
       latitude: null,
       longitude: null,
-    }, 'Rumi\'s Kitchen');
+    }, "Rumi's Kitchen");
     await sleep(1200);
 
     await upsertRestaurant('Mediterranean Grill - Decatur', {
@@ -2200,8 +2322,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('BaBa\'s Wings & Platters', {
-      name: 'BaBa\'s Wings & Platters',
+    await upsertRestaurant("BaBa's Wings & Platters", {
+      name: "BaBa's Wings & Platters",
       cuisineType: CuisineType.MEDITERRANEAN,
       address: '706 Grayson Hwy suite 211, Lawrenceville, GA 30046, USA',
       description: '',
@@ -2560,8 +2682,8 @@ async function main() {
     }, 'Bezoria');
     await sleep(1200);
 
-    await upsertRestaurant('Ibu\'s Kitchen', {
-      name: 'Ibu\'s Kitchen',
+    await upsertRestaurant("Ibu's Kitchen", {
+      name: "Ibu's Kitchen",
       cuisineType: CuisineType.INDONESIAN,
       address: '1927 Lakeside Pkwy Suite K-21, Tucker, GA 30084',
       description: '',
@@ -3747,8 +3869,8 @@ async function main() {
     });
     await sleep(1200);
 
-    await upsertRestaurant('Jay\'s Deli', {
-      name: 'Jay\'s Deli',
+    await upsertRestaurant("Jay's Deli", {
+      name: "Jay's Deli",
       cuisineType: CuisineType.OTHER,
       address: '2179 Lawrenceville Hwy f, Decatur, GA 30033, USA',
       description: "Atlanta’s First & Only Zabihah Halal Deli. Our entire menu is crafted with care and devotion, ensuring every bite is Fully Zabihah Halal. Come experience our mouth-watering halal favorites, served with a smile and a touch of authentic tradition.",
@@ -3976,6 +4098,66 @@ async function main() {
       zabihaGoat: false,
       zabihaVerified: new Date('2025-05-12'),
       zabihaVerifiedBy: 'Owner',
+      brandId: null,
+      isPartiallyHalal: false,
+      partiallyHalalChicken: false,
+      partiallyHalalLamb: false,
+      partiallyHalalBeef: false,
+      partiallyHalalGoat: false,
+      latitude: null,
+      longitude: null,
+    });
+    await sleep(1200);
+
+    await upsertRestaurant("MRR's Deli", {
+      name: "MRR's Deli",
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '3055 N Main St Ste# 101, Kennesaw, GA 30144',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
+      brandId: null,
+      isPartiallyHalal: false,
+      partiallyHalalChicken: false,
+      partiallyHalalLamb: false,
+      partiallyHalalBeef: false,
+      partiallyHalalGoat: false,
+      latitude: null,
+      longitude: null,
+    });
+    await sleep(1200);
+
+    await upsertRestaurant("Gas Bros Hot Foods", {
+      name: "Gas Bros Hot Foods",
+      cuisineType: CuisineType.FAST_FOOD,
+      address: '751 N Central Ave, Hapeville, GA 30354',
+      description: '',
+      priceRange: PriceRange.LOW,
+      hasPrayerRoom: false,
+      hasOutdoorSeating: false,
+      hasHighChair: false,
+      servesAlcohol: false,
+      isFullyHalal: true,
+      isZabiha: false,
+      imageUrl: '/images/logo.png',
+      zabihaChicken: false,
+      zabihaLamb: false,
+      zabihaBeef: false,
+      zabihaGoat: false,
+      zabihaVerified: null,
+      zabihaVerifiedBy: null,
       brandId: null,
       isPartiallyHalal: false,
       partiallyHalalChicken: false,

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import EditRestaurantModal from '@/components/EditRestaurantModal';
+import EditRestaurantModal from '@/components/modals/EditRestaurantModal/index.tsx';
 import { type Restaurant } from '@prisma/client';
 import { Button } from '../../../components/ui/Button';
 

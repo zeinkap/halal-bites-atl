@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import RestaurantList from '@/components/RestaurantList';
+import RestaurantList from '@/components/restaurants/RestaurantList/RestaurantList';
 
 // Separate component for search functionality
 function SearchWrapper() {

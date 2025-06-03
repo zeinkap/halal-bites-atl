@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
-import ScrollToTop from "@/components/ScrollToTop";
+import ScrollToTop from "@/components/common/ScrollToTop";
 import { Toaster } from 'react-hot-toast';
 import { ModalProvider } from '@/components/ui/ModalContext';
 

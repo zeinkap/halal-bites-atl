@@ -3,7 +3,7 @@ import "./globals.css";
 import Script from "next/script";
 import { metadata } from "./metadata";
 import { ModalProvider } from '@/components/ui/ModalContext';
-import AppShell from '../components/AppShell';
+import AppShell from '../components/common/AppShell';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

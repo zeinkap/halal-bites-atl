@@ -46,8 +46,8 @@ export const OutdoorSeatingIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 ); 
 
-export const HeartIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+export const HeartIcon = ({ fill = '#ef4444', stroke = 'none', ...props }: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill={fill} stroke={stroke} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
     <path d="M16.5 3.75a5.25 5.25 0 0 1 3.713 8.888l-7.213 7.212-7.213-7.212A5.25 5.25 0 1 1 12 6.75a5.25 5.25 0 0 1 4.5-3z" />
   </svg>
 );
