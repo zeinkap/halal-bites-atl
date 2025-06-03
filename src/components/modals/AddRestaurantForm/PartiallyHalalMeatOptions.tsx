@@ -19,7 +19,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           data-testid="partially-halal-chicken-checkbox"
           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           checked={formData.partiallyHalalChicken}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalChicken: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalChicken: e.target.checked }))}
         />
         <span className="ml-2 text-sm text-gray-700">Chicken</span>
       </label>
@@ -29,7 +29,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           data-testid="partially-halal-lamb-checkbox"
           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           checked={formData.partiallyHalalLamb}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalLamb: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalLamb: e.target.checked }))}
         />
         <span className="ml-2 text-sm text-gray-700">Lamb</span>
       </label>
@@ -39,7 +39,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           data-testid="partially-halal-beef-checkbox"
           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           checked={formData.partiallyHalalBeef}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalBeef: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalBeef: e.target.checked }))}
         />
         <span className="ml-2 text-sm text-gray-700">Beef</span>
       </label>
@@ -49,7 +49,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           data-testid="partially-halal-goat-checkbox"
           className="rounded border-blue-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
           checked={formData.partiallyHalalGoat}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalGoat: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalGoat: e.target.checked }))}
         />
         <span className="ml-2 text-sm text-gray-700">Goat</span>
       </label>

@@ -1,8 +1,9 @@
 import React from 'react';
+import type { FormData } from '../AddRestaurantForm/add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   error?: string | null;
 };
 
@@ -17,7 +18,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           type="checkbox"
           id="partiallyHalalChicken"
           checked={formData.partiallyHalalChicken}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalChicken: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalChicken: e.target.checked }))}
           className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
         />
         <label htmlFor="partiallyHalalChicken" className="ml-3 block text-base text-yellow-700">
@@ -29,7 +30,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           type="checkbox"
           id="partiallyHalalLamb"
           checked={formData.partiallyHalalLamb}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalLamb: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalLamb: e.target.checked }))}
           className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
         />
         <label htmlFor="partiallyHalalLamb" className="ml-3 block text-base text-yellow-700">
@@ -41,7 +42,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           type="checkbox"
           id="partiallyHalalBeef"
           checked={formData.partiallyHalalBeef}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalBeef: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalBeef: e.target.checked }))}
           className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
         />
         <label htmlFor="partiallyHalalBeef" className="ml-3 block text-base text-yellow-700">
@@ -53,7 +54,7 @@ const PartiallyHalalMeatOptions: React.FC<Props> = ({ formData, setFormData, err
           type="checkbox"
           id="partiallyHalalGoat"
           checked={formData.partiallyHalalGoat}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, partiallyHalalGoat: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, partiallyHalalGoat: e.target.checked }))}
           className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
         />
         <label htmlFor="partiallyHalalGoat" className="ml-3 block text-base text-yellow-700">

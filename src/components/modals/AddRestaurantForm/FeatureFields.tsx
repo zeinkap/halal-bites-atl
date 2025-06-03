@@ -20,7 +20,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               data-testid="prayer-room-checkbox"
               className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
               checked={formData.hasPrayerRoom}
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, hasPrayerRoom: e.target.checked }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, hasPrayerRoom: e.target.checked }))}
             />
             <span className="ml-3 text-sm text-gray-900">Prayer Space
               <span className="block text-xs text-gray-500 mt-1">A dedicated prayer area is available.</span>
@@ -34,7 +34,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               data-testid="zabiha-checkbox"
               className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
               checked={formData.isZabiha}
-              onChange={(e) => setFormData((prev: any) => ({
+              onChange={(e) => setFormData(prev => ({
                 ...prev,
                 isZabiha: e.target.checked,
                 isPartiallyHalal: e.target.checked ? false : prev.isPartiallyHalal
@@ -54,7 +54,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               checked={formData.servesAlcohol}
               onChange={(e) => {
                 const servesAlcohol = e.target.checked;
-                setFormData((prev: any) => ({
+                setFormData(prev => ({
                   ...prev,
                   servesAlcohol,
                   isFullyHalal: servesAlcohol ? false : prev.isFullyHalal
@@ -75,7 +75,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               data-testid="outdoor-seating-checkbox"
               className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
               checked={formData.hasOutdoorSeating}
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, hasOutdoorSeating: e.target.checked }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, hasOutdoorSeating: e.target.checked }))}
             />
             <span className="ml-3 text-sm text-gray-900">Outdoor Seating
               <span className="block text-xs text-gray-500 mt-1">Outside seating is available.</span>
@@ -89,7 +89,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               data-testid="high-chair-checkbox"
               className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 transition-colors"
               checked={formData.hasHighChair}
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, hasHighChair: e.target.checked }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, hasHighChair: e.target.checked }))}
             />
             <span className="ml-3 text-sm text-gray-900">High Chairs
               <span className="block text-xs text-gray-500 mt-1">High chairs are available for young kids.</span>
@@ -103,7 +103,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               data-testid="fully-halal-checkbox"
               className="h-4 w-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               checked={formData.isFullyHalal}
-              onChange={(e) => setFormData((prev: any) => ({ ...prev, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : prev.isPartiallyHalal }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : prev.isPartiallyHalal }))}
               disabled={formData.servesAlcohol || formData.isPartiallyHalal}
             />
             <span className="ml-3 text-sm text-gray-900">Fully Halal Menu
@@ -118,7 +118,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
               data-testid="restaurant-partially-halal-checkbox"
               className="h-4 w-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 transition-colors"
               checked={formData.isPartiallyHalal}
-              onChange={(e) => setFormData((prev: any) => ({
+              onChange={(e) => setFormData(prev => ({
                 ...prev,
                 isPartiallyHalal: e.target.checked,
                 isZabiha: e.target.checked ? false : prev.isZabiha,

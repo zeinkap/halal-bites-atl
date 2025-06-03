@@ -38,7 +38,7 @@ const BasicInfoFields: React.FC<Props> = ({
         data-testid="restaurant-name-input"
         className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-base h-12 py-3 px-4 transition-colors placeholder-gray-500 text-gray-900 mb-4"
         value={formData.name}
-        onChange={(e) => setFormData((prev: any) => ({ ...prev, name: e.target.value }))}
+        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
         placeholder="Enter restaurant name"
         required
       />
@@ -56,7 +56,7 @@ const BasicInfoFields: React.FC<Props> = ({
           className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-base h-12 py-3 pl-10 pr-4 transition-colors placeholder-gray-500 text-gray-900 mb-4"
           value={formData.address}
           onChange={(e) => {
-            setFormData((prev: any) => ({ ...prev, address: e.target.value }));
+            setFormData(prev => ({ ...prev, address: e.target.value }));
             handleAddressChange(e.target.value, isLoaded, setFormData, setAddressSuggestions, setShowSuggestions);
           }}
           onFocus={() => setShowSuggestions(true)}
@@ -102,7 +102,7 @@ const BasicInfoFields: React.FC<Props> = ({
         className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900"
         placeholder="Tell us about the restaurant's specialties, atmosphere, or any other notable features..."
         value={formData.description}
-        onChange={(e) => setFormData((prev: any) => ({ ...prev, description: e.target.value }))}
+        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
       />
       <div className="flex justify-between mt-1">
         <span className="text-xs text-gray-500">Optional</span>

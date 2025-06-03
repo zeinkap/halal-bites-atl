@@ -1,8 +1,9 @@
 import React from 'react';
+import type { FormData } from '../AddRestaurantForm/add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 };
 
 const HalalStatusFields: React.FC<Props> = ({ formData, setFormData }) => (
@@ -14,7 +15,7 @@ const HalalStatusFields: React.FC<Props> = ({ formData, setFormData }) => (
           type="checkbox"
           id="isFullyHalal"
           checked={formData.isFullyHalal}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : prev.isPartiallyHalal }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, isFullyHalal: e.target.checked, isPartiallyHalal: e.target.checked ? false : prev.isPartiallyHalal }))}
           className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
           disabled={formData.servesAlcohol || formData.isPartiallyHalal}
         />
@@ -27,7 +28,7 @@ const HalalStatusFields: React.FC<Props> = ({ formData, setFormData }) => (
           type="checkbox"
           id="isZabiha"
           checked={formData.isZabiha}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, isZabiha: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, isZabiha: e.target.checked }))}
           className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
         />
         <label htmlFor="isZabiha" className="ml-3 block text-base text-gray-900">
@@ -39,7 +40,7 @@ const HalalStatusFields: React.FC<Props> = ({ formData, setFormData }) => (
           type="checkbox"
           id="isPartiallyHalal"
           checked={formData.isPartiallyHalal}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, isPartiallyHalal: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, isPartiallyHalal: e.target.checked }))}
           className="h-5 w-5 rounded border-yellow-400 text-yellow-600 focus:ring-yellow-500"
         />
         <label htmlFor="isPartiallyHalal" className="ml-3 block text-base text-yellow-700">

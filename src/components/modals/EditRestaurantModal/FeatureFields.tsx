@@ -1,8 +1,9 @@
 import React from 'react';
+import type { FormData } from '../AddRestaurantForm/add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 };
 
 const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
@@ -14,7 +15,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
           type="checkbox"
           id="hasPrayerRoom"
           checked={formData.hasPrayerRoom}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, hasPrayerRoom: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, hasPrayerRoom: e.target.checked }))}
           className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
         />
         <label htmlFor="hasPrayerRoom" className="ml-3 block text-base text-gray-900">
@@ -26,7 +27,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
           type="checkbox"
           id="hasOutdoorSeating"
           checked={formData.hasOutdoorSeating}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, hasOutdoorSeating: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, hasOutdoorSeating: e.target.checked }))}
           className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
         />
         <label htmlFor="hasOutdoorSeating" className="ml-3 block text-base text-gray-900">
@@ -38,7 +39,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
           type="checkbox"
           id="hasHighChair"
           checked={formData.hasHighChair}
-          onChange={(e) => setFormData((prev: any) => ({ ...prev, hasHighChair: e.target.checked }))}
+          onChange={(e) => setFormData(prev => ({ ...prev, hasHighChair: e.target.checked }))}
           className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
         />
         <label htmlFor="hasHighChair" className="ml-3 block text-base text-gray-900">
@@ -52,7 +53,7 @@ const FeatureFields: React.FC<Props> = ({ formData, setFormData }) => (
           checked={formData.servesAlcohol}
           onChange={(e) => {
             const servesAlcohol = e.target.checked;
-            setFormData((prev: any) => ({
+            setFormData(prev => ({
               ...prev,
               servesAlcohol,
               isFullyHalal: servesAlcohol ? false : prev.isFullyHalal

@@ -19,7 +19,7 @@ const CuisinePriceFields: React.FC<Props> = ({ formData, setFormData }) => (
         data-testid="cuisine-type-select"
         className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors text-gray-900"
         value={formData.cuisineType}
-        onChange={(e) => setFormData((prev: any) => ({ ...prev, cuisineType: e.target.value as CuisineType }))}
+        onChange={(e) => setFormData(prev => ({ ...prev, cuisineType: e.target.value as CuisineType }))}
         required
       >
         <option value="" className="text-gray-400">Select cuisine type</option>
@@ -44,7 +44,7 @@ const CuisinePriceFields: React.FC<Props> = ({ formData, setFormData }) => (
         data-testid="price-range-select"
         className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors text-gray-900"
         value={formData.priceRange}
-        onChange={(e) => setFormData((prev: any) => ({ ...prev, priceRange: e.target.value as PriceRange }))}
+        onChange={(e) => setFormData(prev => ({ ...prev, priceRange: e.target.value as PriceRange }))}
         required
       >
         <option value="" className="text-gray-400">Select price range</option>

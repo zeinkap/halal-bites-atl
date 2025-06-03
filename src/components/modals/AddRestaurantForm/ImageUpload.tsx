@@ -46,7 +46,7 @@ const ImageUpload: React.FC<Props> = ({ formData, setFormData, isUploading, uplo
                 data-testid="remove-image-button"
                 onClick={(e) => {
                   e.preventDefault();
-                  setFormData((prev: any) => ({ ...prev, image: undefined }));
+                  setFormData(prev => ({ ...prev, image: undefined }));
                 }}
                 className="px-3 py-1 text-xs rounded-full hover:bg-red-700 transition-colors"
                 variant="danger"

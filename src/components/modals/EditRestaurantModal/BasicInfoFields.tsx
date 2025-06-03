@@ -1,9 +1,10 @@
 import React from 'react';
 import { Button } from '../../ui/Button';
+import type { FormData } from '../AddRestaurantForm/add-restaurant-helpers';
 
 type Props = {
-  formData: any;
-  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   isLoaded: boolean;
   addressSuggestions: google.maps.places.AutocompletePrediction[];
   setAddressSuggestions: React.Dispatch<React.SetStateAction<google.maps.places.AutocompletePrediction[]>>;
@@ -32,9 +33,12 @@ const BasicInfoFields: React.FC<Props> = ({
       </label>
       <input
         type="text"
+        name="name"
+        id="name"
+        data-testid="restaurant-name-input"
+        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-base h-12 py-3 px-4 transition-colors placeholder-gray-500 text-gray-900 mb-4"
         value={formData.name}
-        onChange={(e) => setFormData((prev: any) => ({ ...prev, name: e.target.value }))}
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base placeholder-gray-500 text-gray-900"
+        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
         placeholder="Enter restaurant name"
         required
       />
@@ -46,17 +50,17 @@ const BasicInfoFields: React.FC<Props> = ({
       <div className="relative">
         <input
           type="text"
+          name="address"
+          id="address"
+          data-testid="restaurant-address-input"
+          className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-2 focus:ring-orange-500 text-base h-12 py-3 pl-10 pr-4 transition-colors placeholder-gray-500 text-gray-900 mb-4"
           value={formData.address}
-          onChange={(e) => handleAddressChange(
-            e.target.value,
-            isLoaded,
-            setFormData,
-            setAddressSuggestions,
-            setShowSuggestions
-          )}
+          onChange={(e) => {
+            setFormData(prev => ({ ...prev, address: e.target.value }));
+            handleAddressChange(e.target.value, isLoaded, setFormData, setAddressSuggestions, setShowSuggestions);
+          }}
           onFocus={() => setShowSuggestions(true)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base placeholder-gray-500 text-gray-900"
-          placeholder="Enter full address"
+          placeholder="Start typing the restaurant address..."
           required
         />
         {showSuggestions && addressSuggestions.length > 0 && (
@@ -90,11 +94,14 @@ const BasicInfoFields: React.FC<Props> = ({
         Description
       </label>
       <textarea
-        value={formData.description || ''}
-        onChange={(e) => setFormData((prev: any) => ({ ...prev, description: e.target.value }))}
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-base placeholder-gray-500 text-gray-900"
-        placeholder="Enter a description of the restaurant"
+        id="description"
+        name="description"
         rows={3}
+        data-testid="description-input"
+        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm transition-colors placeholder-gray-500 text-gray-900"
+        placeholder="Tell us about the restaurant's specialties, atmosphere, or any other notable features..."
+        value={formData.description}
+        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
       />
     </div>
   </div>
