@@ -79,6 +79,18 @@ export const ChevronUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const ChevronLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+    <path d="M15 19l-7-7 7-7" />
+  </svg>
+);
+
+export const ChevronRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+    <path d="M9 5l7 7-7 7" />
+  </svg>
+);
+
 export const ExclamationTriangleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
     <path d="M12 9v4m0 4h.01M21.8 18.4l-8-14a2 2 0 0 0-3.6 0l-8 14A2 2 0 0 0 4 22h16a2 2 0 0 0 1.8-3.6z" />

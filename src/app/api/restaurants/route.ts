@@ -19,10 +19,17 @@ export async function GET(req: NextRequest) {
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
     const radius = searchParams.get('radius'); // in kilometers
+    const featured = searchParams.get('featured');
+
+    // Build a unique cache key based on query params
+    let cacheKey = RESTAURANTS_CACHE_KEY;
+    if (featured === 'true') cacheKey += ':featured';
+    if (lat && lng) cacheKey += `:lat=${lat}:lng=${lng}`;
+    if (radius) cacheKey += `:radius=${radius}`;
 
     // Try to get from cache first (skip cache if proximity search)
     if (!lat && !lng) {
-      const cachedData = await redis.get(RESTAURANTS_CACHE_KEY);
+      const cachedData = await redis.get(cacheKey);
       if (cachedData) {
         return NextResponse.json(cachedData);
       }
@@ -30,54 +37,51 @@ export async function GET(req: NextRequest) {
 
     // If not in cache, get from database
     await prisma.$connect();
+    const whereClause = featured === 'true' ? { isFeatured: true } : undefined;
     const restaurants = await prisma.restaurant.findMany({
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        cuisineType: true,
-        address: true,
-        description: true,
-        priceRange: true,
-        hasPrayerRoom: true,
-        hasOutdoorSeating: true,
-        hasHighChair: true,
-        servesAlcohol: true,
-        isFullyHalal: true,
-        isZabiha: true,
-        isPartiallyHalal: true,
-        partiallyHalalChicken: true,
-        partiallyHalalLamb: true,
-        partiallyHalalBeef: true,
-        partiallyHalalGoat: true,
-        imageUrl: true,
-        zabihaChicken: true,
-        zabihaLamb: true,
-        zabihaBeef: true,
-        zabihaGoat: true,
-        zabihaVerified: true,
-        zabihaVerifiedBy: true,
-        createdAt: true,
-        updatedAt: true,
-        brandId: true,
-        latitude: true,
-        longitude: true,
-        comments: false,
-        reports: false,
-        _count: true
+      include: {
+        _count: {
+          select: { comments: true }
+        }
       }
     });
 
-    // Transform the data to include commentCount
-    const restaurantsWithCommentCount = restaurants.map(restaurant => {
-      const { _count, ...rest } = restaurant;
-      return {
-        ...rest,
-        latitude: restaurant.latitude,
-        longitude: restaurant.longitude,
-        commentCount: _count.comments
-      };
-    });
+    // Transform the data to include only the fields needed for the API response
+    const restaurantsWithCommentCount = restaurants.map(restaurant => ({
+      id: restaurant.id,
+      name: restaurant.name,
+      cuisineType: restaurant.cuisineType,
+      address: restaurant.address,
+      description: restaurant.description,
+      priceRange: restaurant.priceRange,
+      hasPrayerRoom: restaurant.hasPrayerRoom,
+      hasOutdoorSeating: restaurant.hasOutdoorSeating,
+      hasHighChair: restaurant.hasHighChair,
+      servesAlcohol: restaurant.servesAlcohol,
+      isFullyHalal: restaurant.isFullyHalal,
+      isZabiha: restaurant.isZabiha,
+      isPartiallyHalal: restaurant.isPartiallyHalal,
+      partiallyHalalChicken: restaurant.partiallyHalalChicken,
+      partiallyHalalLamb: restaurant.partiallyHalalLamb,
+      partiallyHalalBeef: restaurant.partiallyHalalBeef,
+      partiallyHalalGoat: restaurant.partiallyHalalGoat,
+      imageUrl: restaurant.imageUrl,
+      zabihaChicken: restaurant.zabihaChicken,
+      zabihaLamb: restaurant.zabihaLamb,
+      zabihaBeef: restaurant.zabihaBeef,
+      zabihaGoat: restaurant.zabihaGoat,
+      zabihaVerified: restaurant.zabihaVerified,
+      zabihaVerifiedBy: restaurant.zabihaVerifiedBy,
+      createdAt: restaurant.createdAt,
+      updatedAt: restaurant.updatedAt,
+      brandId: restaurant.brandId,
+      latitude: restaurant.latitude,
+      longitude: restaurant.longitude,
+      isFeatured: restaurant.isFeatured,
+      commentCount: restaurant._count.comments
+    }));
 
     // If lat/lng provided, sort/filter by proximity
     let result = restaurantsWithCommentCount;
@@ -111,7 +115,7 @@ export async function GET(req: NextRequest) {
 
     // Store in cache (only if not proximity search)
     if (!lat && !lng) {
-      await redis.set(RESTAURANTS_CACHE_KEY, restaurantsWithCommentCount, {
+      await redis.set(cacheKey, result, {
         ex: CACHE_TTL
       });
     }

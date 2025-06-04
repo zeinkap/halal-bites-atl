@@ -175,6 +175,7 @@ export default function RestaurantsManagement() {
                           <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Updated At</th>
                         </>
                       )}
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Featured</th>
                       <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 w-28">
                         <span className="sr-only">Actions</span>
                       </th>
@@ -236,7 +237,35 @@ export default function RestaurantsManagement() {
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.updatedAt ? new Date(restaurant.updatedAt).toLocaleString() : '-'}</td>
                           </>
                         )}
+                        <td className="px-3 py-4 text-sm text-gray-500 text-center">
+                          {restaurant.isFeatured ? (
+                            <span className="text-green-600 font-semibold">Yes</span>
+                          ) : (
+                            <span className="text-gray-400">No</span>
+                          )}
+                        </td>
                         <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 whitespace-nowrap">
+                          <Button
+                            variant={restaurant.isFeatured ? 'secondary' : 'primary'}
+                            size="sm"
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(`/api/admin/restaurants?id=${restaurant.id}`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ isFeatured: !restaurant.isFeatured })
+                                });
+                                if (!response.ok) throw new Error('Failed to update featured status');
+                                toast.success(`Restaurant ${!restaurant.isFeatured ? 'featured' : 'unfeatured'} successfully`);
+                                fetchRestaurants();
+                              } catch {
+                                toast.error('Failed to update featured status');
+                              }
+                            }}
+                            className="mr-2"
+                          >
+                            {restaurant.isFeatured ? 'Unfeature' : 'Feature'}
+                          </Button>
                           <Button
                             variant="info"
                             size="sm"

@@ -18,14 +18,17 @@ const ITEMS_PER_PAGE = 10;
 
 interface RestaurantListProps {
   initialSearch?: string;
+  aboveResults?: React.ReactNode;
+  setSearchQuery?: (q: string) => void;
+  firstResultRef?: React.RefObject<HTMLDivElement>;
 }
 
-export default function RestaurantList({ initialSearch = '' }: RestaurantListProps) {
+export default function RestaurantList({ initialSearch = '', aboveResults, setSearchQuery, firstResultRef }: RestaurantListProps) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [displayedRestaurants, setDisplayedRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [searchQuery, _setSearchQuery] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType | 'all'>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
@@ -66,6 +69,14 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
   const [showingNearMe, setShowingNearMe] = useState(false);
   const router = useRouter();
 
+  const handleSetSearchQuery = (q: string) => {
+    if (setSearchQuery) {
+      setSearchQuery(q);
+    } else {
+      _setSearchQuery(q);
+    }
+  };
+
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -88,16 +99,26 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
     fetchRestaurants();
   }, []);
 
+  // Sync searchQuery with initialSearch if not controlled
+  useEffect(() => {
+    if (!setSearchQuery) {
+      _setSearchQuery(initialSearch);
+    }
+  }, [initialSearch, setSearchQuery]);
+
+  // Use the correct search query depending on controlled/uncontrolled mode
+  const effectiveSearchQuery = setSearchQuery ? initialSearch : searchQuery;
+
   // Filter and sort restaurants
   useEffect(() => {
     const filteredRestaurants = restaurants.filter(restaurant => {
       const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisineType === selectedCuisine;
       const matchesPriceRange = selectedPriceRange === 'all' || restaurant.priceRange === selectedPriceRange;
-      const matchesSearch = !searchQuery || 
-        restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.cuisineType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.address.match(/\b\d{5}\b/)?.[0]?.includes(searchQuery);
+      const matchesSearch = !effectiveSearchQuery || 
+        restaurant.name.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
+        restaurant.cuisineType.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
+        restaurant.address.toLowerCase().includes(effectiveSearchQuery.toLowerCase()) ||
+        restaurant.address.match(/\b\d{5}\b/)?.[0]?.includes(effectiveSearchQuery);
       
       // Check if restaurant matches selected features
       const matchesFeatures = Object.entries(selectedFeatures).every(([feature, isSelected]) => {
@@ -132,12 +153,12 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
     const endIndex = page * ITEMS_PER_PAGE;
     setDisplayedRestaurants(filteredRestaurants.slice(startIndex, endIndex));
     setHasMore(endIndex < filteredRestaurants.length);
-  }, [restaurants, searchQuery, selectedCuisine, selectedPriceRange, sortBy, page, selectedFeatures]);
+  }, [restaurants, effectiveSearchQuery, selectedCuisine, selectedPriceRange, sortBy, page, selectedFeatures]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, selectedCuisine, selectedPriceRange, sortBy, selectedFeatures]);
+  }, [effectiveSearchQuery, selectedCuisine, selectedPriceRange, sortBy, selectedFeatures]);
 
   // Add state for filtered count
   const [filteredCount, setFilteredCount] = useState(0);
@@ -182,7 +203,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         if (!response.ok) throw new Error('Failed to fetch by location');
         const data = await response.json();
         setRestaurants(data);
-        setSearchQuery('');
+        handleSetSearchQuery('');
         setSelectedCuisine('all');
         setSelectedPriceRange('all');
         setSelectedFeatures({
@@ -252,10 +273,12 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
           Halal Bites ATL
         </h1>
       </Button>
+      {/* Injected content below header */}
+      {aboveResults}
       <div className="mb-8 bg-white z-10 p-4 shadow-sm" data-testid="restaurant-list-searchbar-section">
         <RestaurantSearchBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
+          searchQuery={effectiveSearchQuery}
+          setSearchQuery={handleSetSearchQuery}
           radiusMiles={radiusMiles}
           setRadiusMiles={setRadiusMiles}
           locationLoading={locationLoading}
@@ -308,7 +331,7 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
                   servesAlcohol: false,
                   isPartiallyHalal: false,
                 });
-                setSearchQuery('');
+                handleSetSearchQuery('');
               }}
               data-testid="clear-filters-button"
             >
@@ -326,10 +349,18 @@ export default function RestaurantList({ initialSearch = '' }: RestaurantListPro
         <RestaurantListLoadingSkeleton count={3} />
       ) : displayedRestaurants.length > 0 ? (
         <>
-          <RestaurantListItems
-            restaurants={displayedRestaurants}
-            lastRestaurantRef={lastRestaurantRef}
-          />
+          {displayedRestaurants.map((restaurant, idx) => (
+            <div
+              key={restaurant.id}
+              ref={idx === 0 ? firstResultRef : undefined}
+              className="w-full"
+            >
+              <RestaurantListItems
+                restaurants={[restaurant]}
+                lastRestaurantRef={lastRestaurantRef}
+              />
+            </div>
+          ))}
           {hasMore && (
             <div className="flex justify-center p-4" data-testid="restaurant-list-has-more-spinner">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>

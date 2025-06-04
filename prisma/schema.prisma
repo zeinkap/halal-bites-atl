@@ -40,6 +40,7 @@ model Restaurant {
   comments              Comment[]
   reports               Report[]
   brand                 Brand?      @relation(fields: [brandId], references: [id])
+  isFeatured            Boolean     @default(false)
 
   @@unique([name, address], name: "name_address_unique")
 }

@@ -5,38 +5,17 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import ScrollToTop from './ScrollToTop';
 import { Toaster } from 'react-hot-toast';
-import { Banner } from '../ui/Banner';
 import { useState } from 'react';
 import FeatureRestaurantModal from '../modals/FeatureRestaurantModal/index.tsx';
-import { Button } from '../ui/Button';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname ? pathname.startsWith('/admin') : false;
-  const [showBanner, setShowBanner] = useState(true);
   const [showFeatureModal, setShowFeatureModal] = useState(false);
 
   return (
     <>
-      {!isAdmin && showBanner && (
-        <Banner
-          message={
-            <>
-              Interested in having your restaurant featured? Please reach out to us{' '}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFeatureModal(true)}
-                className="text-green-800 underline px-0 py-0 h-auto min-w-0 align-baseline inline"
-              >
-                here
-              </Button>
-            </>
-          }
-          onClose={() => setShowBanner(false)}
-        />
-      )}
-      {!isAdmin && <Navbar showBanner={showBanner} />}
+      {!isAdmin && <Navbar />}
       <main className="flex-1">
         {children}
       </main>

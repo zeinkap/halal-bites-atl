@@ -1,16 +1,39 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import RestaurantList from '@/components/restaurants/RestaurantList/RestaurantList';
+import FeaturedRestaurantsCarousel from '@/components/restaurants/FeaturedRestaurantsCarousel';
 
 // Separate component for search functionality
 function SearchWrapper() {
   const searchParams = useSearchParams();
-  const search = searchParams?.get('search') || '';
-  
+  const initialSearch = searchParams?.get('search') || '';
+  const [search, setSearch] = useState(initialSearch);
+  const listRef = useRef<HTMLDivElement>(null);
+  const firstResultRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to restaurant list when a featured card is clicked
+  const handleSelectRestaurant = (name: string) => {
+    setSearch(name);
+    setTimeout(() => {
+      if (firstResultRef.current) {
+        firstResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100); // Wait for state update/render
+  };
+
   return (
-    <RestaurantList initialSearch={search} />
+    <div ref={listRef}>
+      <RestaurantList
+        initialSearch={search}
+        setSearchQuery={setSearch}
+        aboveResults={<FeaturedRestaurantsCarousel onSelectRestaurant={handleSelectRestaurant} />}
+        firstResultRef={firstResultRef as React.RefObject<HTMLDivElement>}
+      />
+    </div>
   );
 }
 
