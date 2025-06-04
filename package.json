@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "checkLintErrors": "npx eslint src --ext .ts,.tsx",
+    "checkTSErrors": "tsc --noEmit",
     "seed": "ts-node prisma/seed.ts",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

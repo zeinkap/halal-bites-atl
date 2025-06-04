@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: session.url });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Stripe error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

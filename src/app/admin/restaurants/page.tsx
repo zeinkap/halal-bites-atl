@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import EditRestaurantModal from '@/components/modals/EditRestaurantModal/index.tsx';
 import { type Restaurant } from '@prisma/client';
 import { Button } from '../../../components/ui/Button';
+import Image from 'next/image';
 
 // Extend the Prisma Restaurant type for admin view
 interface AdminRestaurant extends Restaurant {
@@ -214,7 +215,11 @@ export default function RestaurantsManagement() {
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.servesAlcohol ? 'Yes' : 'No'}</td>
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isZabiha ? 'Yes' : 'No'}</td>
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isFullyHalal ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.imageUrl ? <img src={restaurant.imageUrl} alt="img" className="w-12 h-12 object-cover rounded" /> : '-'}</td>
+                            <td className="px-3 py-4 text-xs text-gray-500">
+                              {restaurant.imageUrl ? (
+                                <Image src={restaurant.imageUrl} alt="img" width={48} height={48} className="w-12 h-12 object-cover rounded" unoptimized />
+                              ) : '-'}
+                            </td>
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaBeef ? 'Yes' : 'No'}</td>
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaChicken ? 'Yes' : 'No'}</td>
                             <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaGoat ? 'Yes' : 'No'}</td>

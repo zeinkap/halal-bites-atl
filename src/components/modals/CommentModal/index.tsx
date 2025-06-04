@@ -7,6 +7,7 @@ import {
   MAX_COMMENT_LENGTH,
   CommentItem
 } from './comment-helpers';
+import type { Comment, CommentForm } from './utils';
 import { Card } from '../../ui/Card';
 import { Button, CloseButton } from '../../ui/Button';
 import { useModalContext } from '../../ui/ModalContext';
@@ -94,9 +95,8 @@ export default function CommentModal({
   restaurantName: string;
   onCommentAdded?: () => void;
 }) {
-  // TODO: Replace with proper Comment type
-  const [comments, setComments] = useState<Array<{ id: string; content: string; authorName: string; createdAt: string; rating: number; imageUrl?: string; hearts?: number }>>([]);
-  const [newComment, setNewComment] = useState(initialCommentState);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState<CommentForm>(initialCommentState);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);

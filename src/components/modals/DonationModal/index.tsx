@@ -48,7 +48,7 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
       } else {
         setError(data.error || 'Something went wrong.');
       }
-    } catch (e) {
+    } catch {
       setError('Could not connect to payment service.');
     } finally {
       setLoading(false);
@@ -134,8 +134,8 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
                       className="border border-gray-300 rounded px-2 py-1 w-24 text-right text-base text-black bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500"
                       placeholder="Other"
                       value={customAmount}
-                      onChange={e => {
-                        setCustomAmount(e.target.value);
+                      onChange={event => {
+                        setCustomAmount(event.target.value);
                         setSelectedPreset(null);
                       }}
                       disabled={loading}

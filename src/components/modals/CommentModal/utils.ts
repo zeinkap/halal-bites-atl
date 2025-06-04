@@ -36,14 +36,30 @@ export function removeImage(setSelectedImage: (file: File | null) => void, setIm
   if (fileInputRef.current) fileInputRef.current.value = '';
 }
 
+export type CommentForm = {
+  content: string;
+  authorName: string;
+  rating: number;
+};
+
+export type Comment = {
+  id: string;
+  content: string;
+  authorName: string;
+  createdAt: string;
+  rating: number;
+  imageUrl?: string;
+  hearts?: number;
+};
+
 export async function submitComment({ newComment, selectedImage, restaurantId, setFormErrors, setIsSubmitting, setComments, setNewComment, setSelectedImage, setImagePreview, fileInputRef, onCommentAdded, setIsVisible, onClose }: {
-  newComment: any,
+  newComment: CommentForm,
   selectedImage: File | null,
   restaurantId: string,
-  setFormErrors: (errors: any) => void,
+  setFormErrors: (errors: Record<string, string>) => void,
   setIsSubmitting: (b: boolean) => void,
-  setComments: (cb: (prev: any[]) => any[]) => void,
-  setNewComment: (c: any) => void,
+  setComments: (cb: (prev: Comment[]) => Comment[]) => void,
+  setNewComment: (c: CommentForm) => void,
   setSelectedImage: (f: File | null) => void,
   setImagePreview: (s: string | null) => void,
   fileInputRef: React.RefObject<HTMLInputElement | null>,
@@ -83,13 +99,13 @@ export async function submitComment({ newComment, selectedImage, restaurantId, s
     setNewComment(initialCommentState);
     setSelectedImage(null);
     setImagePreview(null);
-    setFormErrors({});
+    setFormErrors({} as Record<string, string>);
     if (fileInputRef.current) fileInputRef.current.value = '';
     toast.success('Comment added successfully!');
     onCommentAdded?.();
     setIsVisible(false);
     setTimeout(onClose, 300);
-  } catch (error) {
+  } catch {
     toast.error('Failed to add comment. Please try again.');
     setIsSubmitting(false);
   } finally {
@@ -97,25 +113,25 @@ export async function submitComment({ newComment, selectedImage, restaurantId, s
   }
 }
 
-export async function fetchComments(restaurantId: string, setComments: (comments: any[]) => void, setIsLoading: (b: boolean) => void) {
+export async function fetchComments(restaurantId: string, setComments: (comments: Comment[]) => void, setIsLoading: (b: boolean) => void) {
   setIsLoading(true);
   try {
     const response = await fetch(`/api/comments?restaurantId=${restaurantId}`);
     if (!response.ok) throw new Error('Failed to fetch comments');
     const data = await response.json();
     console.log('fetchComments API response', { restaurantId, data });
-    const sortedComments = [...data].sort(
+    const sortedComments = [...(data as Comment[])].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     setComments(sortedComments);
-  } catch (error) {
+  } catch {
     toast.error('Failed to load comments');
   } finally {
     setIsLoading(false);
   }
 }
 
-export function calcAvgRating(comments: Array<{ rating: number }>): number {
+export function calcAvgRating(comments: Comment[]): number {
   if (!comments.length) return 0;
   return (
     Math.round(
@@ -124,7 +140,7 @@ export function calcAvgRating(comments: Array<{ rating: number }>): number {
   );
 }
 
-export function useKeyboardSubmit(isOpen: boolean, handleSubmit: () => void, deps: any[] = []) {
+export function useKeyboardSubmit(isOpen: boolean, handleSubmit: () => void, deps: unknown[] = []) {
   React.useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && isOpen) {

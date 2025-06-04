@@ -23,7 +23,7 @@ interface BugReportModalProps {
   onClose: () => void;
 }
 
-type BugReportFormData = {
+export type BugReportFormData = {
   title: string;
   description: string;
   stepsToReproduce: string;
@@ -40,6 +40,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showAdvancedFields, setShowAdvancedFields] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { setAnyModalOpen } = useModalContext();
 
@@ -90,7 +91,10 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
     handleConfirmClose(closeModal);
 
   const onSubmit = async (formData: BugReportFormData) =>
-    submitBugReport(formData, setIsSubmitting, closeModal, setPreviewUrl);
+    submitBugReport(formData, setIsSubmitting, setError, () => {
+      closeModal();
+      setPreviewUrl(null);
+    });
 
   useEffect(() => {
     setAnyModalOpen(isOpen);
@@ -138,6 +142,9 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                     <Card.Content>
                       {isSubmitting === false && showConfirmDialog === false && (
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto max-h-[70vh]" data-testid="bug-report-form">
+                    {error && (
+                      <div className="text-red-600 text-sm mb-2" data-testid="bug-report-error">{error}</div>
+                    )}
                     <div>
                       <label htmlFor="title" className="block text-base font-medium text-gray-700 mb-1">
                         What&apos;s not working? <span className="text-red-500" aria-hidden="true">*</span>

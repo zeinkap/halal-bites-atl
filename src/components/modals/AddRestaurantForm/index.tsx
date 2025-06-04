@@ -14,10 +14,7 @@ import { HalalBadgeIcon } from '../../ui/icons';
 import type { FormData } from './add-restaurant-helpers';
 import {
   initialFormState,
-  validateForm,
-  handleAddressChange as helperHandleAddressChange,
-  handleAddressSelect as helperHandleAddressSelect
-} from './add-restaurant-helpers';
+  validateForm} from './add-restaurant-helpers';
 
 import BasicInfoFields from './BasicInfoFields';
 import CuisinePriceFields from './CuisinePriceFields';
@@ -144,16 +141,6 @@ const AddRestaurantForm: React.FC<AddRestaurantFormProps> = ({ isOpen, onClose, 
         setUploadProgress(0);
       }
     }
-  };
-
-  // Address autocomplete (debounced)
-  const handleAddressChange = (value: string) => {
-    helperHandleAddressChange(value, isLoaded, setAddressSuggestions, setShowSuggestions);
-  };
-
-  // Address select
-  const handleAddressSelect = (suggestion: google.maps.places.AutocompletePrediction) => {
-    helperHandleAddressSelect(suggestion, placesService.current, setFormData, setShowSuggestions);
   };
 
   // Submission handler

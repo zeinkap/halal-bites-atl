@@ -30,10 +30,10 @@ export default function EditRestaurantModal({
   onClose,
   onSave,
 }: EditRestaurantModalProps) {
-  const [formData, setFormData] = useState<Partial<Restaurant>>({
+  const [formData, setFormData] = useState<import('../AddRestaurantForm/add-restaurant-helpers').FormData>({
     name: restaurant.name,
     address: restaurant.address,
-    description: restaurant.description ?? '',
+    description: restaurant.description === null ? undefined : restaurant.description,
     cuisineType: restaurant.cuisineType,
     priceRange: restaurant.priceRange,
     hasPrayerRoom: restaurant.hasPrayerRoom,

@@ -1,29 +1,29 @@
 import type { CuisineType, PriceRange } from '@prisma/client';
 
 export interface FormData {
-  name: string;
-  cuisineType: CuisineType | '';
-  address: string;
-  priceRange: PriceRange | '';
-  description: string;
-  hasPrayerRoom: boolean;
-  hasOutdoorSeating: boolean;
-  isZabiha: boolean;
-  hasHighChair: boolean;
-  servesAlcohol: boolean;
-  isFullyHalal: boolean;
-  zabihaChicken: boolean;
-  zabihaLamb: boolean;
-  zabihaBeef: boolean;
-  zabihaGoat: boolean;
+  name?: string;
+  cuisineType?: CuisineType | '';
+  address?: string;
+  priceRange?: PriceRange | '';
+  description?: string;
+  hasPrayerRoom?: boolean;
+  hasOutdoorSeating?: boolean;
+  isZabiha?: boolean;
+  hasHighChair?: boolean;
+  servesAlcohol?: boolean;
+  isFullyHalal?: boolean;
+  zabihaChicken?: boolean;
+  zabihaLamb?: boolean;
+  zabihaBeef?: boolean;
+  zabihaGoat?: boolean;
   zabihaVerified?: Date | null;
   zabihaVerifiedBy?: string;
   image?: File;
-  isPartiallyHalal: boolean;
-  partiallyHalalChicken: boolean;
-  partiallyHalalLamb: boolean;
-  partiallyHalalBeef: boolean;
-  partiallyHalalGoat: boolean;
+  isPartiallyHalal?: boolean;
+  partiallyHalalChicken?: boolean;
+  partiallyHalalLamb?: boolean;
+  partiallyHalalBeef?: boolean;
+  partiallyHalalGoat?: boolean;
 }
 
 export const initialFormState: FormData = {
@@ -56,10 +56,10 @@ export const MAX_NAME_LENGTH = 100;
 export const MAX_DESCRIPTION_LENGTH = 500;
 
 export function validateForm(formData: FormData): string | null {
-  if (formData.name.trim().length === 0) {
+  if ((formData.name?.trim().length ?? 0) === 0) {
     return 'Restaurant name is required';
   }
-  if (formData.name.length > MAX_NAME_LENGTH) {
+  if ((formData.name?.length ?? 0) > MAX_NAME_LENGTH) {
     return `Restaurant name must be less than ${MAX_NAME_LENGTH} characters`;
   }
   if (formData.description && formData.description.length > MAX_DESCRIPTION_LENGTH) {
@@ -71,7 +71,7 @@ export function validateForm(formData: FormData): string | null {
   if (!formData.priceRange) {
     return 'Please select a price range';
   }
-  if (!formData.address.trim()) {
+  if (!formData.address?.trim()) {
     return 'Address is required';
   }
   if (formData.isZabiha) {

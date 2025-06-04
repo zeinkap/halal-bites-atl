@@ -14,7 +14,7 @@ export default function Footer() {
           <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500" aria-hidden="true" />
           <Badge color="gray" size="xs" className="mr-2">Disclaimer</Badge>
           <span>
-          We strive to keep all restaurant details accurate and up to date. However, information such as menu, features, and halal status may change without notice. We recommend contacting the restaurant directly to confirm the latest details before your visit..
+          We strive to keep all restaurant details accurate and up to date. However, information such as menu, features, and halal status may change without notice. We recommend contacting the restaurant directly to confirm the latest details before your visit.
           </span>
         </div>
       </Card>

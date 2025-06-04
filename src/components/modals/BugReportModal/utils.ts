@@ -1,5 +1,6 @@
 // Utilities and helpers for BugReportModal
 import { toast } from 'react-hot-toast';
+import type { BugReportFormData } from './index';
 
 export const BUG_REPORT_DEFAULTS = {
   title: '',
@@ -66,31 +67,53 @@ export function handleConfirmClose(closeModal: () => void) {
   closeModal();
 }
 
-export async function submitBugReport(formData: any, setIsSubmitting: (b: boolean) => void, closeModal: () => void, setPreviewUrl: (url: string | null) => void) {
+export async function submitBugReport(
+  formData: BugReportFormData,
+  setIsSubmitting: (b: boolean) => void,
+  setError: (e: string | null) => void,
+  onSuccess: () => void
+) {
   try {
     setIsSubmitting(true);
-    // Create FormData instance to handle file upload
-    const submitData = new FormData();
-    // Add all text fields
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key !== 'screenshot') {
-        submitData.append(key, value as string);
+    // Validate required fields
+    if (typeof formData !== 'object' || formData === null) {
+      setError('Invalid form data');
+      setIsSubmitting(false);
+      return;
+    }
+    const requiredFields: (keyof BugReportFormData)[] = [
+      'title',
+      'description',
+    ];
+    const missingFields = requiredFields.filter(
+      (key) => !formData[key] || (typeof formData[key] === 'string' && (formData[key] as string).trim() === '')
+    );
+    if (missingFields.length > 0) {
+      setError(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      setIsSubmitting(false);
+      return;
+    }
+    // Prepare form data for submission
+    const data = new FormData();
+    (Object.keys(formData) as (keyof BugReportFormData)[]).forEach((key) => {
+      const value = formData[key];
+      if (value !== undefined && key !== 'screenshot') {
+        data.append(key as string, value as string);
       }
     });
     // Add screenshot if present
-    if (formData.screenshot?.[0]) {
-      submitData.append('screenshot', formData.screenshot[0]);
+    if (formData.screenshot && formData.screenshot.length > 0) {
+      data.append('screenshot', formData.screenshot[0]);
     }
     const response = await fetch('/api/bug-report', {
       method: 'POST',
-      body: submitData,
+      body: data,
     });
     if (!response.ok) {
       throw new Error('Failed to submit bug report');
     }
     toast.success('Thank you! Your bug report has been submitted successfully. We will look into it.');
-    closeModal();
-    setPreviewUrl(null);
+    onSuccess();
   } catch (err) {
     toast.error('Failed to submit bug report. Please try again.');
     console.error('Error submitting bug report:', err);

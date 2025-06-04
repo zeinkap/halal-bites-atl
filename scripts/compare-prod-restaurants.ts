@@ -182,9 +182,9 @@ async function main() {
 
     // Print all restaurant names and the total count for debugging
     console.log('\nAll restaurant names fetched from production:');
-    prodRestaurants.forEach((r, i) => {
-      console.log(`${i + 1}. ${r.name}`);
-    });
+    for (const prod of prodRestaurants) {
+      console.log(`${prod.name}`);
+    }
     console.log(`\nTotal fetched from production: ${prodRestaurants.length}\n`);
 
     console.log(chalk.blue(`Found ${prodRestaurants.length} restaurants in production database`));
