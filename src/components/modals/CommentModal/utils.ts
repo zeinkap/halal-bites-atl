@@ -72,6 +72,12 @@ export async function submitComment({ newComment, selectedImage, restaurantId, s
   if (Object.keys(errors).length > 0) return;
   setIsSubmitting(true);
   try {
+    if (!restaurantId || restaurantId.trim() === '') {
+      toast.error('Invalid restaurant. Please refresh the page and try again.');
+      setIsSubmitting(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('content', newComment.content);
     formData.append('authorName', newComment.authorName);
@@ -86,11 +92,27 @@ export async function submitComment({ newComment, selectedImage, restaurantId, s
     });
     if (!response.ok) {
       let errorMsg = 'Failed to add comment';
+      let shouldRefresh = false;
       try {
         const err = await response.json();
-        if (err && err.error) errorMsg = err.error;
+        if (err && err.error) {
+          errorMsg = err.error;
+          // If restaurant not found, suggest refreshing
+          if (response.status === 404 && err.error.includes('Restaurant not found')) {
+            errorMsg = 'Restaurant not found. The page may need to be refreshed.';
+            shouldRefresh = true;
+          }
+        }
       } catch {}
       toast.error(errorMsg);
+      if (shouldRefresh) {
+        // Wait a bit then suggest refresh
+        setTimeout(() => {
+          if (confirm('The restaurant data may be outdated. Would you like to refresh the page?')) {
+            window.location.reload();
+          }
+        }, 2000);
+      }
       setIsSubmitting(false);
       return;
     }

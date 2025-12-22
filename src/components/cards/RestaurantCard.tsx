@@ -28,6 +28,12 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
       const updatedRestaurant = restaurants.find((r: Restaurant) => r.id === localRestaurant.id);
       if (updatedRestaurant) {
         setLocalRestaurant(updatedRestaurant);
+      } else {
+        // Restaurant no longer exists, refresh the page
+        console.warn(`Restaurant ${localRestaurant.id} no longer exists in database`);
+        if (confirm('This restaurant is no longer available. Would you like to refresh the page?')) {
+          window.location.reload();
+        }
       }
     } catch (error) {
       console.error('Error refreshing restaurant data:', error);
@@ -36,15 +42,15 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
   const renderFeatureIcon = (condition: boolean, icon: React.ReactNode, label: string) => (
     <div 
-      className={`flex items-center gap-1.5 ${
+      className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${
         condition 
-          ? 'text-green-700' 
-          : 'text-gray-500'
+          ? 'text-green-700 bg-green-50' 
+          : 'text-gray-500 bg-gray-50'
       }`}
       title={label}
     >
       {icon}
-      <span className="inline text-xs">{label}</span>
+      <span className="inline text-xs font-medium">{label}</span>
     </div>
   );
 
@@ -55,55 +61,57 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
   return (
     <>
-      <Card hoverable onClick={() => setIsExpanded((prev) => !prev)} className="cursor-pointer">
+      <Card hoverable onClick={() => setIsExpanded((prev) => !prev)} className="cursor-pointer overflow-hidden">
         <div className="flex flex-col sm:flex-row">
           {/* Restaurant Image */}
-          <div className="relative w-full h-32 sm:w-48 sm:h-48 border-b sm:border-b-0 sm:border-r border-gray-100 flex-shrink-0">
+          <div className="relative w-full h-40 sm:w-48 sm:h-48 border-b sm:border-b-0 sm:border-r border-gray-100 flex-shrink-0">
             <Image
               src={isFallbackLogo ? '/images/logo.png' : (localRestaurant.imageUrl as string)}
               alt={localRestaurant.name}
               fill
-              className={isFallbackLogo ? 'object-contain sm:object-cover' : 'object-cover'}
+              className={isFallbackLogo ? 'object-contain sm:object-cover p-2' : 'object-cover'}
               sizes="(max-width: 768px) 100vw, 192px"
               priority={true}
               quality={85}
             />
           </div>
-          <div className="flex-1 p-2 sm:p-4">
-            <div className="space-y-2 sm:space-y-3">
+          <div className="flex-1 p-3 sm:p-4">
+            <div className="space-y-2.5 sm:space-y-3">
               {/* Header & Address */}
               <div>
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-0.5 sm:mb-1 flex items-center gap-2" 
+                <h3 className="text-lg sm:text-lg font-bold text-gray-900 mb-1.5 sm:mb-1 leading-tight" 
                   data-testid={`restaurant-name-${localRestaurant.id}`}>
                   {localRestaurant.name}
+                </h3>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
                   <Badge color={
                     localRestaurant.priceRange === 'LOW'
                       ? 'green'
                       : localRestaurant.priceRange === 'MEDIUM'
                       ? 'yellow'
                       : 'orange'
-                  }>
+                  } className="text-xs">
                     {localRestaurant.priceRange === 'LOW'
                       ? '$'
                       : localRestaurant.priceRange === 'MEDIUM'
                       ? '$$'
                       : '$$$'}
                   </Badge>
-                  <Badge color="blue">
+                  <Badge color="blue" className="text-xs">
                     {formatCuisineName(localRestaurant.cuisineType)}
                   </Badge>
-                </h3>
-                <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-600">
-                  <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                  <p className="line-clamp-1" data-testid={`restaurant-address-${localRestaurant.id}`}>{localRestaurant.address}</p>
+                </div>
+                <div className="flex items-start gap-1.5 text-xs sm:text-sm text-gray-600">
+                  <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <p className="line-clamp-2 leading-relaxed" data-testid={`restaurant-address-${localRestaurant.id}`}>{localRestaurant.address}</p>
                 </div>
               </div>
               {/* Description */}
               {localRestaurant.description && (
-                <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 leading-relaxed" data-testid={`restaurant-description-${localRestaurant.id}`}>{localRestaurant.description}</p>
+                <p className="text-sm sm:text-sm text-gray-600 line-clamp-2 leading-relaxed" data-testid={`restaurant-description-${localRestaurant.id}`}>{localRestaurant.description}</p>
               )}
               {/* Features */}
-              <div className="flex flex-wrap gap-1 sm:gap-2 pt-1 sm:pt-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-1 sm:pt-2">
                 {localRestaurant.hasPrayerRoom && renderFeatureIcon(
                   true,
                   <HomeModernIcon className="h-4 w-4" />,
@@ -131,13 +139,13 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 )}
                 {localRestaurant.servesAlcohol
                   ? (
-                    <div className="flex items-center gap-1.5 text-pink-700 bg-pink-100 px-2 py-1 rounded-full font-semibold" title="Serves Alcohol">
+                    <div className="flex items-center gap-1.5 text-pink-700 bg-pink-100 px-2 py-1 rounded-md font-semibold" title="Serves Alcohol">
                       <WineGlassIcon className="h-4 w-4 text-pink-600" />
                       <span className="inline text-xs">Serves Alcohol</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-gray-500" title="No Alcohol">
-                      <WineGlassIcon className="h-4 w-4 text-rose-300" />
+                    <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2 py-1 rounded-md font-medium" title="No Alcohol">
+                      <WineGlassIcon className="h-4 w-4 text-green-600" />
                       <span className="inline text-xs">No Alcohol</span>
                     </div>
                   )}
@@ -160,7 +168,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
               {/* Zabihah Details (always show if present) */}
                 {localRestaurant.isZabiha && (localRestaurant.zabihaChicken || localRestaurant.zabihaLamb || localRestaurant.zabihaBeef || localRestaurant.zabihaGoat) && (
-                <div className="bg-orange-50 rounded-lg p-3 space-y-1.5 mt-2">
+                <div className="bg-orange-50 rounded-lg p-3 sm:p-3 space-y-1.5 mt-2 border border-orange-100">
                     <div className="flex items-center gap-1.5">
                       <HeartIcon className="h-4 w-4" />
                       <span className="text-sm font-medium text-orange-900">Zabihah (Hand-cut) Status:</span>
@@ -194,7 +202,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
                 {/* Partially Halal Details (always show if present) */}
                 {localRestaurant.isPartiallyHalal && (localRestaurant.partiallyHalalChicken || localRestaurant.partiallyHalalLamb || localRestaurant.partiallyHalalBeef || localRestaurant.partiallyHalalGoat) && (
-                  <div className="bg-yellow-50 rounded-lg p-3 space-y-1.5 mt-2">
+                  <div className="bg-yellow-50 rounded-lg p-3 sm:p-3 space-y-1.5 mt-2 border border-yellow-100">
                     <div className="flex items-center gap-1.5">
                       <BeakerIcon className="h-4 w-4 text-yellow-600" />
                       <span className="text-sm font-medium text-gray-600">Partially Halal:</span>
@@ -217,18 +225,18 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 )}
 
                 {/* Action Buttons - only show map buttons when expanded, but always show comment/report */}
-                <div className="flex flex-wrap gap-2 pt-2 justify-center">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 pt-3 sm:pt-2">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-white bg-gradient-to-r from-sky-400 to-blue-600 hover:from-sky-500 hover:to-blue-700 relative"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-3 sm:py-1.5 text-white bg-gradient-to-r from-sky-400 to-blue-600 hover:from-sky-500 hover:to-blue-700 relative w-full sm:w-auto text-sm sm:text-sm font-medium"
                     title="Add Comment"
                     onClick={e => { e.stopPropagation(); setIsCommentModalOpen(true); }}
                   >
-                    <ChatBubbleLeftIcon className="h-4 w-4" />
+                    <ChatBubbleLeftIcon className="h-4 w-4 sm:h-4 sm:w-4" />
                     <span>Add Comment</span>
                     {localRestaurant.commentCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-white text-blue-600 text-xs rounded-full h-5 w-5 flex items-center justify-center border border-blue-200 shadow">
+                      <span className="absolute -top-2 -right-2 bg-white text-blue-600 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border border-blue-200 shadow-sm">
                         {localRestaurant.commentCount}
                       </span>
                     )}
@@ -236,11 +244,11 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-white bg-gradient-to-r from-rose-400 to-red-600 hover:from-rose-500 hover:to-red-700"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2.5 sm:px-3 sm:py-1.5 text-white bg-gradient-to-r from-rose-400 to-red-600 hover:from-rose-500 hover:to-red-700 w-full sm:w-auto text-sm sm:text-sm font-medium"
                     title="Report Issue"
                     onClick={e => { e.stopPropagation(); setIsReportModalOpen(true); }}
                   >
-                    <FlagIcon className="h-4 w-4" />
+                    <FlagIcon className="h-4 w-4 sm:h-4 sm:w-4" />
                     <span>Report Issue</span>
                   </Button>
                 </div>
@@ -269,7 +277,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                   </div>
                 )}
                 {!isExpanded && (
-                  <div className="mt-1 text-xs text-gray-400 text-center select-none">
+                  <div className="mt-2 text-xs text-gray-400 text-center select-none">
                     Tap the card to view map & directions
                   </div>
                 )}

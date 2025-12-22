@@ -6,8 +6,8 @@ type Props = {
 };
 
 const HalalStatusFields: React.FC<Props> = ({ halalVerificationConsent, setHalalVerificationConsent }) => (
-  <div className="bg-orange-50 rounded-xl p-4 w-full">
-    <label htmlFor="halalVerification" className="flex items-start cursor-pointer text-base">
+  <div className="bg-orange-50 rounded-xl p-3 sm:p-4 w-full border border-orange-100">
+    <label htmlFor="halalVerification" className="flex items-start cursor-pointer">
       <input
         id="halalVerification"
         name="halalVerification"
@@ -15,10 +15,10 @@ const HalalStatusFields: React.FC<Props> = ({ halalVerificationConsent, setHalal
         data-testid="halal-verification-checkbox"
         checked={halalVerificationConsent}
         onChange={(e) => setHalalVerificationConsent(e.target.checked)}
-        className="h-4 w-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500 transition-colors mt-1"
+        className="h-5 w-5 sm:h-4 sm:w-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500 transition-colors mt-1 flex-shrink-0"
       />
-      <span className="ml-3">
-        <span className="text-sm font-semibold text-gray-900">
+      <span className="ml-2.5 sm:ml-3">
+        <span className="text-sm font-semibold text-gray-900 block">
           Halal Verification <span className="text-red-500">*</span>
         </span>
         <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">

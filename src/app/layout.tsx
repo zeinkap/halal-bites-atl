@@ -37,12 +37,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
-        <Script
-          id="cloudflare-analytics"
-          strategy="afterInteractive"
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "20389085e7e44917b63b5307437e21f2"}'
-        />
+        {process.env.NODE_ENV === 'production' && (
+          <Script
+            id="cloudflare-analytics"
+            strategy="afterInteractive"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "20389085e7e44917b63b5307437e21f2"}'
+          />
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white`}

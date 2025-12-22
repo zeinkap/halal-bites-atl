@@ -13,6 +13,7 @@ import RestaurantFilterControls from '../RestaurantFilterControls';
 import RestaurantListLoadingSkeleton from './LoadingSkeleton';
 import RestaurantListItems from './ListItems';
 import RestaurantResultsCount from '../RestaurantResultsCount';
+import QuickFilterChips from '../QuickFilterChips';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -29,6 +30,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, _setSearchQuery] = useState(initialSearch);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(initialSearch);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType | 'all'>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
@@ -103,11 +105,21 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   useEffect(() => {
     if (!setSearchQuery) {
       _setSearchQuery(initialSearch);
+      setDebouncedSearchQuery(initialSearch);
     }
   }, [initialSearch, setSearchQuery]);
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(setSearchQuery ? initialSearch : searchQuery);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, initialSearch, setSearchQuery]);
+
   // Use the correct search query depending on controlled/uncontrolled mode
-  const effectiveSearchQuery = setSearchQuery ? initialSearch : searchQuery;
+  const effectiveSearchQuery = setSearchQuery ? initialSearch : debouncedSearchQuery;
 
   // Filter and sort restaurants
   useEffect(() => {
@@ -162,6 +174,18 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
 
   // Add state for filtered count
   const [filteredCount, setFilteredCount] = useState(0);
+
+  // Calculate active filter count
+  const activeFilterCount = useCallback(() => {
+    let count = 0;
+    if (selectedCuisine !== 'all') count++;
+    if (selectedPriceRange !== 'all') count++;
+    if (sortBy !== 'name-asc') count++;
+    if (Object.values(selectedFeatures).some(v => v === true)) {
+      count += Object.values(selectedFeatures).filter(v => v === true).length;
+    }
+    return count;
+  }, [selectedCuisine, selectedPriceRange, sortBy, selectedFeatures]);
 
   const handleFeatureChange = (feature: keyof typeof selectedFeatures) => {
     setSelectedFeatures(prev => ({
@@ -288,10 +312,22 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           handleClearNearMe={handleClearNearMe}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
+          activeFilterCount={activeFilterCount()}
         />
 
         {showFilters && (
           <Card className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4" data-testid="filters-panel">
+            {/* Quick Filter Chips */}
+            <QuickFilterChips
+              selectedCuisine={selectedCuisine}
+              selectedPriceRange={selectedPriceRange}
+              selectedFeatures={selectedFeatures}
+              onRemoveCuisine={() => setSelectedCuisine('all')}
+              onRemovePriceRange={() => setSelectedPriceRange('all')}
+              onRemoveFeature={handleFeatureChange}
+              formatCuisineName={formatCuisineName as (cuisine: string) => string}
+            />
+
             <RestaurantFilterControls
               sortBy={sortBy}
               setSortBy={(value) => setSortBy(value as typeof sortBy)}

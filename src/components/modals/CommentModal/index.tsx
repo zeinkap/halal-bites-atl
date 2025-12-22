@@ -2,6 +2,7 @@ import React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { StarIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 import {
   initialCommentState,
   MAX_COMMENT_LENGTH,
@@ -128,9 +129,30 @@ export default function CommentModal({
   }, [newComment, selectedImage]);
 
   // Fetch comments
-  const fetchCommentsCallback = useCallback(() => {
+  const fetchCommentsCallback = useCallback(async () => {
+    // Verify restaurant exists before fetching comments
+    try {
+      const verifyResponse = await fetch(`/api/restaurants`);
+      if (verifyResponse.ok) {
+        const restaurants = await verifyResponse.json();
+        const restaurantExists = restaurants.some((r: { id: string }) => r.id === restaurantId);
+        if (!restaurantExists) {
+          toast.error('This restaurant is no longer available. Please refresh the page.');
+          setTimeout(() => {
+            if (confirm('Would you like to refresh the page to see the latest restaurants?')) {
+              window.location.reload();
+            } else {
+              onClose();
+            }
+          }, 1500);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error verifying restaurant:', error);
+    }
     fetchComments(restaurantId, setComments, setIsLoading);
-  }, [restaurantId]);
+  }, [restaurantId, onClose]);
 
   useEffect(() => {
     if (isOpen) {

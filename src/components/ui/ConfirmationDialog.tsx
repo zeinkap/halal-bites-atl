@@ -53,10 +53,10 @@ export function ConfirmationDialog({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/25 backdrop-blur-sm transition-opacity" data-testid={testIds.backdrop || 'confirm-dialog-backdrop'} />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" data-testid={testIds.backdrop || 'confirm-dialog-backdrop'} />
         </Transition.Child>
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -66,41 +66,45 @@ export function ConfirmationDialog({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Card className="max-w-md w-full mx-4 transform transition-all" data-testid={testIds.root || 'confirm-dialog'}>
-                <Card.Header className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                    <ExclamationTriangleIcon className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <div>
-                    <Card.Title className="text-lg font-semibold text-gray-900" data-testid={testIds.title || 'confirm-dialog-title'}>
-                      {title}
-                    </Card.Title>
-                    <Card.Description className="mt-2 text-sm text-gray-600" data-testid={testIds.message || 'confirm-dialog-message'}>
-                      {message}
-                    </Card.Description>
-                    {children}
-                    <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:gap-3 sm:justify-between sm:items-center">
-                      <Button
-                        type="button"
-                        onClick={onConfirm}
-                        variant="outline"
-                        size="sm"
-                        className="text-black w-full sm:w-auto"
-                        data-testid={testIds.confirm || 'confirm-dialog-discard'}
-                      >
-                        {confirmText}
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={onCancel}
-                        variant="primary"
-                        size="sm"
-                        className="w-full sm:w-auto"
-                        data-testid={testIds.cancel || 'confirm-dialog-keep-editing'}
-                      >
-                        {cancelText}
-                      </Button>
+              <Card className="max-w-md w-full mx-4 transform transition-all shadow-2xl" data-testid={testIds.root || 'confirm-dialog'}>
+                <Card.Header className="p-4 sm:p-6">
+                  {/* Mobile: Stack icon above content */}
+                  <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-4">
+                    <div className="flex-shrink-0 w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center shadow-sm">
+                      <ExclamationTriangleIcon className="h-7 w-7 sm:h-6 sm:w-6 text-orange-600" />
                     </div>
+                    <div className="flex-1 text-center sm:text-left w-full">
+                      <Card.Title className="text-xl sm:text-lg font-bold text-gray-900 mb-2 sm:mb-0" data-testid={testIds.title || 'confirm-dialog-title'}>
+                        {title}
+                      </Card.Title>
+                      <Card.Description className="mt-2 sm:mt-2 text-sm sm:text-sm text-gray-600 leading-relaxed" data-testid={testIds.message || 'confirm-dialog-message'}>
+                        {message}
+                      </Card.Description>
+                      {children}
+                    </div>
+                  </div>
+                  {/* Buttons: Mobile optimized with better spacing and order */}
+                  <div className="mt-6 sm:mt-4 flex flex-col-reverse sm:flex-row gap-3 sm:gap-3 sm:justify-end">
+                    <Button
+                      type="button"
+                      onClick={onCancel}
+                      variant="primary"
+                      size="sm"
+                      className="w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold shadow-sm"
+                      data-testid={testIds.cancel || 'confirm-dialog-keep-editing'}
+                    >
+                      {cancelText}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={onConfirm}
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold border-2 border-gray-300 hover:border-gray-400 bg-white"
+                      data-testid={testIds.confirm || 'confirm-dialog-discard'}
+                    >
+                      {confirmText}
+                    </Button>
                   </div>
                 </Card.Header>
               </Card>

@@ -39,6 +39,7 @@ const CuisinePriceFields: React.FC<Props> = ({ formData, setFormData }) => (
       <label htmlFor="priceRange" className="block text-sm font-medium text-gray-700 mb-1">
         Price Range <span className="text-red-500">*</span>
       </label>
+      <p className="text-xs text-gray-500 mb-2">$ = $1-10, $$ = $10-20, $$$ = $30+</p>
       <select
         id="priceRange"
         name="priceRange"
@@ -51,7 +52,7 @@ const CuisinePriceFields: React.FC<Props> = ({ formData, setFormData }) => (
         <option value="" className="text-gray-400">Select price range</option>
         {Object.values(PriceRange).map((range) => (
           <option key={range} value={range}>
-            {range === 'LOW' ? '$' : range === 'MEDIUM' ? '$$' : range === 'HIGH' ? '$$$' : range}
+            {range === 'LOW' ? '$ ($1-10)' : range === 'MEDIUM' ? '$$ ($10-20)' : range === 'HIGH' ? '$$$ ($30+)' : range}
           </option>
         ))}
       </select>

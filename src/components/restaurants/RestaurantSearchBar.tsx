@@ -14,6 +14,7 @@ interface RestaurantSearchBarProps {
   handleClearNearMe: () => void;
   showFilters: boolean;
   setShowFilters: (value: boolean) => void;
+  activeFilterCount?: number;
 }
 
 const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
@@ -28,6 +29,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
   handleClearNearMe,
   showFilters,
   setShowFilters,
+  activeFilterCount = 0,
 }) => (
   <>
     {/* Desktop: Search input row */}
@@ -37,9 +39,16 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setSearchQuery('');
+              e.currentTarget.blur();
+            }
+          }}
           placeholder="Search by name, cuisine, feature or zip code"
           className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400 text-sm"
           data-testid="search-input"
+          aria-label="Search restaurants"
         />
         <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
         {searchQuery && (
@@ -90,28 +99,49 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
           size="sm"
           onClick={() => setShowFilters(!showFilters)}
           data-testid="filters-button"
-          className="min-w-[128px] w-32 flex items-center justify-center"
+          className="min-w-[128px] w-32 flex items-center justify-center relative"
         >
           <AdjustmentsHorizontalIcon className="h-5 w-5" />
           <span className="font-semibold tracking-wide">Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {activeFilterCount}
+            </span>
+          )}
         </Button>
-        <div className="text-xs text-gray-500 flex items-center justify-center gap-2">
+        <div className="text-xs text-gray-500 flex items-center justify-center gap-2 flex-wrap">
           {showingNearMe && !locationError && (
             <>
-              <span className="text-green-600">Showing results near you.</span>
+              <span className="text-green-600 font-medium flex items-center gap-1">
+                <MapPinIcon className="h-4 w-4" />
+                Showing results within {radiusMiles === 'all' ? 'all distances' : `${radiusMiles} mi`}
+              </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleClearNearMe}
-                className="ml-2 px-2 py-1"
+                className="px-2 py-1"
                 aria-label="Clear Near Me"
+                title="Show all restaurants"
               >
                 <XMarkIcon className="h-4 w-4" />
               </Button>
             </>
           )}
           {locationError && (
-            <span className="text-red-600">{locationError}</span>
+            <span className="text-red-600 flex items-center gap-1">
+              <span>{locationError}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLocationSearch}
+                disabled={locationLoading}
+                className="px-2 py-1 text-xs"
+                title="Retry location search"
+              >
+                Retry
+              </Button>
+            </span>
           )}
         </div>
       </div>
@@ -125,9 +155,16 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setSearchQuery('');
+                e.currentTarget.blur();
+              }
+            }}
             placeholder="Search by name, cuisine, feature or zip code"
             className="w-full px-4 py-2 pl-10 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 placeholder-gray-400 text-xs sm:text-sm"
             data-testid="search-input"
+            aria-label="Search restaurants"
           />
           <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
           {searchQuery && (
@@ -144,7 +181,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
         </div>
         {/* Two-column grid for controls */}
         <div className="w-full">
-          <div className="bg-orange-50 rounded-xl p-4 grid grid-cols-1 gap-3 w-full max-w-xs mx-auto mb-2 shadow-sm sm:hidden">
+          <div className="bg-orange-50 rounded-xl p-4 grid grid-cols-1 gap-3 w-full max-w-xs mx-auto mb-2 shadow-sm sm:hidden border border-orange-100">
             {/* Distance select */}
             <div className="col-span-1 flex items-center gap-2 w-full">
               <MapPinIcon className="h-5 w-5 text-orange-500 flex-shrink-0" />
@@ -175,41 +212,64 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
               </Button>
             </div>
             {/* Instruction text above Filters button */}
-            <div className="col-span-2 w-full text-center mb-1">
-              <div className="text-xs text-gray-500">Choose distance and tap Near Me.</div>
-            </div>
+            {!showingNearMe && (
+              <div className="col-span-2 w-full text-center mb-1">
+                <div className="text-xs text-gray-500">Choose distance and tap Near Me.</div>
+              </div>
+            )}
             {/* Filters button, spans both columns */}
             <div className="col-span-2 mt-1">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
-                className="w-full flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2 relative"
                 data-testid="filters-button-mobile"
                 type="button"
               >
                 <AdjustmentsHorizontalIcon className="h-5 w-5" />
                 <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
               </Button>
             </div>
             {/* Status and errors */}
             <div className="col-span-2 mt-2 w-full text-center">
               {showingNearMe && !locationError && (
-                <div className="flex items-center justify-center gap-2 text-xs text-green-600 mt-1">
-                  <span>Showing results near you.</span>
+                <div className="flex items-center justify-center gap-2 text-xs text-green-600 mt-1 flex-wrap">
+                  <span className="font-medium flex items-center gap-1">
+                    <MapPinIcon className="h-4 w-4" />
+                    Within {radiusMiles === 'all' ? 'all distances' : `${radiusMiles} mi`}
+                  </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleClearNearMe}
                     className="px-2 py-1"
                     aria-label="Clear Near Me"
+                    title="Show all restaurants"
                   >
                     <XMarkIcon className="h-4 w-4" />
                   </Button>
                 </div>
               )}
               {locationError && (
-                <div className="text-xs text-red-600 mt-1">{locationError}</div>
+                <div className="flex items-center justify-center gap-2 text-xs text-red-600 mt-1 flex-wrap">
+                  <span>{locationError}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLocationSearch}
+                    disabled={locationLoading}
+                    className="px-2 py-1 text-xs"
+                    title="Retry location search"
+                  >
+                    Retry
+                  </Button>
+                </div>
               )}
             </div>
           </div>

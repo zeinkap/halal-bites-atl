@@ -9,10 +9,10 @@ export function middleware(request: NextRequest) {
   
   const cspHeader = `
     default-src 'self';
-    script-src 'self' ${isDev ? "'unsafe-eval'" : ""} 'unsafe-inline' https://*.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com;
+    script-src 'self' ${isDev ? "'unsafe-eval'" : ""} 'unsafe-inline' https://*.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com https://static.cloudflareinsights.com;
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https://*.google-analytics.com https://*.googletagmanager.com;
-    connect-src 'self' ${isDev ? "* 'unsafe-eval'" : ""} https://*.google-analytics.com https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com;
+    connect-src 'self' ${isDev ? "* 'unsafe-eval'" : ""} https://*.google-analytics.com https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cloudflareinsights.com;
     font-src 'self';
     object-src 'none';
     frame-src 'self' https://buymeacoffee.com;
@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
     frame-ancestors 'none';
     block-all-mixed-content;
     ${!isDev ? 'upgrade-insecure-requests;' : ''}
-`.replace(/\s{2,}/g, ' ').trim();
+  `.replace(/\s{2,}/g, ' ').trim();
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);

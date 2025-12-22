@@ -87,9 +87,31 @@ export async function POST(request: Request) {
     }
 
     if (!content || !authorName || !restaurantId) {
+      console.error('Missing required fields:', { content: !!content, authorName: !!authorName, restaurantId });
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
+      );
+    }
+
+    // Validate that the restaurant exists before creating the comment
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId },
+      select: { id: true },
+    });
+
+    if (!restaurant) {
+      console.error(`Restaurant with ID "${restaurantId}" not found in database`);
+      // Clear cache to force refresh on next request
+      try {
+        await redis.del(RESTAURANTS_CACHE_KEY);
+        await redis.del(`${RESTAURANTS_CACHE_KEY}:featured`);
+      } catch (cacheError) {
+        console.error('Error clearing cache:', cacheError);
+      }
+      return NextResponse.json(
+        { error: `Restaurant not found. The restaurant may have been removed. Please refresh the page.` },
+        { status: 404 }
       );
     }
 

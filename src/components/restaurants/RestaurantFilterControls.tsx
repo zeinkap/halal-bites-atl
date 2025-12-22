@@ -79,7 +79,7 @@ const RestaurantFilterControls: React.FC<RestaurantFilterControlsProps> = ({
         <option value="all" className="text-gray-700">Any Price</option>
         {['LOW', 'MEDIUM', 'HIGH'].map((price) => (
           <option key={price} value={price} className="text-gray-700">
-            {price === 'LOW' ? '$' : price === 'MEDIUM' ? '$$' : '$$$'}
+            {price === 'LOW' ? '$ ($1-10)' : price === 'MEDIUM' ? '$$ ($10-20)' : '$$$ ($30+)'}
           </option>
         ))}
       </select>
