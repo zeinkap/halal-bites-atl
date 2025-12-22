@@ -52,6 +52,50 @@ A modern web application to discover halal restaurants and Muslim-owned cafes in
   - Image attachments for better context
 - **Automatic geocoding:** Restaurant addresses are geocoded using Nominatim (OpenStreetMap) for latitude/longitude. If Nominatim fails, Google Maps Geocoding API is used as a fallback to ensure accurate map locations.
 
+## Featured Restaurants
+
+The application includes a featured restaurants carousel that displays highlighted restaurants at the top of the homepage. This feature can be enabled or disabled as needed.
+
+### Enabling/Disabling Featured Restaurants
+
+To **enable** the featured restaurants section:
+
+1. Open `src/app/page.tsx`
+2. Import the `FeaturedRestaurantsCarousel` component:
+   ```typescript
+   import FeaturedRestaurantsCarousel from '@/components/restaurants/FeaturedRestaurantsCarousel';
+   ```
+3. Add a handler function for restaurant selection:
+   ```typescript
+   const handleSelectRestaurant = (name: string) => {
+     setSearch(name);
+     setTimeout(() => {
+       if (firstResultRef.current) {
+         firstResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+       } else {
+         listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+       }
+     }, 100);
+   };
+   ```
+4. Pass the component to the `RestaurantList` via the `aboveResults` prop:
+   ```typescript
+   <RestaurantList
+     initialSearch={search}
+     setSearchQuery={setSearch}
+     aboveResults={<FeaturedRestaurantsCarousel onSelectRestaurant={handleSelectRestaurant} />}
+     firstResultRef={firstResultRef as React.RefObject<HTMLDivElement>}
+   />
+   ```
+
+To **disable** the featured restaurants section:
+
+1. Remove the `FeaturedRestaurantsCarousel` import
+2. Remove the `handleSelectRestaurant` function
+3. Remove the `aboveResults` prop from `RestaurantList`
+
+**Note:** The featured restaurants functionality remains available in the database and admin panel regardless of whether the carousel is displayed on the homepage. You can mark restaurants as featured in the admin dashboard, and they will appear in the carousel when it's enabled.
+
 ## Halal Status & Meat Types
 
 Restaurants can be marked as:
