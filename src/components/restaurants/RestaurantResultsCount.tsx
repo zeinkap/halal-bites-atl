@@ -6,16 +6,18 @@ interface RestaurantResultsCountProps {
 }
 
 const RestaurantResultsCount: React.FC<RestaurantResultsCountProps> = ({ isLoading, filteredCount }) => (
-  <div className="text-gray-600" data-testid="restaurant-list-results-count">
+  <div className="text-stone-600 text-sm" data-testid="restaurant-list-results-count">
     {isLoading ? (
       <div className="flex items-center gap-2" data-testid="restaurant-list-loading-spinner">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-4 w-4 border-2 border-stone-200 border-t-teal-600" />
         <span>Loading restaurants...</span>
       </div>
     ) : (
-      `Found ${filteredCount} restaurant${filteredCount !== 1 ? 's' : ''}`
+      <span className="font-medium">
+        {filteredCount} restaurant{filteredCount !== 1 ? 's' : ''} found
+      </span>
     )}
   </div>
 );
 
-export default RestaurantResultsCount; 
+export default RestaurantResultsCount;

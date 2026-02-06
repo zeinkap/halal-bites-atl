@@ -1,23 +1,29 @@
 import React from 'react';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
 import { ExclamationTriangleIcon } from '../ui/icons';
 
 export default function Footer() {
   return (
-    <footer aria-label="Site disclaimer" className="w-full mt-8">
-      <Card
-        className="flex flex-col items-center py-6 bg-gray-50 border-t border-gray-200 shadow-sm"
-        padding={false}
-      >
-        <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600">
-          <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500" aria-hidden="true" />
-          <Badge color="gray" size="xs" className="mr-2">Disclaimer</Badge>
-          <span>
-          We strive to keep all restaurant details accurate and up to date. However, information such as menu, features, and halal status may change without notice. We recommend contacting the restaurant directly to confirm the latest details before your visit.
-          </span>
+    <footer
+      aria-label="Site disclaimer"
+      className="w-full mt-auto pt-6 pb-4"
+      style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-soft">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 text-xs text-stone-600">
+            <span className="inline-flex items-center gap-1.5 shrink-0 font-medium text-stone-700">
+              <ExclamationTriangleIcon className="w-3 h-3 text-amber-500" aria-hidden="true" />
+              Disclaimer
+            </span>
+            <p className="leading-snug">
+              Details may change. Confirm with the restaurant before your visit.
+            </p>
+          </div>
         </div>
-      </Card>
+        <p className="mt-3 text-center text-xs text-stone-500">
+          © {new Date().getFullYear()} Halal Bites ATL · Atlanta, GA
+        </p>
+      </div>
     </footer>
   );
-} 
+}

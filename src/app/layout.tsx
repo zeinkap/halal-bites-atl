@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import type { Viewport } from "next";
 import "./globals.css";
 import Script from "next/script";
 import { metadata } from "./metadata";
@@ -17,17 +18,36 @@ const geistMono = Geist_Mono({
 
 export { metadata };
 
+/** Mobile-first: proper viewport and theme for phones/tablets */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover", // safe-area insets for notched devices
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0d9488" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f766e" },
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
+      <head />
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-stone-50`}
+      >
+        <ModalProvider>
+          <AppShell>{children}</AppShell>
+        </ModalProvider>
+        {/* Analytics: load after page is idle to avoid blocking layout chunk */}
         <Script
-          strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=G-0GR5ED5JGG`}
+          strategy="lazyOnload"
+          src="https://www.googletagmanager.com/gtag/js?id=G-0GR5ED5JGG"
         />
         <Script
           id="google-analytics"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
@@ -40,18 +60,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {process.env.NODE_ENV === 'production' && (
           <Script
             id="cloudflare-analytics"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             src="https://static.cloudflareinsights.com/beacon.min.js"
             data-cf-beacon='{"token": "20389085e7e44917b63b5307437e21f2"}'
           />
         )}
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-white`}
-      >
-        <ModalProvider>
-          <AppShell>{children}</AppShell>
-        </ModalProvider>
       </body>
     </html>
   );

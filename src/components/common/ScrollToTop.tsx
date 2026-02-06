@@ -38,11 +38,11 @@ export default function ScrollToTop() {
   return (
     <>
       <Button
-          onClick={scrollToTop}
+        onClick={scrollToTop}
         size="icon"
-          aria-label="Scroll to top"
-        className="fixed bottom-24 sm:bottom-6 right-6 z-50 shadow-md flex items-center justify-center bg-gradient-to-r from-amber-100 to-amber-300 text-amber-900 hover:to-amber-400"
-        >
+        aria-label="Scroll to top"
+        className="fixed right-6 z-50 shadow-md flex items-center justify-center bg-gradient-to-r from-amber-100 to-amber-300 text-amber-900 hover:to-amber-400 w-12 h-12 min-w-[3rem] min-h-[3rem] sm:w-10 sm:h-10 sm:min-w-[2.5rem] sm:min-h-[2.5rem] safe-bottom-scroll"
+      >
           <svg
           className="w-6 h-6"
             fill="none"

@@ -31,20 +31,12 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
   const activeFilters: Array<{ label: string; onRemove: () => void }> = [];
 
   if (selectedCuisine !== 'all') {
-    activeFilters.push({
-      label: formatCuisineName(selectedCuisine),
-      onRemove: onRemoveCuisine,
-    });
+    activeFilters.push({ label: formatCuisineName(selectedCuisine), onRemove: onRemoveCuisine });
   }
-
   if (selectedPriceRange !== 'all') {
-    const priceLabel = selectedPriceRange === 'LOW' ? '$ ($1-10)' : selectedPriceRange === 'MEDIUM' ? '$$ ($10-20)' : '$$$ ($30+)';
-    activeFilters.push({
-      label: `Price: ${priceLabel}`,
-      onRemove: onRemovePriceRange,
-    });
+    const priceLabel = selectedPriceRange === 'LOW' ? '$' : selectedPriceRange === 'MEDIUM' ? '$$' : '$$$';
+    activeFilters.push({ label: `Price: ${priceLabel}`, onRemove: onRemovePriceRange });
   }
-
   const featureLabels: Record<keyof typeof selectedFeatures, string> = {
     isZabiha: 'Zabihah',
     hasPrayerRoom: 'Prayer Space',
@@ -54,7 +46,6 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
     servesAlcohol: 'No Alcohol',
     isPartiallyHalal: 'Partially Halal',
   };
-
   Object.entries(selectedFeatures).forEach(([feature, isSelected]) => {
     if (isSelected) {
       activeFilters.push({
@@ -71,15 +62,15 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
       {activeFilters.map((filter, index) => (
         <span
           key={index}
-          className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-800 rounded-full text-xs font-medium border border-teal-100"
         >
           {filter.label}
           <button
             onClick={filter.onRemove}
-            className="hover:bg-orange-200 rounded-full p-0.5 transition-colors"
+            className="hover:bg-teal-100 rounded-full p-0.5 transition-colors text-teal-600"
             aria-label={`Remove ${filter.label} filter`}
           >
-            <XMarkIcon className="h-3 w-3" />
+            <XMarkIcon className="h-3.5 w-3.5" />
           </button>
         </span>
       ))}
@@ -88,4 +79,3 @@ const QuickFilterChips: React.FC<QuickFilterChipsProps> = ({
 };
 
 export default QuickFilterChips;
-

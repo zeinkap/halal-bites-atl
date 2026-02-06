@@ -20,9 +20,9 @@ export const Card: React.FC<CardProps> & {
 }) => (
   <div
     className={clsx(
-      'bg-white rounded-xl shadow-sm border border-gray-100 transition-all duration-300 overflow-hidden',
+      'bg-white rounded-2xl border border-stone-200 shadow-soft transition-all duration-300 overflow-hidden',
       padding && 'p-4',
-      hoverable && 'hover:shadow-lg hover:-translate-y-1',
+      hoverable && 'hover:shadow-soft-lg hover:border-stone-300/80',
       className
     )}
     {...props}
@@ -32,13 +32,13 @@ export const Card: React.FC<CardProps> & {
 );
 
 Card.Header = ({ children, className = '', ...props }) => (
-  <div className={clsx('px-4 py-2 border-b border-gray-100 bg-white', className)} {...props}>{children}</div>
+  <div className={clsx('px-4 py-3 border-b border-stone-100 bg-stone-50/50', className)} {...props}>{children}</div>
 );
 Card.Title = ({ children, className = '', ...props }) => (
-  <h2 className={clsx('text-lg font-bold text-gray-900', className)} {...props}>{children}</h2>
+  <h2 className={clsx('text-lg font-bold text-stone-900', className)} {...props}>{children}</h2>
 );
 Card.Description = ({ children, className = '', ...props }) => (
-  <p className={clsx('text-sm text-gray-600', className)} {...props}>{children}</p>
+  <p className={clsx('text-sm text-stone-600', className)} {...props}>{children}</p>
 );
 Card.Content = ({ children, className = '', ...props }) => (
   <div className={clsx('p-4', className)} {...props}>{children}</div>
@@ -49,4 +49,4 @@ Card.Title.displayName = 'Card.Title';
 Card.Description.displayName = 'Card.Description';
 Card.Content.displayName = 'Card.Content';
 
-export default Card; 
+export default Card;

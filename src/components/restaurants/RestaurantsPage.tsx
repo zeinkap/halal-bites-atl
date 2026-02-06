@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { MapPinIcon } from '@heroicons/react/24/outline';
 import { Restaurant } from '@/types';
 import { CuisineType } from '@prisma/client';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import RestaurantSearchBar from './RestaurantSearchBar';
 import RestaurantFilterControls from './RestaurantFilterControls';
 import RestaurantFeatureFilters from './RestaurantFeatureFilters';
@@ -61,6 +63,7 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
   const [locationError, setLocationError] = useState<string | null>(null);
   const [radiusMiles, setRadiusMiles] = useState<string>('5'); // Default to 5 miles
   const [showingNearMe, setShowingNearMe] = useState(false);
+  const [showLocationConfirmDialog, setShowLocationConfirmDialog] = useState(false);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -157,49 +160,76 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
       setLocationError('Geolocation is not supported by your browser.');
       return;
     }
-    setLocationLoading(true);
+    if (!auto) {
+      setLocationLoading(true);
+    }
     setLocationError(null);
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
-      try {
-        setIsLoading(true);
-        let url = `/api/restaurants?lat=${latitude}&lng=${longitude}`;
-        if (radiusMiles !== 'all') {
-          // Convert miles to kilometers for the API
-          const radiusKm = (parseFloat(radiusMiles) * 1.60934).toFixed(2);
-          url += `&radius=${radiusKm}`;
-        }
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch by location');
-        const data = await response.json();
-        setRestaurants(data);
-        setSearchQuery('');
-        setSelectedCuisine('all');
-        setSelectedPriceRange('all');
-        setSelectedFeatures({
-          isZabiha: false,
-          hasPrayerRoom: false,
-          hasHighChair: false,
-          hasOutdoorSeating: false,
-          isFullyHalal: false,
-          servesAlcohol: false,
-          isPartiallyHalal: false,
-        });
-        setShowingNearMe(true);
-        if (!auto) localStorage.setItem('halal-atl-location-allowed', '1');
-      } catch {
-        setLocationError('Failed to fetch restaurants by location.');
-        setShowingNearMe(false);
-      } finally {
-        setIsLoading(false);
-        setLocationLoading(false);
-      }
-    }, () => {
-      setLocationError('Unable to retrieve your location.');
+
+    const safetyTimeoutId = setTimeout(() => {
       setLocationLoading(false);
+      setLocationError('Location request timed out. Please try again.');
       setShowingNearMe(false);
-      if (!auto) localStorage.removeItem('halal-atl-location-allowed');
-    });
+    }, 20000);
+
+    const clearSafety = () => clearTimeout(safetyTimeoutId);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        clearSafety();
+        const { latitude, longitude } = position.coords;
+        const doFetch = async () => {
+          try {
+            setIsLoading(true);
+            let url = `/api/restaurants?lat=${latitude}&lng=${longitude}`;
+            if (radiusMiles !== 'all') {
+              const radiusKm = (parseFloat(radiusMiles) * 1.60934).toFixed(2);
+              url += `&radius=${radiusKm}`;
+            }
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch by location');
+            const data = await response.json();
+            setRestaurants(data);
+            setSearchQuery('');
+            setSelectedCuisine('all');
+            setSelectedPriceRange('all');
+            setSelectedFeatures({
+              isZabiha: false,
+              hasPrayerRoom: false,
+              hasHighChair: false,
+              hasOutdoorSeating: false,
+              isFullyHalal: false,
+              servesAlcohol: false,
+              isPartiallyHalal: false,
+            });
+            setShowingNearMe(true);
+            if (!auto) localStorage.setItem('halal-atl-location-allowed', '1');
+          } catch {
+            setLocationError('Failed to fetch restaurants by location.');
+            setShowingNearMe(false);
+          } finally {
+            setIsLoading(false);
+            setLocationLoading(false);
+          }
+        };
+        void doFetch();
+      },
+      (err: GeolocationPositionError) => {
+        clearSafety();
+        const message =
+          err?.code === 1
+            ? 'Location permission denied. Allow location in your browser or device settings and try again.'
+            : err?.code === 2
+              ? 'Location unavailable. Turn on location services and try again.'
+              : err?.code === 3
+                ? 'Location request timed out. Please try again.'
+                : 'Unable to retrieve your location. Use HTTPS, allow location access, and ensure location services are on.';
+        setLocationError(message);
+        setLocationLoading(false);
+        setShowingNearMe(false);
+        if (!auto) localStorage.removeItem('halal-atl-location-allowed');
+      },
+      { timeout: 15000, maximumAge: 0, enableHighAccuracy: false }
+    );
   };
 
   // Helper to clear near me mode and fetch all restaurants
@@ -230,13 +260,30 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
 
   return (
     <div className="w-full" data-testid="restaurant-list-container">
+      <ConfirmationDialog
+        open={showLocationConfirmDialog}
+        onConfirm={() => {
+          setShowLocationConfirmDialog(false);
+          handleLocationSearch(false);
+        }}
+        onCancel={() => setShowLocationConfirmDialog(false)}
+        title="Use your location?"
+        message="We'll use your location to show restaurants near you. Your browser may ask for permission."
+        confirmText="Use my location"
+        cancelText="Cancel"
+        confirmPrimary
+        icon={<MapPinIcon className="h-7 w-7 sm:h-6 sm:w-6 text-teal-600" />}
+        iconContainerClassName="bg-teal-100"
+        testIds={{ root: 'location-confirm-dialog', confirm: 'location-confirm-use', cancel: 'location-confirm-cancel' }}
+      />
       <RestaurantSearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         radiusMiles={radiusMiles}
         setRadiusMiles={setRadiusMiles}
         locationLoading={locationLoading}
-        handleLocationSearch={() => handleLocationSearch(false)}
+        handleLocationSearch={() => setShowLocationConfirmDialog(true)}
+        onLocationRetry={() => handleLocationSearch(false)}
         showingNearMe={showingNearMe}
         locationError={locationError}
         handleClearNearMe={handleClearNearMe}

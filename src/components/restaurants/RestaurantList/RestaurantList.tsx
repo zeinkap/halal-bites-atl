@@ -4,9 +4,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Restaurant } from '@/types';
 import { CuisineType } from '@prisma/client';
 import { formatCuisineName } from '@/utils/formatCuisineName';
+import { MapPinIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
-import { useRouter } from 'next/navigation';
+import { ConfirmationDialog } from '../../ui/ConfirmationDialog';
 import RestaurantFeatureFilters from '../RestaurantFeatureFilters';
 import RestaurantSearchBar from '../RestaurantSearchBar';
 import RestaurantFilterControls from '../RestaurantFilterControls';
@@ -69,7 +70,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const [locationError, setLocationError] = useState<string | null>(null);
   const [radiusMiles, setRadiusMiles] = useState<string>('5'); // Default to 5 miles
   const [showingNearMe, setShowingNearMe] = useState(false);
-  const router = useRouter();
+  const [showLocationConfirmDialog, setShowLocationConfirmDialog] = useState(false);
 
   const handleSetSearchQuery = (q: string) => {
     if (setSearchQuery) {
@@ -211,49 +212,77 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       setLocationError('Geolocation is not supported by your browser.');
       return;
     }
-    setLocationLoading(true);
+    if (!auto) {
+      setLocationLoading(true);
+    }
     setLocationError(null);
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
-      try {
-        setIsLoading(true);
-        let url = `/api/restaurants?lat=${latitude}&lng=${longitude}`;
-        if (radiusMiles !== 'all') {
-          // Convert miles to kilometers for the API
-          const radiusKm = (parseFloat(radiusMiles) * 1.60934).toFixed(2);
-          url += `&radius=${radiusKm}`;
-        }
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch by location');
-        const data = await response.json();
-        setRestaurants(data);
-        handleSetSearchQuery('');
-        setSelectedCuisine('all');
-        setSelectedPriceRange('all');
-        setSelectedFeatures({
-          isZabiha: false,
-          hasPrayerRoom: false,
-          hasHighChair: false,
-          hasOutdoorSeating: false,
-          isFullyHalal: false,
-          servesAlcohol: false,
-          isPartiallyHalal: false,
-        });
-        setShowingNearMe(true);
-        if (!auto) localStorage.setItem('halal-atl-location-allowed', '1');
-      } catch {
-        setLocationError('Failed to fetch restaurants by location.');
-        setShowingNearMe(false);
-      } finally {
-        setIsLoading(false);
-        setLocationLoading(false);
-      }
-    }, () => {
-      setLocationError('Unable to retrieve your location.');
+
+    // Safety: if browser never calls success/error (e.g. prompt ignored), clear loading after 20s
+    const safetyTimeoutId = setTimeout(() => {
       setLocationLoading(false);
+      setLocationError('Location request timed out. Please try again.');
       setShowingNearMe(false);
-      if (!auto) localStorage.removeItem('halal-atl-location-allowed');
-    });
+    }, 20000);
+
+    const clearSafety = () => clearTimeout(safetyTimeoutId);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        clearSafety();
+        const { latitude, longitude } = position.coords;
+        const doFetch = async () => {
+          try {
+            setIsLoading(true);
+            let url = `/api/restaurants?lat=${latitude}&lng=${longitude}`;
+            if (radiusMiles !== 'all') {
+              const radiusKm = (parseFloat(radiusMiles) * 1.60934).toFixed(2);
+              url += `&radius=${radiusKm}`;
+            }
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch by location');
+            const data = await response.json();
+            setRestaurants(data);
+            handleSetSearchQuery('');
+            setSelectedCuisine('all');
+            setSelectedPriceRange('all');
+            setSelectedFeatures({
+              isZabiha: false,
+              hasPrayerRoom: false,
+              hasHighChair: false,
+              hasOutdoorSeating: false,
+              isFullyHalal: false,
+              servesAlcohol: false,
+              isPartiallyHalal: false,
+            });
+            setShowingNearMe(true);
+            if (!auto) localStorage.setItem('halal-atl-location-allowed', '1');
+          } catch {
+            setLocationError('Failed to fetch restaurants by location.');
+            setShowingNearMe(false);
+          } finally {
+            setIsLoading(false);
+            setLocationLoading(false);
+          }
+        };
+        void doFetch();
+      },
+      (err: GeolocationPositionError) => {
+        clearSafety();
+        const message =
+          err?.code === 1
+            ? 'Location permission denied. Allow location in your browser or device settings and try again.'
+            : err?.code === 2
+              ? 'Location unavailable. Turn on location services and try again.'
+              : err?.code === 3
+                ? 'Location request timed out. Please try again.'
+                : 'Unable to retrieve your location. Use HTTPS, allow location access, and ensure location services are on.';
+        setLocationError(message);
+        setLocationLoading(false);
+        setShowingNearMe(false);
+        if (!auto) localStorage.removeItem('halal-atl-location-allowed');
+      },
+      { timeout: 15000, maximumAge: 0, enableHighAccuracy: false }
+    );
   };
 
   // Helper to clear near me mode and fetch all restaurants
@@ -276,7 +305,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
 
   if (error) {
     return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+      <div className="p-5 rounded-2xl border border-red-200 bg-red-50 text-red-700 text-sm">
         {error}
       </div>
     );
@@ -284,29 +313,43 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
 
   return (
     <div className="w-full" data-testid="restaurant-list-container">
-      <Button
-        variant="ghost"
-        className="mx-auto block p-0 bg-transparent hover:bg-transparent focus:bg-transparent shadow-none"
-        onClick={() => {
-          router.push('/');
-          window.location.reload();
+      <ConfirmationDialog
+        open={showLocationConfirmDialog}
+        onConfirm={() => {
+          setShowLocationConfirmDialog(false);
+          handleLocationSearch(false);
         }}
-        aria-label="Refresh Home Page"
-      >
-        <h1 className="text-4xl font-extrabold tracking-tight text-center mb-1 bg-gradient-to-r from-orange-500 via-orange-400 to-green-500 bg-clip-text text-transparent drop-shadow-md">
+        onCancel={() => setShowLocationConfirmDialog(false)}
+        title="Use your location?"
+        message="We'll use your location to show restaurants near you. Your browser may ask for permission."
+        confirmText="Use my location"
+        cancelText="Cancel"
+        confirmPrimary
+        icon={<MapPinIcon className="h-7 w-7 sm:h-6 sm:w-6 text-teal-600" />}
+        iconContainerClassName="bg-teal-100"
+        testIds={{ root: 'location-confirm-dialog', confirm: 'location-confirm-use', cancel: 'location-confirm-cancel' }}
+      />
+      {/* Hero */}
+      <header className="text-center mb-8 sm:mb-10">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-2">
           Halal Bites ATL
         </h1>
-      </Button>
-      {/* Injected content below header */}
+        <p className="text-stone-600 text-sm sm:text-base max-w-md mx-auto">
+          Discover halal restaurants and cafes across Atlanta, GA
+        </p>
+      </header>
+
       {aboveResults}
-      <div className="mb-8 bg-white z-10 p-4 shadow-sm" data-testid="restaurant-list-searchbar-section">
+
+      <div className="mb-8 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 shadow-soft z-10" data-testid="restaurant-list-searchbar-section">
         <RestaurantSearchBar
           searchQuery={effectiveSearchQuery}
           setSearchQuery={handleSetSearchQuery}
           radiusMiles={radiusMiles}
           setRadiusMiles={setRadiusMiles}
           locationLoading={locationLoading}
-          handleLocationSearch={() => handleLocationSearch(false)}
+          handleLocationSearch={() => setShowLocationConfirmDialog(true)}
+          onLocationRetry={() => handleLocationSearch(false)}
           showingNearMe={showingNearMe}
           locationError={locationError}
           handleClearNearMe={handleClearNearMe}
@@ -316,7 +359,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         />
 
         {showFilters && (
-          <Card className="bg-white rounded-lg shadow-lg p-4 mb-4 space-y-4" data-testid="filters-panel">
+          <Card className="bg-stone-50/80 rounded-xl border border-stone-200 p-4 sm:p-5 mb-4 space-y-4" data-testid="filters-panel">
             {/* Quick Filter Chips */}
             <QuickFilterChips
               selectedCuisine={selectedCuisine}
@@ -339,9 +382,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
               formatCuisineName={formatCuisineName as (cuisine: string) => string}
             />
 
-            {/* Features Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-stone-700 mb-2">
                 Features
               </label>
               <RestaurantFeatureFilters
@@ -398,14 +440,14 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
             </div>
           ))}
           {hasMore && (
-            <div className="flex justify-center p-4" data-testid="restaurant-list-has-more-spinner">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="flex justify-center p-6" data-testid="restaurant-list-has-more-spinner">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-200 border-t-teal-600"></div>
             </div>
           )}
         </>
       ) : (
-        <div className="text-center py-12" data-testid="restaurant-list-no-results">
-          <p className="text-gray-600">No restaurants found matching your criteria.</p>
+        <div className="text-center py-16 rounded-2xl border border-stone-200 bg-white" data-testid="restaurant-list-no-results">
+          <p className="text-stone-600">No restaurants found matching your criteria.</p>
         </div>
       )}
     </div>

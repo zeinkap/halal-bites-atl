@@ -1,7 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 
-export type BadgeColor = 'blue' | 'green' | 'yellow' | 'orange' | 'gray' | 'pink';
+export type BadgeColor = 'blue' | 'green' | 'yellow' | 'orange' | 'gray' | 'pink' | 'teal';
 export type BadgeSize = 'xs' | 'sm' | 'md';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -10,16 +10,17 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const colorMap: Record<BadgeColor, string> = {
-  blue: 'bg-blue-100 text-blue-800',
-  green: 'bg-green-100 text-green-800',
-  yellow: 'bg-yellow-100 text-yellow-800',
-  orange: 'bg-orange-100 text-orange-800',
-  gray: 'bg-gray-100 text-gray-800',
-  pink: 'bg-pink-100 text-pink-700',
+  blue: 'bg-blue-50 text-blue-700 border border-blue-100',
+  green: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+  yellow: 'bg-amber-50 text-amber-700 border border-amber-100',
+  orange: 'bg-orange-50 text-orange-700 border border-orange-100',
+  gray: 'bg-stone-100 text-stone-700 border border-stone-200',
+  pink: 'bg-pink-50 text-pink-700 border border-pink-100',
+  teal: 'bg-teal-50 text-teal-700 border border-teal-100',
 };
 const sizeMap: Record<BadgeSize, string> = {
   xs: 'px-2 py-0.5 text-xs',
-  sm: 'px-2 py-1 text-sm',
+  sm: 'px-2.5 py-1 text-sm',
   md: 'px-3 py-1.5 text-base',
 };
 
@@ -31,11 +32,11 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => (
   <span
-    className={clsx('rounded-full font-semibold', colorMap[color], sizeMap[size], className)}
+    className={clsx('rounded-lg font-medium', colorMap[color], sizeMap[size], className)}
     {...props}
   >
     {children}
   </span>
 );
 
-export default Badge; 
+export default Badge;

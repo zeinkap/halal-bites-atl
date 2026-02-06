@@ -143,27 +143,56 @@ export async function POST(request: Request) {
       );
     }
 
+    const trimmedAddress = String(data.address).trim();
+    if (!trimmedAddress) {
+      return NextResponse.json(
+        { error: 'Address is required' },
+        { status: 400 }
+      );
+    }
+
+    // Reject if a restaurant with the same address already exists (case-insensitive)
+    await prisma.$connect();
+    const existing = await prisma.restaurant.findFirst({
+      where: {
+        address: { equals: trimmedAddress, mode: 'insensitive' }
+      },
+      select: { id: true, name: true }
+    });
+    if (existing) {
+      return NextResponse.json(
+        { error: `A restaurant at this address already exists: "${existing.name}". Use the existing listing or report an issue if it's a different place.` },
+        { status: 409 }
+      );
+    }
+
     // Geocode address using Nominatim, fallback to Google Maps if needed
     let latitude: number | null = null;
     let longitude: number | null = null;
     try {
-      // Try Nominatim first
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(data.address)}`;
+      // Try Nominatim first (only parse as JSON if response is OK and is JSON)
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmedAddress)}`;
       const res = await fetch(url, {
         headers: { 'User-Agent': 'halal-restaurants-atl/1.0 (your-email@example.com)' }
       });
-      const geo = await res.json();
-      if (geo.length > 0) {
-        latitude = parseFloat(geo[0].lat);
-        longitude = parseFloat(geo[0].lon);
-      } else {
-        // Fallback to Google Maps Geocoding API
+      const contentType = res.headers.get('content-type') ?? '';
+      const isJson = res.ok && contentType.includes('application/json');
+      if (isJson) {
+        const geo = await res.json();
+        if (Array.isArray(geo) && geo.length > 0) {
+          latitude = parseFloat(geo[0].lat);
+          longitude = parseFloat(geo[0].lon);
+        }
+      }
+      // Fallback to Google Maps if Nominatim didn't return coords
+      if ((latitude == null || longitude == null) && process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-        if (apiKey) {
-          const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(data.address)}&key=${apiKey}`;
-          const googleRes = await fetch(googleUrl);
+          const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(trimmedAddress)}&key=${apiKey}`;
+        const googleRes = await fetch(googleUrl);
+        const googleContentType = googleRes.headers.get('content-type') ?? '';
+        if (googleRes.ok && googleContentType.includes('application/json')) {
           const googleData = await googleRes.json();
-          if (googleData.status === 'OK' && googleData.results.length > 0) {
+          if (googleData.status === 'OK' && googleData.results?.length > 0) {
             latitude = googleData.results[0].geometry.location.lat;
             longitude = googleData.results[0].geometry.location.lng;
           }
@@ -179,7 +208,7 @@ export async function POST(request: Request) {
         id: data.id,
         name: data.name,
         cuisineType: data.cuisineType as CuisineType,
-        address: data.address,
+        address: trimmedAddress,
         description: data.description || '',
         priceRange: data.priceRange as PriceRange,
         hasPrayerRoom: data.hasPrayerRoom || false,
@@ -209,8 +238,16 @@ export async function POST(request: Request) {
     await redis.del(RESTAURANTS_CACHE_KEY);
 
     return NextResponse.json(restaurant);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating restaurant:', error);
+    // Prisma unique constraint (same name + address)
+    const prismaError = error as { code?: string; meta?: { target?: string[] } };
+    if (prismaError?.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'A restaurant with this name and address already exists.' },
+        { status: 409 }
+      );
+    }
     if (error instanceof Error) {
       return NextResponse.json(
         { error: `Error creating restaurant: ${error.message}` },

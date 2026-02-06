@@ -8,7 +8,29 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Add any custom colors here
+        surface: 'var(--surface)',
+        accent: {
+          DEFAULT: 'var(--accent)',
+          hover: 'var(--accent-hover)',
+          muted: 'var(--accent-muted)',
+        },
+        halal: {
+          DEFAULT: 'var(--halal)',
+          muted: 'var(--halal-muted)',
+        },
+      },
+      fontFamily: {
+        sans: ['var(--font-sans)'],
+        mono: ['var(--font-mono)'],
+      },
+      borderRadius: {
+        'design': 'var(--radius)',
+        'design-lg': 'var(--radius-lg)',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow-sm)',
+        'soft-md': 'var(--shadow-md)',
+        'soft-lg': 'var(--shadow-lg)',
       },
     },
   },

@@ -1,15 +1,20 @@
 'use client';
 
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { ExclamationTriangleIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { useState } from 'react';
 import BugReportModal from '@/components/modals/BugReportModal/index';
 import DonationModal from '@/components/modals/DonationModal/index';
-import AddRestaurantForm from '@/components/modals/AddRestaurantForm/index';
 import { toast } from 'react-hot-toast';
 import { Button } from '../ui/Button';
+
+const AddRestaurantForm = dynamic(
+  () => import('@/components/modals/AddRestaurantForm/index'),
+  { ssr: false, loading: () => null }
+);
 
 interface NavbarProps {
   showBanner?: boolean;
@@ -23,44 +28,61 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
 
   const handleHomeClick = () => {
     localStorage.removeItem('halal-atl-radius-miles');
-    router.push('/');
-    router.refresh();
+    window.location.href = '/';
   };
 
   return (
     <>
-      <nav 
-        className={`bg-orange-50/95 backdrop-blur-md shadow-sm sticky ${showBanner ? 'top-[52px]' : 'top-0'} z-40 border-b border-orange-100/50`}
+      <nav
+        className={`bg-white/80 backdrop-blur-xl border-b border-stone-200/80 sticky ${showBanner ? 'top-[52px]' : 'top-0'} z-40 shadow-soft`}
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center gap-4 py-3">
-            {/* Logo and Tagline */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center gap-4 py-3.5">
             <button
               onClick={handleHomeClick}
-              className="flex items-center gap-2 sm:gap-3 lg:gap-4 flex-shrink-0 hover:opacity-80 transition-opacity group focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded-lg p-1 -m-1"
+              className="flex items-center gap-3 sm:gap-4 flex-shrink-0 rounded-xl px-2 py-1.5 -ml-2 hover:bg-stone-50 active:bg-stone-100 transition-colors group focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
               data-testid="logo-home-link"
               aria-label="Halal Bites ATL - Go to homepage"
             >
-              <div className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 flex-shrink-0">
+              {/* Logo mark: icon or image */}
+              <div className="relative w-11 h-11 sm:w-12 sm:h-12 flex-shrink-0 rounded-xl overflow-hidden bg-gradient-to-br from-teal-100 to-teal-200 shadow-md ring-1 ring-stone-200/80 flex items-center justify-center">
                 <Image
                   src="/images/logo-transparent.png"
-                  alt="Halal Bites ATL Logo"
+                  alt=""
                   fill
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="object-contain p-1.5 group-hover:scale-105 transition-transform duration-300"
                   priority
-                  sizes="(max-width: 640px) 40px, (max-width: 1024px) 48px, 56px"
+                  sizes="48px"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    const next = target.nextElementSibling as HTMLElement | null;
+                    if (next) next.style.display = 'flex';
+                  }}
                 />
+                <span className="absolute inset-0 hidden items-center justify-center bg-gradient-to-br from-teal-200 to-teal-300 text-teal-800 text-lg sm:text-xl font-bold" aria-hidden="true">
+                  HB
+                </span>
               </div>
-              <p className="hidden min-[375px]:block text-xs sm:text-sm lg:text-base text-gray-700 max-w-[140px] sm:max-w-[180px] lg:max-w-[220px] text-left leading-tight font-medium">
-                Discover the best halal restaurants & cafes in Atlanta
-              </p>
+              {/* Wordmark + tagline */}
+              <div className="hidden min-[380px]:block text-left min-w-0">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="font-bold text-stone-900 text-lg sm:text-xl tracking-tight leading-none group-hover:text-teal-700 transition-colors">
+                    Halal Bites
+                  </span>
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-teal-100 text-teal-700 text-xs sm:text-sm font-bold tracking-wide uppercase">
+                    ATL
+                  </span>
+                </div>
+                <span className="block mt-1 text-xs sm:text-sm text-stone-500 font-medium">
+                  Restaurants &amp; cafes in Atlanta
+                </span>
+              </div>
             </button>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 flex-shrink-0">
-              {/* Add Restaurant Button - Desktop only */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               <Button
                 onClick={() => setShowAddRestaurantForm(true)}
                 className="hidden md:inline-flex items-center gap-2"
@@ -69,32 +91,32 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
                 size="md"
                 aria-label="Add a new restaurant"
               >
-                <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                <PlusIcon className="h-4 w-4" aria-hidden="true" />
                 <span>Add Restaurant</span>
               </Button>
 
-              {/* Support Us Button */}
               <Button
                 onClick={() => setShowDonationModal(true)}
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap bg-gradient-to-r from-pink-400 via-rose-400 to-amber-400 text-white hover:from-pink-500 hover:via-rose-500 hover:to-amber-500 focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
                 data-testid="donate-navbar-button"
+                variant="donate"
                 size="sm"
                 aria-label="Support Halal Bites ATL"
               >
-                <HeartIcon className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" aria-hidden="true" />
+                <HeartIcon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden="true" />
                 <span className="hidden sm:inline">Support Us</span>
               </Button>
 
-              {/* Report Issue Button */}
               <Button
                 onClick={() => setShowBugReportModal(true)}
-                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap bg-gradient-to-r from-rose-400 to-rose-600 text-white hover:from-rose-500 hover:to-rose-700 focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
+                className="inline-flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap"
                 data-testid="report-issue-button"
+                variant="outline"
                 size="sm"
                 aria-label="Report an issue"
                 title="Report Issue"
               >
-                <ExclamationTriangleIcon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                <ExclamationTriangleIcon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden="true" />
                 <span className="hidden sm:inline">Report Issue</span>
               </Button>
             </div>
@@ -102,16 +124,17 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
         </div>
       </nav>
 
-      {/* Floating Add Restaurant Button for Mobile */}
       <Button
         onClick={() => setShowAddRestaurantForm(true)}
-        className="md:hidden fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 shadow-lg hover:shadow-xl flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 rounded-full w-12 h-12 sm:w-14 sm:h-14 transition-all duration-200"
+        className="md:hidden fixed z-50 shadow-soft-lg rounded-full w-14 h-14 min-w-[3.5rem] min-h-[3.5rem] flex items-center justify-center right-5"
+        style={{ bottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
         data-testid="add-restaurant-floating-button"
         size="icon"
+        variant="primary"
         aria-label="Add a new restaurant"
         title="Add Restaurant"
       >
-        <PlusIcon className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
+        <PlusIcon className="h-6 w-6" aria-hidden="true" />
         <span className="sr-only">Add Restaurant</span>
       </Button>
 
@@ -144,4 +167,4 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
       )}
     </>
   );
-} 
+}

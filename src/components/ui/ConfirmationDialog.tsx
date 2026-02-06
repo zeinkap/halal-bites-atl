@@ -13,6 +13,12 @@ interface ConfirmationDialogProps {
   onCancel: () => void;
   confirmText?: string;
   cancelText?: string;
+  /** When true, confirm button is primary (filled) and cancel is outline. Default: false (cancel primary). */
+  confirmPrimary?: boolean;
+  /** Optional custom icon; defaults to exclamation triangle. */
+  icon?: React.ReactNode;
+  /** Optional class for the icon container (e.g. bg-teal-100 for location dialog). */
+  iconContainerClassName?: string;
   danger?: boolean;
   testIds?: {
     root?: string;
@@ -33,9 +39,45 @@ export function ConfirmationDialog({
   onCancel,
   confirmText = 'Yes, Discard',
   cancelText = 'No, Keep Editing',
+  confirmPrimary = false,
+  icon,
+  iconContainerClassName = 'bg-orange-100',
   testIds = {},
   children,
 }: ConfirmationDialogProps) {
+  const ConfirmButton = (
+    <Button
+      type="button"
+      onClick={onConfirm}
+      variant={confirmPrimary ? 'primary' : 'outline'}
+      size="sm"
+      className={
+        confirmPrimary
+          ? 'w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold shadow-sm'
+          : 'w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold border-2 border-gray-300 hover:border-gray-400 bg-white'
+      }
+      data-testid={testIds.confirm || 'confirm-dialog-discard'}
+    >
+      {confirmText}
+    </Button>
+  );
+  const CancelButton = (
+    <Button
+      type="button"
+      onClick={onCancel}
+      variant={confirmPrimary ? 'outline' : 'primary'}
+      size="sm"
+      className={
+        confirmPrimary
+          ? 'w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold border-2 border-gray-300 hover:border-gray-400 bg-white'
+          : 'w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold shadow-sm'
+      }
+      data-testid={testIds.cancel || 'confirm-dialog-keep-editing'}
+    >
+      {cancelText}
+    </Button>
+  );
+
   return (
     <Transition appear show={open} as={Fragment}>
       <Dialog
@@ -68,10 +110,9 @@ export function ConfirmationDialog({
             >
               <Card className="max-w-md w-full mx-4 transform transition-all shadow-2xl" data-testid={testIds.root || 'confirm-dialog'}>
                 <Card.Header className="p-4 sm:p-6">
-                  {/* Mobile: Stack icon above content */}
                   <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-4">
-                    <div className="flex-shrink-0 w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center shadow-sm">
-                      <ExclamationTriangleIcon className="h-7 w-7 sm:h-6 sm:w-6 text-orange-600" />
+                    <div className={`flex-shrink-0 w-14 h-14 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-sm ${iconContainerClassName}`}>
+                      {icon ?? <ExclamationTriangleIcon className="h-7 w-7 sm:h-6 sm:w-6 text-orange-600" />}
                     </div>
                     <div className="flex-1 text-center sm:text-left w-full">
                       <Card.Title className="text-xl sm:text-lg font-bold text-gray-900 mb-2 sm:mb-0" data-testid={testIds.title || 'confirm-dialog-title'}>
@@ -83,28 +124,9 @@ export function ConfirmationDialog({
                       {children}
                     </div>
                   </div>
-                  {/* Buttons: Mobile optimized with better spacing and order */}
                   <div className="mt-6 sm:mt-4 flex flex-col-reverse sm:flex-row gap-3 sm:gap-3 sm:justify-end">
-                    <Button
-                      type="button"
-                      onClick={onCancel}
-                      variant="primary"
-                      size="sm"
-                      className="w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold shadow-sm"
-                      data-testid={testIds.cancel || 'confirm-dialog-keep-editing'}
-                    >
-                      {cancelText}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={onConfirm}
-                      variant="outline"
-                      size="sm"
-                      className="w-full sm:w-auto sm:min-w-[120px] h-11 sm:h-9 text-base sm:text-sm font-semibold border-2 border-gray-300 hover:border-gray-400 bg-white"
-                      data-testid={testIds.confirm || 'confirm-dialog-discard'}
-                    >
-                      {confirmText}
-                    </Button>
+                    {CancelButton}
+                    {ConfirmButton}
                   </div>
                 </Card.Header>
               </Card>

@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button } from '../../ui/Button';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPinIcon } from '@heroicons/react/24/solid';
 import { handleAddressChange, handleAddressSelect } from '../EditRestaurantModal/edit-restaurant-helpers';
 import type { FormData } from './add-restaurant-helpers';
@@ -24,7 +23,63 @@ const BasicInfoFields: React.FC<Props> = ({
   showSuggestions,
   setShowSuggestions,
   placesService,
-}) => (
+}) => {
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const listRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    if (showSuggestions && addressSuggestions.length > 0) {
+      setHighlightedIndex(0);
+      itemRefs.current = [];
+    } else {
+      setHighlightedIndex(-1);
+    }
+  }, [addressSuggestions, showSuggestions]);
+
+  useEffect(() => {
+    if (highlightedIndex >= 0 && itemRefs.current[highlightedIndex]) {
+      itemRefs.current[highlightedIndex]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [highlightedIndex]);
+
+  const selectSuggestion = (suggestion: google.maps.places.AutocompletePrediction) => {
+    handleAddressSelect(suggestion, placesService.current, setFormData, setShowSuggestions);
+    setHighlightedIndex(-1);
+  };
+
+  const handleAddressKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || addressSuggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlightedIndex((prev) =>
+          prev < addressSuggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlightedIndex((prev) =>
+          prev <= 0 ? addressSuggestions.length - 1 : prev - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        const index = highlightedIndex >= 0 ? highlightedIndex : 0;
+        selectSuggestion(addressSuggestions[index]);
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setHighlightedIndex(-1);
+        break;
+      default:
+        break;
+    }
+  };
+
+  return (
   <div className="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-3 sm:space-y-4 w-full">
     <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Basic Information</h3>
     <div>
@@ -60,31 +115,43 @@ const BasicInfoFields: React.FC<Props> = ({
             handleAddressChange(e.target.value, isLoaded, setFormData, setAddressSuggestions, setShowSuggestions);
           }}
           onFocus={() => setShowSuggestions(true)}
+          onKeyDown={handleAddressKeyDown}
           placeholder="Start typing the restaurant address..."
           required
+          role="combobox"
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
+          aria-expanded={showSuggestions && addressSuggestions.length > 0}
+          aria-controls="address-suggestions-list"
+          aria-activedescendant={highlightedIndex >= 0 ? `address-suggestion-${highlightedIndex}` : undefined}
         />
         <MapPinIcon className="absolute left-2.5 sm:left-3 top-2.5 sm:top-3 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 pointer-events-none" aria-hidden="true" />
         {showSuggestions && addressSuggestions.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-48 sm:max-h-60 overflow-auto">
-            {addressSuggestions.map((suggestion) => (
-              <Button
+          <div
+            id="address-suggestions-list"
+            ref={listRef}
+            role="listbox"
+            className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-48 sm:max-h-60 overflow-auto"
+          >
+            {addressSuggestions.map((suggestion, index) => (
+              <button
                 key={suggestion.place_id}
+                ref={(el) => { itemRefs.current[index] = el; }}
+                id={`address-suggestion-${index}`}
+                role="option"
                 type="button"
-                variant="ghost"
-                size="sm"
-                className="w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 text-sm hover:bg-orange-50 focus:bg-orange-50 focus:outline-none transition-colors border-b border-gray-100 last:border-0"
-                onClick={() => handleAddressSelect(
-                  suggestion,
-                  placesService.current,
-                  setFormData,
-                  setShowSuggestions
-                )}
+                aria-selected={index === highlightedIndex}
+                className={`w-full text-left px-3 sm:px-4 py-2.5 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-inset transition-colors border-b border-gray-100 last:border-0 bg-transparent hover:bg-orange-50 ${
+                  index === highlightedIndex ? 'bg-orange-50' : ''
+                }`}
+                onClick={() => selectSuggestion(suggestion)}
+                onMouseEnter={() => setHighlightedIndex(index)}
               >
                 <div className="flex flex-col">
                   <span className="font-medium text-gray-900 text-sm">{suggestion.structured_formatting.main_text}</span>
                   <span className="text-gray-500 text-xs mt-0.5">{suggestion.structured_formatting.secondary_text}</span>
                 </div>
-              </Button>
+              </button>
             ))}
           </div>
         )}
@@ -110,6 +177,7 @@ const BasicInfoFields: React.FC<Props> = ({
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default BasicInfoFields; 

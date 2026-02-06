@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY is not set');
+  return new Stripe(key, { apiVersion: '2025-08-27.basil' });
+}
 
 export async function POST(req: NextRequest) {
   try {
+    const stripe = getStripe();
     const { amount } = await req.json();
     // Validate amount (at least $1)
     if (!amount || typeof amount !== 'number' || amount < 100) {

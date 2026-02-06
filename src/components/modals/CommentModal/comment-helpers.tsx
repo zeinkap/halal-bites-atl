@@ -2,15 +2,17 @@ import React from 'react';
 import { StarIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import ImageWithLightbox from '../../restaurants/ImageWithLightbox';
 
-// Utility for relative time
-export function timeAgo(date: string) {
-  const now = new Date();
-  const then = new Date(date);
-  const diff = Math.floor((now.getTime() - then.getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+/** Format date for display: e.g. "Dec 21, 2025, 11:38 PM" */
+export function formatCommentDate(date: string) {
+  const d = new Date(date);
+  return d.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 }
 
 export function getInitials(name: string) {
@@ -81,8 +83,8 @@ export const CommentItem = React.memo(function CommentItem({ comment }: { commen
             />
           </div>
         )}
-        <p className="mt-2 text-xs text-gray-500" title={new Date(comment.createdAt).toLocaleString()}>
-          {timeAgo(comment.createdAt)}
+        <p className="mt-2 text-xs text-gray-500">
+          {formatCommentDate(comment.createdAt)}
         </p>
       </div>
     </div>
