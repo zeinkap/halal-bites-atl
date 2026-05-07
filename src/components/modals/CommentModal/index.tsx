@@ -56,28 +56,26 @@ function CommentItemWithHeart({ comment }: { comment: { id: string; content: str
   };
 
   return (
-    <div className="relative group border border-gray-100 rounded-lg p-4 bg-white flex flex-col gap-2">
+    <div className="relative border border-stone-100 rounded-xl p-4 bg-white flex flex-col gap-2 hover:border-stone-200 transition-colors">
       <CommentItem comment={{ ...comment, hearts }} />
-      <div className="flex items-center gap-2 mt-2">
-        <Button
+      <div className="flex items-center gap-2 pt-1 border-t border-stone-50">
+        <button
           type="button"
-          variant={isHearted ? 'danger' : 'outline'}
-          size="icon"
           aria-label={isHearted ? 'Unheart comment' : 'Heart comment'}
           onClick={handleHeart}
-          className={`transition-colors ${isHearted ? 'text-red-500' : 'text-gray-400'}`}
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-150 active:scale-95 focus:outline-none focus:ring-2 focus:ring-rose-300 ${
+            isHearted ? 'bg-rose-50 text-rose-500' : 'bg-stone-50 text-stone-400 hover:bg-rose-50 hover:text-rose-400'
+          }`}
         >
-          <span
-            className={`inline-flex items-center justify-center transition-transform duration-200 ${pop ? 'scale-125' : 'scale-100'} ${isHearted ? 'drop-shadow-[0_2px_8px_rgba(239,68,68,0.25)]' : ''}`}
-          >
+          <span className={`inline-flex transition-transform duration-200 ${pop ? 'scale-125' : 'scale-100'}`}>
             <HeartIcon
               fill={isHearted ? 'currentColor' : 'none'}
               stroke="currentColor"
-              className="w-5 h-5"
+              className="w-4 h-4"
             />
           </span>
-        </Button>
-        <span className="text-sm text-gray-600 select-none">{hearts}</span>
+        </button>
+        <span className={`text-xs font-medium select-none ${isHearted ? 'text-rose-500' : 'text-stone-400'}`}>{hearts > 0 ? hearts : ''}</span>
       </div>
     </div>
   );

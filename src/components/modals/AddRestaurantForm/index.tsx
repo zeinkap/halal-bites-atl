@@ -268,32 +268,25 @@ const AddRestaurantForm: React.FC<AddRestaurantFormProps> = ({ isOpen, onClose, 
           onClick={e => e.stopPropagation()}
           data-testid="add-restaurant-modal-panel"
         >
-          {/* Close Button */}
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-            <CloseButton onClick={handleClose} />
-          </div>
           {/* Modal Header */}
-          <div className="pt-5 pb-3 sm:pt-6 sm:pb-2 px-4 sm:px-6 flex flex-col items-center justify-center bg-orange-50 rounded-t-none sm:rounded-t-2xl">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1">
-              <HalalBadgeIcon className="w-7 h-7 sm:w-8 sm:h-8" />
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Add New Restaurant</h2>
+          <div className="relative flex-shrink-0 px-5 sm:px-6 pt-6 pb-5 bg-gradient-to-br from-teal-50 via-white to-white border-b border-stone-100 rounded-t-none sm:rounded-t-2xl text-center">
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+              <CloseButton onClick={handleClose} />
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 text-center px-2">Help others discover great halal restaurants in Atlanta</p>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-teal-100 mb-3 shadow-sm">
+              <HalalBadgeIcon className="w-7 h-7 text-teal-600" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">Add New Restaurant</h2>
+            <p className="text-sm text-stone-500 mt-1 max-w-xs mx-auto">Help the community discover great halal food in Atlanta</p>
           </div>
           <div ref={modalContentRef} className="flex-1 overflow-y-auto max-h-[calc(100vh-140px)] sm:max-h-[70vh] p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 mb-4" data-testid="form-error">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <ExclamationTriangleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">
-                      Please fix the following error:
-                    </h3>
-                    <p className="text-sm text-red-700 mt-1 break-words">{error}</p>
-                  </div>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 mb-2 flex gap-3" data-testid="form-error">
+                <ExclamationTriangleIcon className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-semibold text-red-800">Please fix this before submitting:</p>
+                  <p className="text-sm text-red-700 mt-0.5 break-words">{error}</p>
                 </div>
               </div>
             )}
@@ -329,14 +322,14 @@ const AddRestaurantForm: React.FC<AddRestaurantFormProps> = ({ isOpen, onClose, 
                 setHalalVerificationConsent={setHalalVerificationConsent}
               />
               {/* Sticky Footer */}
-              <div className="sticky bottom-0 bg-white border-t border-gray-100 px-4 sm:px-6 py-3 sm:py-1.5 rounded-b-none sm:rounded-b-2xl flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sm:justify-end z-10 shadow-lg sm:shadow-none -mx-4 sm:mx-0 -mb-4 sm:mb-0">
+              <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-stone-100 px-4 sm:px-6 py-3 rounded-b-none sm:rounded-b-2xl flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 sm:justify-end z-10 -mx-4 sm:mx-0 -mb-4 sm:mb-0">
                 <Button
                   type="button"
                   onClick={handleClose}
                   data-testid="cancel-restaurant-button"
                   variant="secondary"
-                  size="lg"
-                  className="w-full sm:w-auto h-11 sm:h-12 text-sm sm:text-base rounded-lg font-medium"
+                  size="md"
+                  className="w-full sm:w-auto rounded-xl font-medium"
                 >
                   Cancel
                 </Button>
@@ -346,14 +339,14 @@ const AddRestaurantForm: React.FC<AddRestaurantFormProps> = ({ isOpen, onClose, 
                   data-testid="submit-restaurant-button"
                   disabled={isSubmitting || !halalVerificationConsent}
                   variant="primary"
-                  size="lg"
-                  className="w-full sm:w-auto h-11 sm:h-12 text-sm sm:text-base rounded-lg font-semibold shadow-sm"
+                  size="md"
+                  className="w-full sm:w-auto rounded-xl font-semibold shadow-sm flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
-                    <span className="flex items-center justify-center">
-                      <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></span>
-                      Adding...
-                    </span>
+                    <>
+                      <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                      Adding…
+                    </>
                   ) : (
                     'Add Restaurant'
                   )}

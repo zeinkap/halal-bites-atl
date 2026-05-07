@@ -22,8 +22,12 @@ function SearchWrapper() {
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-        <Suspense fallback={<div className="animate-pulse h-64 rounded-2xl bg-stone-200/50" />}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:pt-10 sm:pb-20">
+        <Suspense fallback={
+          <div className="text-center pt-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-stone-200 border-t-teal-500" />
+          </div>
+        }>
           <SearchWrapper />
         </Suspense>
       </div>

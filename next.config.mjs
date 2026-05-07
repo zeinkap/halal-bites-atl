@@ -5,6 +5,7 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
+      // Known optimised sources
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
@@ -16,6 +17,20 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
+      },
+      // AWS S3 (any bucket / region)
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+      },
+      // Community-submitted restaurant images can come from any host
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
       },
     ],
   },

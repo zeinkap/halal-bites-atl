@@ -22,7 +22,7 @@ export const Card: React.FC<CardProps> & {
     className={clsx(
       'bg-white rounded-2xl border border-stone-200 shadow-soft transition-all duration-300 overflow-hidden',
       padding && 'p-4',
-      hoverable && 'hover:shadow-soft-lg hover:border-stone-300/80',
+      hoverable && 'hover:shadow-soft-lg hover:border-teal-300/70 hover:-translate-y-px',
       className
     )}
     {...props}

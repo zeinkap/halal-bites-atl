@@ -34,7 +34,10 @@
 
 @layer base {
   body {
-    background: var(--background);
+    background-color: var(--background);
+    /* Subtle teal-tinted gradient at the top that fades to neutral — feels fresh on both mobile and desktop */
+    background-image: linear-gradient(to bottom, #edfdf8 0%, #f5fdfb 8%, var(--background) 28%);
+    background-attachment: scroll;
     color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

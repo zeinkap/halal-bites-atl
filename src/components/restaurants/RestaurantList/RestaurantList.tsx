@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Restaurant } from '@/types';
 import { CuisineType } from '@prisma/client';
 import { formatCuisineName } from '@/utils/formatCuisineName';
-import { MapPinIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ListBulletIcon, MapIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
 import { ConfirmationDialog } from '../../ui/ConfirmationDialog';
@@ -15,6 +16,19 @@ import RestaurantListLoadingSkeleton from './LoadingSkeleton';
 import RestaurantListItems from './ListItems';
 import RestaurantResultsCount from '../RestaurantResultsCount';
 import QuickFilterChips from '../QuickFilterChips';
+
+// Leaflet must be loaded client-side only (uses browser APIs)
+const RestaurantMapView = dynamic(() => import('../RestaurantMapView'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-center" style={{ height: '560px' }}>
+      <div className="flex flex-col items-center gap-3 text-stone-400">
+        <div className="h-8 w-8 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
+        <span className="text-sm">Loading map…</span>
+      </div>
+    </div>
+  ),
+});
 
 const ITEMS_PER_PAGE = 10;
 
@@ -35,7 +49,9 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType | 'all'>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'>('name-asc');
+  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'rating-desc' | 'comments-desc'>('name-asc');
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const [allFilteredRestaurants, setAllFilteredRestaurants] = useState<Restaurant[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | undefined>(undefined);
@@ -154,12 +170,17 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           return a.priceRange.length - b.priceRange.length;
         case 'price-desc':
           return b.priceRange.length - a.priceRange.length;
+        case 'rating-desc':
+          return (b.avgRating ?? -1) - (a.avgRating ?? -1);
+        case 'comments-desc':
+          return b.commentCount - a.commentCount;
         default:
           return 0;
       }
     });
 
     setFilteredCount(filteredRestaurants.length);
+    setAllFilteredRestaurants(filteredRestaurants);
 
     // Update displayed restaurants based on pagination
     const startIndex = 0;
@@ -330,18 +351,25 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         testIds={{ root: 'location-confirm-dialog', confirm: 'location-confirm-use', cancel: 'location-confirm-cancel' }}
       />
       {/* Hero */}
-      <header className="text-center mb-8 sm:mb-10">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-2">
-          Halal Bites ATL
+      <header className="text-center mb-8 sm:mb-10 px-2">
+        {/* Pill badge */}
+        <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200/80 text-teal-700 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-4 shadow-sm">
+          🕌 <span>Atlanta&apos;s Halal Restaurant Guide</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-3 leading-tight">
+          Find Halal Food in{' '}
+          <span className="text-teal-600">Atlanta</span>
         </h1>
-        <p className="text-stone-600 text-sm sm:text-base max-w-md mx-auto">
-          Discover halal restaurants and cafes across Atlanta, GA
+        <p className="text-stone-500 text-sm sm:text-base max-w-sm mx-auto leading-relaxed">
+          {!isLoading && restaurants.length > 0
+            ? `Explore ${restaurants.length} halal-verified restaurants & cafes across Metro Atlanta`
+            : 'Discover halal-verified restaurants & cafes across Metro Atlanta'}
         </p>
       </header>
 
       {aboveResults}
 
-      <div className="mb-8 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 shadow-soft z-10" data-testid="restaurant-list-searchbar-section">
+      <div className="mb-8 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 shadow-soft z-10 ring-1 ring-teal-100/40" data-testid="restaurant-list-searchbar-section">
         <RestaurantSearchBar
           searchQuery={effectiveSearchQuery}
           setSearchQuery={handleSetSearchQuery}
@@ -418,37 +446,169 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           </Card>
         )}
 
-        {/* Results count */}
-        <RestaurantResultsCount isLoading={isLoading} filteredCount={filteredCount} />
+        {/* Zabiha / Halal / No Alcohol — always-visible quick-filter pills */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          {(
+            [
+              { key: 'isZabiha',     label: '🥩 Zabihah',    activeClass: 'bg-amber-500 text-white border-amber-500',    inactiveClass: 'bg-white text-amber-700 border-amber-300 hover:border-amber-500 hover:bg-amber-50' },
+              { key: 'isFullyHalal', label: '✅ Fully Halal', activeClass: 'bg-teal-600 text-white border-teal-600',      inactiveClass: 'bg-white text-teal-700 border-teal-300 hover:border-teal-500 hover:bg-teal-50'   },
+              { key: 'servesAlcohol',label: '🚫 No Alcohol',  activeClass: 'bg-rose-500 text-white border-rose-500',      inactiveClass: 'bg-white text-rose-700 border-rose-300 hover:border-rose-500 hover:bg-rose-50'    },
+            ] as const
+          ).map(({ key, label, activeClass, inactiveClass }) => (
+            <button
+              key={key}
+              onClick={() => handleFeatureChange(key)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                selectedFeatures[key] ? activeClass : inactiveClass
+              }`}
+              aria-pressed={selectedFeatures[key]}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Results count + Map/List toggle */}
+        <div className="flex items-center justify-between gap-2 mt-3">
+          <RestaurantResultsCount isLoading={isLoading} filteredCount={filteredCount} />
+          <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1 flex-shrink-0" role="group" aria-label="View toggle">
+            <button
+              onClick={() => setView('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                view === 'list'
+                  ? 'bg-white text-teal-700 shadow-sm border border-stone-200'
+                  : 'text-stone-500 hover:text-stone-700'
+              }`}
+              aria-pressed={view === 'list'}
+            >
+              <ListBulletIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              onClick={() => setView('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                view === 'map'
+                  ? 'bg-white text-teal-700 shadow-sm border border-stone-200'
+                  : 'text-stone-500 hover:text-stone-700'
+              }`}
+              aria-pressed={view === 'map'}
+            >
+              <MapIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Map</span>
+            </button>
+          </div>
+        </div>
       </div>
 
+      {/* Map View */}
+      {view === 'map' && (
+        <RestaurantMapView restaurants={allFilteredRestaurants} />
+      )}
+
       {/* Restaurant List */}
-      {isLoading ? (
-        <RestaurantListLoadingSkeleton count={3} />
-      ) : displayedRestaurants.length > 0 ? (
-        <>
-          {displayedRestaurants.map((restaurant, idx) => (
-            <div
-              key={restaurant.id}
-              ref={idx === 0 ? firstResultRef : undefined}
-              className="w-full"
-            >
-              <RestaurantListItems
-                restaurants={[restaurant]}
-                lastRestaurantRef={lastRestaurantRef}
-              />
+      {view === 'list' && (
+        isLoading ? (
+          <RestaurantListLoadingSkeleton count={3} />
+        ) : displayedRestaurants.length > 0 ? (
+          <div className="flex flex-col gap-4 sm:gap-5">
+            {displayedRestaurants.map((restaurant, idx) => (
+              <div
+                key={restaurant.id}
+                ref={idx === 0 ? firstResultRef : undefined}
+                className="w-full"
+              >
+                <RestaurantListItems
+                  restaurants={[restaurant]}
+                  lastRestaurantRef={lastRestaurantRef}
+                />
+              </div>
+            ))}
+            {hasMore && (
+              <div className="flex justify-center p-6" data-testid="restaurant-list-has-more-spinner">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-200 border-t-teal-600"></div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-stone-200 bg-white px-6 py-12 text-center" data-testid="restaurant-list-no-results">
+            <p className="text-4xl mb-3">🍽️</p>
+            <p className="text-stone-800 font-semibold text-lg mb-1">No restaurants found</p>
+
+            {/* What caused it */}
+            {effectiveSearchQuery ? (
+              <p className="text-stone-500 text-sm mb-5">
+                No results for &ldquo;<span className="font-medium text-stone-700">{effectiveSearchQuery}</span>&rdquo;
+                {(selectedCuisine !== 'all' || selectedPriceRange !== 'all' || Object.values(selectedFeatures).some(Boolean))
+                  ? ' with your current filters applied.'
+                  : '.'}
+              </p>
+            ) : (
+              <p className="text-stone-500 text-sm mb-5">
+                Your current filters didn&apos;t match any restaurants.
+              </p>
+            )}
+
+            {/* Suggested actions */}
+            <div className="flex flex-wrap gap-2 justify-center mb-6">
+              {effectiveSearchQuery && (
+                <button
+                  onClick={() => handleSetSearchQuery('')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                >
+                  ✕ Clear &ldquo;{effectiveSearchQuery}&rdquo;
+                </button>
+              )}
+              {selectedCuisine !== 'all' && (
+                <button
+                  onClick={() => setSelectedCuisine('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                >
+                  ✕ Remove cuisine filter
+                </button>
+              )}
+              {selectedPriceRange !== 'all' && (
+                <button
+                  onClick={() => setSelectedPriceRange('all')}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                >
+                  ✕ Remove price filter
+                </button>
+              )}
+              {Object.values(selectedFeatures).some(Boolean) && (
+                <button
+                  onClick={() => setSelectedFeatures({ isZabiha: false, hasPrayerRoom: false, hasHighChair: false, hasOutdoorSeating: false, isFullyHalal: false, servesAlcohol: false, isPartiallyHalal: false })}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
+                >
+                  ✕ Remove feature filters
+                </button>
+              )}
             </div>
-          ))}
-          {hasMore && (
-            <div className="flex justify-center p-6" data-testid="restaurant-list-has-more-spinner">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-200 border-t-teal-600"></div>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="text-center py-16 rounded-2xl border border-stone-200 bg-white" data-testid="restaurant-list-no-results">
-          <p className="text-stone-600">No restaurants found matching your criteria.</p>
-        </div>
+
+            {/* Browse available cuisines */}
+            {(() => {
+              const availableCuisines = Array.from(new Set(restaurants.map(r => r.cuisineType)))
+                .filter(c => c !== 'OTHER')
+                .sort()
+                .slice(0, 6);
+              return availableCuisines.length > 0 ? (
+                <div>
+                  <p className="text-xs text-stone-400 uppercase tracking-wider font-semibold mb-2">Browse by cuisine</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {availableCuisines.map(cuisine => (
+                      <button
+                        key={cuisine}
+                        onClick={() => { setSelectedCuisine(cuisine as typeof selectedCuisine); handleSetSearchQuery(''); }}
+                        className="inline-flex items-center px-3 py-1.5 rounded-full bg-teal-50 border border-teal-100 text-teal-700 text-xs font-medium hover:bg-teal-100 transition-colors"
+                      >
+                        {formatCuisineName(cuisine)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+          </div>
+        )
       )}
     </div>
   );

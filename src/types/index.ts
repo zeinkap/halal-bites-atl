@@ -28,6 +28,7 @@ export interface Restaurant {
   createdAt: Date;
   updatedAt: Date;
   commentCount: number;
+  avgRating?: number | null;
   latitude?: number | null;
   longitude?: number | null;
 } 

@@ -3,13 +3,51 @@ import { prisma } from '@/lib/prisma';
 import { CuisineType, PriceRange } from '@prisma/client';
 import { Redis } from '@upstash/redis';
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
-
 const CACHE_TTL = 60 * 5; // 5 minutes
 const RESTAURANTS_CACHE_KEY = 'restaurants:all';
+
+// Only initialise Redis when valid credentials are present so a missing/empty
+// env var doesn't throw at module-load time and silently break the entire route.
+function getRedis(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  try {
+    return new Redis({ url, token });
+  } catch {
+    return null;
+  }
+}
+
+async function redisGet<T>(key: string): Promise<T | null> {
+  try {
+    const client = getRedis();
+    if (!client) return null;
+    return await client.get<T>(key);
+  } catch {
+    return null;
+  }
+}
+
+async function redisSet(key: string, value: unknown, ex: number): Promise<void> {
+  try {
+    const client = getRedis();
+    if (!client) return;
+    await client.set(key, value, { ex });
+  } catch {
+    // Cache write failure is non-fatal
+  }
+}
+
+async function redisDel(key: string): Promise<void> {
+  try {
+    const client = getRedis();
+    if (!client) return;
+    await client.del(key);
+  } catch {
+    // Cache delete failure is non-fatal
+  }
+}
 
 // Get all restaurants
 export async function GET(req: NextRequest) {
@@ -29,7 +67,7 @@ export async function GET(req: NextRequest) {
 
     // Try to get from cache first (skip cache if proximity search)
     if (!lat && !lng) {
-      const cachedData = await redis.get(cacheKey);
+      const cachedData = await redisGet(cacheKey);
       if (cachedData) {
         return NextResponse.json(cachedData);
       }
@@ -44,44 +82,54 @@ export async function GET(req: NextRequest) {
       include: {
         _count: {
           select: { comments: true }
+        },
+        comments: {
+          select: { rating: true }
         }
       }
     });
 
     // Transform the data to include only the fields needed for the API response
-    const restaurantsWithCommentCount = restaurants.map(restaurant => ({
-      id: restaurant.id,
-      name: restaurant.name,
-      cuisineType: restaurant.cuisineType,
-      address: restaurant.address,
-      description: restaurant.description,
-      priceRange: restaurant.priceRange,
-      hasPrayerRoom: restaurant.hasPrayerRoom,
-      hasOutdoorSeating: restaurant.hasOutdoorSeating,
-      hasHighChair: restaurant.hasHighChair,
-      servesAlcohol: restaurant.servesAlcohol,
-      isFullyHalal: restaurant.isFullyHalal,
-      isZabiha: restaurant.isZabiha,
-      isPartiallyHalal: restaurant.isPartiallyHalal,
-      partiallyHalalChicken: restaurant.partiallyHalalChicken,
-      partiallyHalalLamb: restaurant.partiallyHalalLamb,
-      partiallyHalalBeef: restaurant.partiallyHalalBeef,
-      partiallyHalalGoat: restaurant.partiallyHalalGoat,
-      imageUrl: restaurant.imageUrl,
-      zabihaChicken: restaurant.zabihaChicken,
-      zabihaLamb: restaurant.zabihaLamb,
-      zabihaBeef: restaurant.zabihaBeef,
-      zabihaGoat: restaurant.zabihaGoat,
-      zabihaVerified: restaurant.zabihaVerified,
-      zabihaVerifiedBy: restaurant.zabihaVerifiedBy,
-      createdAt: restaurant.createdAt,
-      updatedAt: restaurant.updatedAt,
-      brandId: restaurant.brandId,
-      latitude: restaurant.latitude,
-      longitude: restaurant.longitude,
-      isFeatured: restaurant.isFeatured,
-      commentCount: restaurant._count.comments
-    }));
+    const restaurantsWithCommentCount = restaurants.map(restaurant => {
+      const avgRating =
+        restaurant.comments.length > 0
+          ? restaurant.comments.reduce((sum, c) => sum + c.rating, 0) / restaurant.comments.length
+          : null;
+      return {
+        id: restaurant.id,
+        name: restaurant.name,
+        cuisineType: restaurant.cuisineType,
+        address: restaurant.address,
+        description: restaurant.description,
+        priceRange: restaurant.priceRange,
+        hasPrayerRoom: restaurant.hasPrayerRoom,
+        hasOutdoorSeating: restaurant.hasOutdoorSeating,
+        hasHighChair: restaurant.hasHighChair,
+        servesAlcohol: restaurant.servesAlcohol,
+        isFullyHalal: restaurant.isFullyHalal,
+        isZabiha: restaurant.isZabiha,
+        isPartiallyHalal: restaurant.isPartiallyHalal,
+        partiallyHalalChicken: restaurant.partiallyHalalChicken,
+        partiallyHalalLamb: restaurant.partiallyHalalLamb,
+        partiallyHalalBeef: restaurant.partiallyHalalBeef,
+        partiallyHalalGoat: restaurant.partiallyHalalGoat,
+        imageUrl: restaurant.imageUrl,
+        zabihaChicken: restaurant.zabihaChicken,
+        zabihaLamb: restaurant.zabihaLamb,
+        zabihaBeef: restaurant.zabihaBeef,
+        zabihaGoat: restaurant.zabihaGoat,
+        zabihaVerified: restaurant.zabihaVerified,
+        zabihaVerifiedBy: restaurant.zabihaVerifiedBy,
+        createdAt: restaurant.createdAt,
+        updatedAt: restaurant.updatedAt,
+        brandId: restaurant.brandId,
+        latitude: restaurant.latitude,
+        longitude: restaurant.longitude,
+        isFeatured: restaurant.isFeatured,
+        commentCount: restaurant._count.comments,
+        avgRating,
+      };
+    });
 
     // If lat/lng provided, sort/filter by proximity
     let result = restaurantsWithCommentCount;
@@ -115,9 +163,7 @@ export async function GET(req: NextRequest) {
 
     // Store in cache (only if not proximity search)
     if (!lat && !lng) {
-      await redis.set(cacheKey, result, {
-        ex: CACHE_TTL
-      });
+      await redisSet(cacheKey, result, CACHE_TTL);
     }
 
     return NextResponse.json(result);
@@ -235,7 +281,7 @@ export async function POST(request: Request) {
     });
 
     // Clear the cache to ensure fresh data
-    await redis.del(RESTAURANTS_CACHE_KEY);
+    await redisDel(RESTAURANTS_CACHE_KEY);
 
     return NextResponse.json(restaurant);
   } catch (error: unknown) {

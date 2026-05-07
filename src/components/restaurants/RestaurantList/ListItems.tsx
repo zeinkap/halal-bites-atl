@@ -8,7 +8,7 @@ interface RestaurantListItemsProps {
 }
 
 const RestaurantListItems: React.FC<RestaurantListItemsProps> = ({ restaurants, lastRestaurantRef }) => (
-  <div className="space-y-4" data-testid="restaurant-list-items-section">
+  <div className="space-y-4 sm:space-y-5" data-testid="restaurant-list-items-section">
     {restaurants.map((restaurant, index) => (
       <div
         key={restaurant.id}

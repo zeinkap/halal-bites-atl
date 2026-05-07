@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MapPinIcon } from '@heroicons/react/24/outline';
+import dynamic from 'next/dynamic';
+import { MapPinIcon, ListBulletIcon, MapIcon } from '@heroicons/react/24/outline';
 import { Restaurant } from '@/types';
 import { CuisineType } from '@prisma/client';
 import { formatCuisineName } from '@/utils/formatCuisineName';
@@ -12,6 +13,19 @@ import RestaurantFeatureFilters from './RestaurantFeatureFilters';
 import RestaurantListLoadingSkeleton from './RestaurantList/LoadingSkeleton';
 import RestaurantResultsCount from './RestaurantResultsCount';
 import RestaurantListItems from './RestaurantList/ListItems';
+
+// Leaflet map must be loaded client-side only (uses browser APIs)
+const RestaurantMapView = dynamic(() => import('./RestaurantMapView'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-center" style={{ height: '560px' }}>
+      <div className="flex flex-col items-center gap-3 text-stone-400">
+        <div className="h-8 w-8 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
+        <span className="text-sm">Loading map…</span>
+      </div>
+    </div>
+  ),
+});
 
 const ITEMS_PER_PAGE = 10;
 
@@ -28,7 +42,7 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType | 'all'>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'>('name-asc');
+  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'rating-desc' | 'comments-desc'>('name-asc');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | undefined>(undefined);
@@ -64,6 +78,8 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
   const [radiusMiles, setRadiusMiles] = useState<string>('5'); // Default to 5 miles
   const [showingNearMe, setShowingNearMe] = useState(false);
   const [showLocationConfirmDialog, setShowLocationConfirmDialog] = useState(false);
+  const [view, setView] = useState<'list' | 'map'>('list');
+  const [allFilteredRestaurants, setAllFilteredRestaurants] = useState<Restaurant[]>([]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -116,11 +132,16 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
           return a.priceRange.length - b.priceRange.length;
         case 'price-desc':
           return b.priceRange.length - a.priceRange.length;
+        case 'rating-desc':
+          return (b.avgRating ?? -1) - (a.avgRating ?? -1);
+        case 'comments-desc':
+          return b.commentCount - a.commentCount;
         default:
           return 0;
       }
     });
     setFilteredCount(filteredRestaurants.length);
+    setAllFilteredRestaurants(filteredRestaurants);
     // Update displayed restaurants based on pagination
     const startIndex = 0;
     const endIndex = page * ITEMS_PER_PAGE;
@@ -336,10 +357,47 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
             </Button>
           </Card>
         )}
-        <RestaurantResultsCount isLoading={isLoading} filteredCount={filteredCount} />
+        <div className="flex items-center justify-between gap-2">
+          <RestaurantResultsCount isLoading={isLoading} filteredCount={filteredCount} />
+          {/* Map / List view toggle */}
+          <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1 flex-shrink-0" role="group" aria-label="View toggle">
+            <button
+              onClick={() => setView('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                view === 'list'
+                  ? 'bg-white text-teal-700 shadow-sm border border-stone-200'
+                  : 'text-stone-500 hover:text-stone-700'
+              }`}
+              aria-pressed={view === 'list'}
+            >
+              <ListBulletIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              onClick={() => setView('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                view === 'map'
+                  ? 'bg-white text-teal-700 shadow-sm border border-stone-200'
+                  : 'text-stone-500 hover:text-stone-700'
+              }`}
+              aria-pressed={view === 'map'}
+            >
+              <MapIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Map</span>
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Map View */}
+      {view === 'map' && (
+        <div className="px-1">
+          <RestaurantMapView restaurants={allFilteredRestaurants} />
+        </div>
+      )}
+
       {/* Restaurant List */}
-      {isLoading ? (
+      {view === 'list' && (isLoading ? (
         <RestaurantListLoadingSkeleton count={3} />
       ) : displayedRestaurants.length > 0 ? (
         <RestaurantListItems
@@ -350,7 +408,7 @@ const RestaurantsPage: React.FC<RestaurantsPageProps> = ({ initialSearch = '' })
         <div className="text-center py-12" data-testid="restaurant-list-no-results">
           <p className="text-gray-600">No restaurants found matching your criteria.</p>
         </div>
-      )}
+      ))}
     </div>
   );
 };
