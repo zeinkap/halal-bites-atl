@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import EditRestaurantModal from '@/components/modals/EditRestaurantModal/index.tsx';
 import { type Restaurant } from '@prisma/client';
-import { Button } from '../../../components/ui/Button';
 import Image from 'next/image';
 
 // Extend the Prisma Restaurant type for admin view
@@ -271,7 +270,7 @@ export default function RestaurantsManagement() {
                               {restaurant.isFeatured ? 'Unfeature' : 'Feature'}
                             </button>
                             <button
-                              onClick={() => { const { commentCount: _c, reportCount: _r, ...r } = restaurant; setEditingRestaurant(r); }}
+                              onClick={() => setEditingRestaurant(restaurant)}
                               className="text-xs font-medium text-stone-600 bg-white hover:bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full transition-colors"
                             >
                               Edit
