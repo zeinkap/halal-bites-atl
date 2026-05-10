@@ -75,7 +75,10 @@ export async function GET(req: NextRequest) {
 
     // If not in cache, get from database
     await prisma.$connect();
-    const whereClause = featured === 'true' ? { isFeatured: true } : undefined;
+    const whereClause = {
+      status: 'approved',
+      ...(featured === 'true' ? { isFeatured: true } : {}),
+    };
     const restaurants = await prisma.restaurant.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
@@ -276,7 +279,8 @@ export async function POST(request: Request) {
         zabihaVerified: data.zabihaVerified || null,
         zabihaVerifiedBy: data.zabihaVerifiedBy || null,
         latitude,
-        longitude
+        longitude,
+        status: 'pending', // requires admin approval before going live
       }
     });
 

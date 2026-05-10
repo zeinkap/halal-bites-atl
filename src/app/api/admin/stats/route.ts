@@ -29,9 +29,11 @@ export async function GET() {
     const rejectedReports = await prisma.report.count({ where: { status: 'rejected' } });
 
     // Restaurants
-    const totalRestaurants = await prisma.restaurant.count();
+    const totalRestaurants = await prisma.restaurant.count({ where: { status: 'approved' } });
+    const pendingRestaurants = await prisma.restaurant.count({ where: { status: 'pending' } });
     const newRestaurants = await prisma.restaurant.count({
       where: {
+        status: 'approved',
         createdAt: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         },
@@ -77,6 +79,7 @@ export async function GET() {
       resolvedReports,
       rejectedReports,
       newRestaurants,
+      pendingRestaurants,
       totalRestaurants,
       totalComments,
       lastBackupDate: lastBackup?.createdAt || null,

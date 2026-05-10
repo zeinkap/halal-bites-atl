@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  // ── Admin route protection ──────────────────────────────────────────────
+  // Protect all /admin/* routes at the middleware level so no individual
+  // page can accidentally forget the check.
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin-login')) {
+    const adminSession = request.cookies.get('admin_session');
+    const adminUsers = (process.env.ADMIN_USERS || '')
+      .split(',')
+      .map(u => u.trim())
+      .filter(Boolean);
+    if (!adminSession?.value || !adminUsers.includes(adminSession.value)) {
+      return NextResponse.redirect(new URL('/admin-login', request.url));
+    }
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
 
   // Define different CSP rules for development and production

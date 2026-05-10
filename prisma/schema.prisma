@@ -41,6 +41,7 @@ model Restaurant {
   reports               Report[]
   brand                 Brand?      @relation(fields: [brandId], references: [id])
   isFeatured            Boolean     @default(false)
+  status                String      @default("approved")
 
   @@unique([name, address], name: "name_address_unique")
 }

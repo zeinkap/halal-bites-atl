@@ -80,222 +80,214 @@ export default function RestaurantsManagement() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-900">Loading...</h2>
-          </div>
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-stone-400">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-stone-200 border-t-teal-600" />
+          <p className="text-sm font-medium">Loading restaurants…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-stone-50 pb-16">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 py-6 shadow-md mb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Restaurant Management</h2>
-            <p className="mt-2 text-lg text-gray-600">Manage all restaurants in the system</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Restaurant Management</h1>
+            <p className="text-teal-100 text-sm mt-0.5">
+              <span className="font-semibold">{filteredRestaurants.length}</span> restaurant{filteredRestaurants.length !== 1 ? 's' : ''}
+            </p>
           </div>
-          <Button variant="neutral" onClick={() => router.push('/admin')} className="px-4 py-2 text-sm font-medium">Back to Dashboard</Button>
-        </div>
-        {/* Show More Columns Toggle */}
-        <div className="mb-2">
-          <Button
-            variant="info"
-            size="sm"
-            onClick={() => setShowAllColumns((v) => !v)}
-            className="mb-2"
+          <button
+            onClick={() => router.push('/admin')}
+            className="text-sm font-medium text-white/80 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-full transition-colors"
           >
-            {showAllColumns ? 'Show Fewer Columns' : 'Show More Columns'}
-          </Button>
+            ← Dashboard
+          </button>
         </div>
-        {/* Search Bar */}
-        <div className="mb-2 max-w-md">
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
           <input
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search by name, address, or cuisine..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-900"
+            placeholder="Search by name, address, or cuisine…"
+            className="flex-1 min-w-[200px] max-w-md px-4 py-2 border border-stone-200 rounded-xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-400 placeholder-stone-400 text-stone-900 text-sm"
           />
+          <button
+            onClick={() => setShowAllColumns(v => !v)}
+            className="text-sm font-medium text-stone-600 bg-white hover:bg-stone-50 border border-stone-200 px-4 py-2 rounded-full transition-colors shadow-sm"
+          >
+            {showAllColumns ? 'Fewer columns' : 'More columns'}
+          </button>
         </div>
-        {/* Restaurant Count */}
-        <div className="mb-4 text-gray-700 text-sm">
-          Total Restaurants: <span className="font-semibold">{filteredRestaurants.length}</span>
-        </div>
-        <div className="mt-8 flex flex-col">
-          <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-              <div className="overflow-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-                <table className="min-w-full divide-y divide-gray-300">
-                  <thead className="bg-gray-50">
+        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-stone-100 text-sm">
+                  <thead className="bg-stone-50 border-b border-stone-100">
                     <tr>
-                      <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 w-1/4 cursor-pointer select-none" onClick={() => setSortAsc((asc) => !asc)}>
-                        Name
-                        <span className="ml-1 inline-block align-middle">
-                          {sortAsc ? (
-                            <svg className="w-3 h-3 inline" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6l-4 4h8l-4-4z" /></svg>
-                          ) : (
-                            <svg className="w-3 h-3 inline" viewBox="0 0 20 20" fill="currentColor"><path d="M10 14l4-4H6l4 4z" /></svg>
-                          )}
-                        </span>
+                      <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide cursor-pointer select-none" onClick={() => setSortAsc((asc) => !asc)}>
+                        Name {sortAsc ? '↑' : '↓'}
                       </th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/4">Address</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/6">Cuisine</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Price</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/6">Halal Status</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Comments</th>
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Reports</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Address</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Cuisine</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Price</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Halal Status</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Status</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">💬</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">🚩</th>
                       {showAllColumns && (
                         <>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">ID</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Description</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Has Prayer Room</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Outdoor Seating</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">High Chair</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Alcohol</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Fully Halal</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Image</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Beef</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Chicken</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Goat</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Lamb</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Verified</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Zabihah Verified By</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Brand ID</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partially Halal</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Beef</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Chicken</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Goat</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Partial Lamb</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Created At</th>
-                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-gray-900">Updated At</th>
+                          <th className="px-3 py-3.5 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">ID</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Description</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Prayer Room</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Outdoor</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">High Chair</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Alcohol</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Zabihah</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Fully Halal</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Image</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Z. Beef</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Z. Chicken</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Z. Goat</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Z. Lamb</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Z. Verified</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Z. Verified By</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Brand ID</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Part. Halal</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">P. Beef</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">P. Chicken</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">P. Goat</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">P. Lamb</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Created At</th>
+                          <th className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Updated At</th>
                         </>
                       )}
-                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-16">Featured</th>
-                      <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6 w-28">
-                        <span className="sr-only">Actions</span>
-                      </th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Featured</th>
+                      <th scope="col" className="px-3 py-3 text-left text-xs font-semibold text-stone-500 uppercase tracking-wide">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="divide-y divide-stone-100">
                     {filteredRestaurants.map((restaurant) => (
-                      <tr key={restaurant.id}>
-                        <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 truncate max-w-xs">
+                      <tr key={restaurant.id} className="hover:bg-stone-50/50 transition-colors">
+                        <td className="py-3 pl-4 pr-3 font-medium text-stone-900 truncate max-w-xs">
                           {restaurant.name}
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-500 truncate max-w-xs">
+                        <td className="px-3 py-3 text-stone-500 truncate max-w-xs">
                           {restaurant.address}
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-500">
+                        <td className="px-3 py-3 text-stone-500">
                           {restaurant.cuisineType.replace(/_/g, ' ')}
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-500">
+                        <td className="px-3 py-3 text-stone-500">
                           {restaurant.priceRange}
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-500">
-                          {restaurant.isFullyHalal ? 'Fully Halal' : ''} 
-                          {restaurant.isZabiha ? ' (Zabihah)' : ''}
+                        <td className="px-3 py-3 text-stone-500">
+                          {restaurant.isFullyHalal ? 'Fully Halal' : ''}
+                          {restaurant.isZabiha ? ' Zabihah' : ''}
+                          {restaurant.isPartiallyHalal ? ' Partial' : ''}
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-500 text-center">
+                        <td className="px-3 py-3">
+                          {restaurant.status === 'pending' ? (
+                            <span className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">Pending</span>
+                          ) : restaurant.status === 'rejected' ? (
+                            <span className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600">Rejected</span>
+                          ) : (
+                            <span className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700">Live</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-stone-500 text-center">
                           {restaurant.commentCount}
                         </td>
-                        <td className="px-3 py-4 text-sm text-gray-500 text-center">
+                        <td className="px-3 py-3 text-stone-500 text-center">
                           {restaurant.reportCount}
                         </td>
                         {showAllColumns && (
                           <>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.id}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.description}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.hasPrayerRoom ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.hasOutdoorSeating ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.hasHighChair ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.servesAlcohol ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isZabiha ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isFullyHalal ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">
+                            <td className="px-3 py-3 text-xs text-stone-400 font-mono">{restaurant.id}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500 max-w-[160px] truncate">{restaurant.description}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.hasPrayerRoom ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.hasOutdoorSeating ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.hasHighChair ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.servesAlcohol ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.isZabiha ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.isFullyHalal ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">
                               {restaurant.imageUrl ? (
-                                <Image src={restaurant.imageUrl} alt="img" width={48} height={48} className="w-12 h-12 object-cover rounded" unoptimized />
-                              ) : '-'}
+                                <Image src={restaurant.imageUrl} alt="img" width={40} height={40} className="w-10 h-10 object-cover rounded-lg" unoptimized />
+                              ) : '—'}
                             </td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaBeef ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaChicken ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaGoat ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaLamb ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaVerified ? new Date(restaurant.zabihaVerified).toLocaleDateString() : '-'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.zabihaVerifiedBy || '-'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.brandId || '-'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.isPartiallyHalal ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalBeef ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalChicken ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalGoat ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.partiallyHalalLamb ? 'Yes' : 'No'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleString() : '-'}</td>
-                            <td className="px-3 py-4 text-xs text-gray-500">{restaurant.updatedAt ? new Date(restaurant.updatedAt).toLocaleString() : '-'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.zabihaBeef ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.zabihaChicken ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.zabihaGoat ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.zabihaLamb ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.zabihaVerified ? new Date(restaurant.zabihaVerified).toLocaleDateString() : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.zabihaVerifiedBy || '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-400 font-mono">{restaurant.brandId || '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.isPartiallyHalal ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.partiallyHalalBeef ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.partiallyHalalChicken ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.partiallyHalalGoat ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-500">{restaurant.partiallyHalalLamb ? '✓' : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-400">{restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleDateString() : '—'}</td>
+                            <td className="px-3 py-3 text-xs text-stone-400">{restaurant.updatedAt ? new Date(restaurant.updatedAt).toLocaleDateString() : '—'}</td>
                           </>
                         )}
-                        <td className="px-3 py-4 text-sm text-gray-500 text-center">
+                        <td className="px-3 py-3 text-center">
                           {restaurant.isFeatured ? (
-                            <span className="text-green-600 font-semibold">Yes</span>
+                            <span className="text-teal-600 font-semibold text-xs">★ Yes</span>
                           ) : (
-                            <span className="text-gray-400">No</span>
+                            <span className="text-stone-300 text-xs">—</span>
                           )}
                         </td>
-                        <td className="py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 whitespace-nowrap">
-                          <Button
-                            variant={restaurant.isFeatured ? 'secondary' : 'primary'}
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                const response = await fetch(`/api/admin/restaurants?id=${restaurant.id}`, {
-                                  method: 'PATCH',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ isFeatured: !restaurant.isFeatured })
-                                });
-                                if (!response.ok) throw new Error('Failed to update featured status');
-                                toast.success(`Restaurant ${!restaurant.isFeatured ? 'featured' : 'unfeatured'} successfully`);
-                                fetchRestaurants();
-                              } catch {
-                                toast.error('Failed to update featured status');
-                              }
-                            }}
-                            className="mr-2"
-                          >
-                            {restaurant.isFeatured ? 'Unfeature' : 'Feature'}
-                          </Button>
-                          <Button
-                            variant="info"
-                            size="sm"
-                            onClick={() => {
-                              const restaurantData = {
-                                ...restaurant,
-                                commentCount: undefined,
-                                reportCount: undefined
-                              };
-                              setEditingRestaurant(restaurantData);
-                            }}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDelete(restaurant.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </Button>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(`/api/admin/restaurants?id=${restaurant.id}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ isFeatured: !restaurant.isFeatured })
+                                  });
+                                  if (!response.ok) throw new Error();
+                                  toast.success(restaurant.isFeatured ? 'Unfeatured' : 'Featured!');
+                                  fetchRestaurants();
+                                } catch {
+                                  toast.error('Failed to update');
+                                }
+                              }}
+                              className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                                restaurant.isFeatured
+                                  ? 'text-stone-600 bg-stone-100 border-stone-200 hover:bg-stone-200'
+                                  : 'text-teal-700 bg-teal-50 border-teal-200 hover:bg-teal-100'
+                              }`}
+                            >
+                              {restaurant.isFeatured ? 'Unfeature' : 'Feature'}
+                            </button>
+                            <button
+                              onClick={() => { const { commentCount: _c, reportCount: _r, ...r } = restaurant; setEditingRestaurant(r); }}
+                              className="text-xs font-medium text-stone-600 bg-white hover:bg-stone-100 border border-stone-200 px-2.5 py-1 rounded-full transition-colors"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(restaurant.id)}
+                              className="text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1 rounded-full transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </div>
           </div>
         </div>
       </div>
