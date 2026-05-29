@@ -20,7 +20,9 @@ const APPLY = process.argv.includes('--apply');
 const USE_PROD = process.argv.includes('--prod');
 
 const envFile = USE_PROD ? '.env.production' : '.env';
-dotenv.config({ path: envFile });
+// override so the chosen env file wins even if DATABASE_URL is already set in
+// the shell environment (otherwise dotenv silently keeps the existing value).
+dotenv.config({ path: envFile, override: true });
 
 if (!process.env.DATABASE_URL) {
   console.error(chalk.red(`Error: DATABASE_URL is not set in ${envFile}`));
