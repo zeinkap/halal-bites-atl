@@ -31,4 +31,5 @@ export interface Restaurant {
   avgRating?: number | null;
   latitude?: number | null;
   longitude?: number | null;
+  brandId?: string | null;
 } 

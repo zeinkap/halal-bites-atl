@@ -13,7 +13,9 @@ import RestaurantFeatureFilters from '../RestaurantFeatureFilters';
 import RestaurantSearchBar from '../RestaurantSearchBar';
 import RestaurantFilterControls from '../RestaurantFilterControls';
 import RestaurantListLoadingSkeleton from './LoadingSkeleton';
-import RestaurantListItems from './ListItems';
+import RestaurantCard from '../../cards/RestaurantCard';
+import BrandCard from '../../cards/BrandCard';
+import { groupRestaurants, type CardEntry } from '@/utils/groupRestaurants';
 import RestaurantResultsCount from '../RestaurantResultsCount';
 import QuickFilterChips from '../QuickFilterChips';
 
@@ -41,7 +43,7 @@ interface RestaurantListProps {
 
 export default function RestaurantList({ initialSearch = '', aboveResults, setSearchQuery, firstResultRef }: RestaurantListProps) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [displayedRestaurants, setDisplayedRestaurants] = useState<Restaurant[]>([]);
+  const [displayedEntries, setDisplayedEntries] = useState<CardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, _setSearchQuery] = useState(initialSearch);
@@ -179,14 +181,16 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       }
     });
 
-    setFilteredCount(filteredRestaurants.length);
-    setAllFilteredRestaurants(filteredRestaurants);
+    // Collapse multi-location brands into single cards (nearest/first represents).
+    const entries = groupRestaurants(filteredRestaurants);
 
-    // Update displayed restaurants based on pagination
-    const startIndex = 0;
+    setFilteredCount(entries.length);
+    setAllFilteredRestaurants(filteredRestaurants); // map view keeps every location pin
+
+    // Paginate over grouped entries
     const endIndex = page * ITEMS_PER_PAGE;
-    setDisplayedRestaurants(filteredRestaurants.slice(startIndex, endIndex));
-    setHasMore(endIndex < filteredRestaurants.length);
+    setDisplayedEntries(entries.slice(0, endIndex));
+    setHasMore(endIndex < entries.length);
   }, [restaurants, effectiveSearchQuery, selectedCuisine, selectedPriceRange, sortBy, page, selectedFeatures]);
 
   // Reset pagination when filters change
@@ -509,18 +513,26 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       {view === 'list' && (
         isLoading ? (
           <RestaurantListLoadingSkeleton count={3} />
-        ) : displayedRestaurants.length > 0 ? (
+        ) : displayedEntries.length > 0 ? (
           <div className="flex flex-col gap-4 sm:gap-5">
-            {displayedRestaurants.map((restaurant, idx) => (
+            {displayedEntries.map((entry, idx) => (
               <div
-                key={restaurant.id}
+                key={entry.key}
                 ref={idx === 0 ? firstResultRef : undefined}
                 className="w-full"
+                data-testid={`restaurant-list-item-${entry.key}`}
               >
-                <RestaurantListItems
-                  restaurants={[restaurant]}
-                  lastRestaurantRef={lastRestaurantRef}
-                />
+                <div ref={idx === displayedEntries.length - 1 ? lastRestaurantRef : undefined}>
+                  {entry.kind === 'brand' ? (
+                    <BrandCard
+                      brandName={entry.brandName}
+                      representative={entry.representative}
+                      locations={entry.locations}
+                    />
+                  ) : (
+                    <RestaurantCard restaurant={entry.restaurant} />
+                  )}
+                </div>
               </div>
             ))}
             {hasMore && (
