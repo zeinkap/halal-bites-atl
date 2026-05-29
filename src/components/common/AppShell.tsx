@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -15,7 +16,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {!isAdmin && <Navbar />}
+      {!isAdmin && <Suspense fallback={null}><Navbar /></Suspense>}
       <main className="flex-1">
         {children}
       </main>

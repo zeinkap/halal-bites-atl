@@ -77,7 +77,7 @@ export default function RestaurantMapView({ restaurants }: RestaurantMapViewProp
   const priceLabel = (p: string) => p === 'LOW' ? '$' : p === 'MEDIUM' ? '$$' : '$$$';
 
   return (
-    <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200" style={{ height: '560px' }}>
+    <div className="w-full h-[60vh] min-h-[320px] sm:h-[560px] sm:min-h-0 rounded-2xl overflow-hidden shadow-lg border border-stone-200">
       {mappable.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full bg-stone-50 text-stone-500 gap-3">
           <svg className="h-12 w-12 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

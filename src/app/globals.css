@@ -22,16 +22,6 @@
   --radius-lg: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0c0a09;
-    --foreground: #fafaf9;
-    --surface: #1c1917;
-    --border: #292524;
-    --muted: #a8a29e;
-  }
-}
-
 @layer base {
   body {
     background-color: var(--background);
@@ -55,6 +45,15 @@
   [role="button"] {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Prevent iOS Safari from auto-zooming when focusing a form control.
+     Safari zooms whenever the font-size is below 16px, so enforce a 16px
+     minimum on touch devices regardless of Tailwind text-sm/xs utilities. */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Scroll-to-top button: above FAB on mobile, standard inset on larger screens */
@@ -73,9 +72,11 @@
   outline-offset: 2px;
 }
 
-/* Smooth scroll */
-html {
-  scroll-behavior: smooth;
+/* Smooth scroll — only when the user hasn't asked to reduce motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Selection */

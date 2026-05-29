@@ -12,6 +12,7 @@ import type { Comment, CommentForm } from './utils';
 import { Card } from '../../ui/Card';
 import { Button, CloseButton } from '../../ui/Button';
 import { useModalContext } from '../../ui/ModalContext';
+import { useBodyScrollLock } from '../../../hooks/useBodyScrollLock';
 import { ConfirmationDialog } from '../../ui/ConfirmationDialog';
 import { HeartIcon } from '../../ui/icons';
 import {
@@ -106,6 +107,8 @@ export default function CommentModal({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  useBodyScrollLock(isOpen);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const { setAnyModalOpen } = useModalContext();
 

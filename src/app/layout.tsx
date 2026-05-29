@@ -24,10 +24,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover", // safe-area insets for notched devices
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#0d9488" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f766e" },
-  ],
+  themeColor: "#0d9488",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -35,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-stone-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-dvh flex flex-col bg-stone-50`}
       >
         <ModalProvider>
           <AppShell>{children}</AppShell>

@@ -5,7 +5,8 @@ import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { ExclamationTriangleIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { HeartIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import BugReportModal from '@/components/modals/BugReportModal/index';
 import DonationModal from '@/components/modals/DonationModal/index';
 import { toast } from 'react-hot-toast';
@@ -21,9 +22,19 @@ interface NavbarProps {
 
 export default function Navbar({ showBanner = false }: NavbarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showBugReportModal, setShowBugReportModal] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [showAddRestaurantForm, setShowAddRestaurantForm] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('donation') === 'success') {
+      toast.success('Thank you for supporting Halal Bites ATL!');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('donation');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
 
   const handleHomeClick = () => {
     localStorage.removeItem('halal-atl-radius-miles');
@@ -143,10 +154,7 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
       {showDonationModal && (
         <DonationModal
           isOpen={showDonationModal}
-          onClose={() => {
-            setShowDonationModal(false);
-            toast.success('Thank you for supporting Halal Bites ATL!');
-          }}
+          onClose={() => setShowDonationModal(false)}
         />
       )}
 

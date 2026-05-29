@@ -2,7 +2,6 @@ import { Restaurant } from '@/types';
 import React, { useState } from 'react';
 import {
   MapPinIcon,
-  HomeModernIcon,
   HeartIcon,
   ChatBubbleLeftIcon,
   FlagIcon,
@@ -14,13 +13,31 @@ import ReportModal from '../modals/ReportModal';
 import Image from 'next/image';
 import { formatCuisineName } from '@/utils/formatCuisineName';
 import { Card } from '../ui/Card';
-import { WineGlassIcon, HighChairIcon, HalalBadgeIcon, PartiallyHalalBadgeIcon, OutdoorSeatingIcon } from '../ui/icons';
+import { WineGlassIcon, HighChairIcon, HalalBadgeIcon, PartiallyHalalBadgeIcon, OutdoorSeatingIcon, MosqueIcon } from '../ui/icons';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
 }
 
-// Compact pill chip for feature tags
+// Tier 1 — Headline halal-status badge (solid fill, the most important signal)
+const HalalBadge = ({
+  icon,
+  label,
+  colorClass,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  colorClass: string;
+}) => (
+  <span
+    className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full ${colorClass}`}
+  >
+    {icon}
+    <span>{label}</span>
+  </span>
+);
+
+// Tier 2 — Light meta/feature pill
 const FeatureChip = ({
   icon,
   label,
@@ -35,6 +52,23 @@ const FeatureChip = ({
   >
     {icon}
     <span>{label}</span>
+  </span>
+);
+
+// Tier 3 — Icon-only amenity chip (muted, label exposed via tooltip + a11y)
+const AmenityChip = ({
+  icon,
+  label,
+}: {
+  icon: React.ReactNode;
+  label: string;
+}) => (
+  <span
+    title={label}
+    aria-label={label}
+    className="inline-flex items-center justify-center h-7 w-7 rounded-full border border-stone-200 bg-stone-50 text-stone-500"
+  >
+    {icon}
   </span>
 );
 
@@ -156,24 +190,60 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 )}
               </div>
 
-              {/* Price + Cuisine pills */}
+              {/* Tier 1 — Halal status headline */}
+              {(localRestaurant.isFullyHalal || hasPartiallyHalal || hasZabiha) && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {localRestaurant.isFullyHalal && (
+                    <HalalBadge
+                      icon={<HalalBadgeIcon className="h-3.5 w-3.5" />}
+                      label="Fully Halal"
+                      colorClass="bg-emerald-600 text-white"
+                    />
+                  )}
+                  {hasPartiallyHalal && !localRestaurant.isFullyHalal && (
+                    <HalalBadge
+                      icon={<PartiallyHalalBadgeIcon className="h-3.5 w-3.5" />}
+                      label="Partially Halal"
+                      colorClass="bg-amber-50 text-amber-800 border border-amber-300"
+                    />
+                  )}
+                  {hasZabiha && (
+                    <HalalBadge
+                      icon={<HeartIcon className="h-3.5 w-3.5" />}
+                      label="Zabihah"
+                      colorClass="bg-amber-500 text-white"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Tier 2 — Price + Cuisine pills */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span
-                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                {(() => {
+                  const priceLevel =
                     localRestaurant.priceRange === 'LOW'
-                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      ? 1
                       : localRestaurant.priceRange === 'MEDIUM'
-                      ? 'text-yellow-700 bg-yellow-50 border-yellow-200'
-                      : 'text-orange-700 bg-orange-50 border-orange-200'
-                  }`}
-                >
-                  {localRestaurant.priceRange === 'LOW'
-                    ? '$'
-                    : localRestaurant.priceRange === 'MEDIUM'
-                    ? '$$'
-                    : '$$$'}
-                </span>
-                <span className="text-xs font-medium px-2.5 py-0.5 rounded-full border text-teal-700 bg-teal-50 border-teal-200">
+                      ? 2
+                      : 3;
+                  const priceTitle =
+                    priceLevel === 1
+                      ? 'Budget-friendly'
+                      : priceLevel === 2
+                      ? 'Moderate'
+                      : 'Upscale';
+                  return (
+                    <span
+                      title={priceTitle}
+                      aria-label={`Price: ${priceTitle}`}
+                      className="inline-flex items-center text-xs font-bold tracking-tight px-2.5 py-0.5 rounded-full bg-stone-100 border border-stone-200"
+                    >
+                      <span className="text-stone-800">{'$'.repeat(priceLevel)}</span>
+                      <span className="text-stone-300">{'$'.repeat(3 - priceLevel)}</span>
+                    </span>
+                  );
+                })()}
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border text-teal-700 bg-white border-teal-200">
                   {formatCuisineName(localRestaurant.cuisineType)}
                 </span>
               </div>
@@ -199,64 +269,39 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 </p>
               )}
 
-              {/* Feature chips */}
-              <div className="flex flex-wrap gap-1.5 pt-0.5">
-                {localRestaurant.isFullyHalal && (
-                  <FeatureChip
-                    icon={<HalalBadgeIcon className="h-3 w-3" />}
-                    label="Fully Halal"
-                    colorClass="text-teal-700 bg-teal-50 border-teal-200"
-                  />
-                )}
-                {hasZabiha && (
-                  <FeatureChip
-                    icon={<HeartIcon className="h-3 w-3" />}
-                    label="Zabihah"
-                    colorClass="text-amber-700 bg-amber-50 border-amber-200"
-                  />
-                )}
-                {hasPartiallyHalal && (
-                  <FeatureChip
-                    icon={<PartiallyHalalBadgeIcon className="h-3 w-3" />}
-                    label="Partially Halal"
-                    colorClass="text-stone-600 bg-stone-50 border-stone-200"
-                  />
-                )}
-                {localRestaurant.servesAlcohol ? (
-                  <FeatureChip
-                    icon={<WineGlassIcon className="h-3 w-3" />}
-                    label="Serves Alcohol"
-                    colorClass="text-rose-600 bg-rose-50 border-rose-200"
-                  />
-                ) : (
-                  <FeatureChip
-                    icon={<WineGlassIcon className="h-3 w-3" />}
-                    label="No Alcohol"
-                    colorClass="text-emerald-700 bg-emerald-50 border-emerald-200"
-                  />
-                )}
-                {localRestaurant.hasPrayerRoom && (
-                  <FeatureChip
-                    icon={<HomeModernIcon className="h-3 w-3" />}
-                    label="Prayer Space"
-                    colorClass="text-stone-600 bg-stone-50 border-stone-200"
-                  />
-                )}
-                {localRestaurant.hasOutdoorSeating && (
-                  <FeatureChip
-                    icon={<OutdoorSeatingIcon className="h-3 w-3" />}
-                    label="Outdoor"
-                    colorClass="text-stone-600 bg-stone-50 border-stone-200"
-                  />
-                )}
-                {localRestaurant.hasHighChair && (
-                  <FeatureChip
-                    icon={<HighChairIcon className="h-3 w-3" />}
-                    label="High Chairs"
-                    colorClass="text-stone-600 bg-stone-50 border-stone-200"
-                  />
-                )}
-              </div>
+              {/* Tier 3 — Amenities (icon-only) + alcohol warning (only when applicable) */}
+              {(localRestaurant.servesAlcohol ||
+                localRestaurant.hasPrayerRoom ||
+                localRestaurant.hasOutdoorSeating ||
+                localRestaurant.hasHighChair) && (
+                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                  {localRestaurant.servesAlcohol && (
+                    <FeatureChip
+                      icon={<WineGlassIcon className="h-3 w-3" />}
+                      label="Serves Alcohol"
+                      colorClass="text-rose-600 bg-rose-50 border-rose-200"
+                    />
+                  )}
+                  {localRestaurant.hasPrayerRoom && (
+                    <AmenityChip
+                      icon={<MosqueIcon className="h-4 w-4" />}
+                      label="Prayer space"
+                    />
+                  )}
+                  {localRestaurant.hasOutdoorSeating && (
+                    <AmenityChip
+                      icon={<OutdoorSeatingIcon className="h-4 w-4" />}
+                      label="Outdoor seating"
+                    />
+                  )}
+                  {localRestaurant.hasHighChair && (
+                    <AmenityChip
+                      icon={<HighChairIcon className="h-4 w-4" />}
+                      label="High chairs"
+                    />
+                  )}
+                </div>
+              )}
 
               {/* Zabihah detail box */}
               {hasZabiha && (
@@ -364,37 +409,31 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
               {/* Spacer + map controls */}
               <div className="ml-auto flex items-center gap-2">
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 border border-stone-200 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  <MapPinIcon className="h-3.5 w-3.5 text-stone-500" />
+                  <span>Maps</span>
+                  <ArrowTopRightOnSquareIcon className="h-3 w-3 text-stone-400" />
+                </a>
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 px-3 py-1.5 rounded-full transition-colors"
+                >
+                  <span>Directions</span>
+                  <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white/80" />
+                </a>
                 {isExpanded ? (
-                  <>
-                    <a
-                      href={mapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 border border-stone-200 px-3 py-1.5 rounded-full transition-colors"
-                    >
-                      <MapPinIcon className="h-3.5 w-3.5 text-stone-500" />
-                      <span>Maps</span>
-                      <ArrowTopRightOnSquareIcon className="h-3 w-3 text-stone-400" />
-                    </a>
-                    <a
-                      href={directionsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 px-3 py-1.5 rounded-full transition-colors"
-                    >
-                      <span>Directions</span>
-                      <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white/80" />
-                    </a>
-                    <ChevronUpIcon className="h-4 w-4 text-stone-400 ml-0.5 flex-shrink-0" />
-                  </>
+                  <ChevronUpIcon className="h-4 w-4 text-stone-400 ml-0.5 flex-shrink-0" />
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-xs text-stone-400 select-none">
-                    <MapPinIcon className="h-3 w-3" />
-                    <span className="hidden xs:inline">Tap for map</span>
-                    <ChevronDownIcon className="h-3.5 w-3.5" />
-                  </span>
+                  <ChevronDownIcon className="h-4 w-4 text-stone-400 ml-0.5 flex-shrink-0" />
                 )}
               </div>
             </div>

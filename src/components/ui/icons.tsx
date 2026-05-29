@@ -7,12 +7,14 @@ export const WineGlassIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const HighChairIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  // Side-view baby high chair: backrest, seat, front tray, splayed legs + footrest.
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-    <rect x="7" y="2" width="10" height="4" rx="2" className="fill-yellow-400" />
-    <rect x="9" y="6" width="6" height="8" rx="2" className="fill-yellow-300" />
-    <rect x="8" y="14" width="2" height="6" className="fill-yellow-600" />
-    <rect x="14" y="14" width="2" height="6" className="fill-yellow-600" />
-    <rect x="11" y="14" width="2" height="4" className="fill-yellow-500" />
+    <rect x="7" y="3" width="2.4" height="8" rx="1.2" />
+    <rect x="7" y="9.6" width="7.5" height="2.2" rx="1" />
+    <rect x="12.6" y="7" width="2.2" height="2.4" rx="0.6" />
+    <path d="M7.7 11.4 5.4 21h2l1.7-9.6H7.7z" />
+    <path d="M13.3 11.4 15.6 21h-2l-1.7-9.6h1.4z" />
+    <rect x="7" y="16" width="6" height="1.6" rx="0.8" />
   </svg>
 );
 
@@ -37,14 +39,30 @@ export const PartiallyHalalBadgeIcon = (props: React.SVGProps<SVGSVGElement>) =>
 );
 
 export const OutdoorSeatingIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" {...props}>
-    <ellipse cx="16" cy="10" rx="10" ry="4" fill="#FBBF24" />
-    <rect x="15" y="10" width="2" height="10" fill="#A3A3A3" />
-    <rect x="10" y="20" width="12" height="2" rx="1" fill="#6B7280" />
-    <rect x="12" y="22" width="2" height="4" rx="1" fill="#6B7280" />
-    <rect x="18" y="22" width="2" height="4" rx="1" fill="#6B7280" />
+  // Patio umbrella over a bistro table — the universal "outdoor seating" cue.
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    <path d="M12 2c4.4 0 8 2.6 8.6 5.9.1.4-.2.8-.6.8H4c-.4 0-.7-.4-.6-.8C4 4.6 7.6 2 12 2z" />
+    <rect x="11.5" y="8.5" width="1" height="13" rx="0.5" />
+    <rect x="6.5" y="13.6" width="11" height="1.8" rx="0.9" />
   </svg>
-); 
+);
+
+export const MosqueIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  // Dome + minarets + arched doorway — clearly reads as a prayer space.
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+    {/* minarets */}
+    <rect x="3" y="9" width="2" height="12" rx="0.5" />
+    <path d="M4 6.4 5.3 9H2.7L4 6.4z" />
+    <rect x="19" y="9" width="2" height="12" rx="0.5" />
+    <path d="M20 6.4 21.3 9h-2.6L20 6.4z" />
+    {/* hall with arched doorway */}
+    <path d="M6 21V11h12v10h-3v-4a3 3 0 0 0-6 0v4H6z" />
+    {/* onion dome */}
+    <path d="M12 3.4c2 2 3.5 4 3.5 5.5 0 1.5-1.6 2.1-3.5 2.1S8.5 10.4 8.5 8.9c0-1.5 1.5-3.5 3.5-5.5z" />
+    {/* finial */}
+    <rect x="11.6" y="1.5" width="0.8" height="2.2" rx="0.4" />
+  </svg>
+);
 
 /** Facebook-style heart: symmetrical, rounded lobes, pointed bottom. Use fill for filled state, stroke for outline. */
 export const HeartIcon = ({ fill = '#ef4444', stroke = 'none', ...props }: React.SVGProps<SVGSVGElement>) => (

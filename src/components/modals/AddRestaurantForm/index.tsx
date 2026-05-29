@@ -7,6 +7,7 @@ import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import type { Libraries } from '@react-google-maps/api/dist/utils/make-load-script-url';
 import { useModalContext } from '../../ui/ModalContext';
+import { useBodyScrollLock } from '../../../hooks/useBodyScrollLock';
 import { ConfirmationDialog } from '../../ui/ConfirmationDialog';
 import { CloseButton } from '../../ui/Button';
 import { HalalBadgeIcon } from '../../ui/icons';
@@ -60,6 +61,8 @@ const AddRestaurantForm: React.FC<AddRestaurantFormProps> = ({ isOpen, onClose, 
       placesService.current = new google.maps.places.PlacesService(tempNode);
     }
   }, [isLoaded]);
+
+  useBodyScrollLock(isOpen);
 
   // Modal open/close animation
   useEffect(() => {
