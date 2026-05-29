@@ -56,6 +56,12 @@ export default function EditRestaurantModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Brand (multi-location grouping)
+  const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
+  const [brandId, setBrandId] = useState<string>(restaurant.brandId ?? '');
+  const [showNewBrand, setShowNewBrand] = useState(false);
+  const [newBrandName, setNewBrandName] = useState('');
+
   const { setAnyModalOpen } = useModalContext();
 
   const [addressSuggestions, setAddressSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
@@ -75,6 +81,15 @@ export default function EditRestaurantModal({
     setupPlacesService(isLoaded, placesService);
   }, [isLoaded]);
 
+  // Load existing brands when the modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/admin/brands')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setBrands(Array.isArray(data) ? data : []))
+      .catch(() => setBrands([]));
+  }, [isOpen]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -91,12 +106,26 @@ export default function EditRestaurantModal({
     }
 
     try {
+      // Resolve the brand: create a new one if the admin typed a new name,
+      // otherwise use the selected brand (or null to detach).
+      let resolvedBrandId: string | null = brandId || null;
+      if (showNewBrand && newBrandName.trim()) {
+        const brandRes = await fetch('/api/admin/brands', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newBrandName.trim() }),
+        });
+        if (!brandRes.ok) throw new Error('Failed to create brand');
+        const created = await brandRes.json();
+        resolvedBrandId = created.id;
+      }
+
       const response = await fetch(`/api/admin/restaurants?id=${restaurant.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, brandId: resolvedBrandId }),
       });
 
       if (!response.ok) {
@@ -135,6 +164,46 @@ export default function EditRestaurantModal({
             setShowSuggestions={setShowSuggestions}
             placesService={placesService}
           />
+
+          {/* Brand (multi-location grouping) */}
+          <div>
+            <label htmlFor="brand-select" className="block text-sm font-medium text-gray-700 mb-1">
+              Brand <span className="font-normal text-gray-400">(for multi-location chains)</span>
+            </label>
+            <select
+              id="brand-select"
+              value={showNewBrand ? '__new__' : brandId}
+              onChange={(e) => {
+                if (e.target.value === '__new__') {
+                  setShowNewBrand(true);
+                } else {
+                  setShowNewBrand(false);
+                  setBrandId(e.target.value);
+                }
+              }}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-base text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">— No brand (standalone) —</option>
+              {brands.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+              <option value="__new__">➕ Create new brand…</option>
+            </select>
+            {showNewBrand && (
+              <input
+                type="text"
+                value={newBrandName}
+                onChange={(e) => setNewBrandName(e.target.value)}
+                placeholder="New brand name (e.g. Buzzin Burgers)"
+                className="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 text-base text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Locations sharing a brand are grouped into one card. Leave as standalone for a single-location restaurant.
+            </p>
+          </div>
 
           <CuisinePriceFields formData={formData} setFormData={setFormData} />
 
