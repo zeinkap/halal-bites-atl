@@ -37,6 +37,21 @@ function createHalalMarker() {
   });
 }
 
+// Leaflet renders grey tiles when the map initializes before its container
+// has its final laid-out size (common behind a list/map view toggle and a
+// dynamic import). Recomputing the size after mount forces the correct tiles
+// to load.
+function InvalidateMapSize() {
+  const map = useMap();
+
+  useEffect(() => {
+    const id = setTimeout(() => map.invalidateSize(), 100);
+    return () => clearTimeout(id);
+  }, [map]);
+
+  return null;
+}
+
 // Recenter map when filtered restaurants change
 function MapRecenter({ restaurants }: { restaurants: Restaurant[] }) {
   const map = useMap();
@@ -102,6 +117,7 @@ export default function RestaurantMapView({ restaurants }: RestaurantMapViewProp
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            <InvalidateMapSize />
             <MapRecenter restaurants={restaurants} />
             {mappable.map(restaurant => (
               <Marker
@@ -131,7 +147,7 @@ export default function RestaurantMapView({ restaurants }: RestaurantMapViewProp
                         href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(restaurant.address)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 text-center text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                        className="flex-1 text-center text-xs font-semibold bg-teal-600 hover:bg-teal-700 !text-white !no-underline px-3 py-1.5 rounded-lg transition-colors"
                       >
                         Directions
                       </a>
@@ -139,7 +155,7 @@ export default function RestaurantMapView({ restaurants }: RestaurantMapViewProp
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.name + ' ' + restaurant.address)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 text-center text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg transition-colors"
+                        className="flex-1 text-center text-xs font-semibold bg-stone-100 hover:bg-stone-200 !text-stone-700 !no-underline px-3 py-1.5 rounded-lg transition-colors"
                       >
                         Google Maps
                       </a>
