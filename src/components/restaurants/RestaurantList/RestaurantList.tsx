@@ -43,6 +43,7 @@ interface RestaurantListProps {
 
 export default function RestaurantList({ initialSearch = '', aboveResults, setSearchQuery, firstResultRef }: RestaurantListProps) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [totalUniqueCount, setTotalUniqueCount] = useState<number>(0);
   const [displayedEntries, setDisplayedEntries] = useState<CardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +109,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         }
         const data = await response.json();
         setRestaurants(data);
+        setTotalUniqueCount(new Set(data.map((r: Restaurant) => r.brandId ?? r.id)).size);
       } catch (error) {
         console.error('Failed to fetch restaurants:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch restaurants');
@@ -365,8 +367,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           <span className="text-teal-600">Atlanta</span>
         </h1>
         <p className="text-stone-500 text-sm sm:text-base max-w-sm mx-auto leading-relaxed">
-          {!isLoading && restaurants.length > 0
-            ? `Explore ${restaurants.length} halal-verified restaurants & cafes across Metro Atlanta`
+          {!isLoading && totalUniqueCount > 0
+            ? `Explore ${totalUniqueCount} halal-verified restaurants & cafes across Metro Atlanta`
             : 'Discover halal-verified restaurants & cafes across Metro Atlanta'}
         </p>
       </header>
