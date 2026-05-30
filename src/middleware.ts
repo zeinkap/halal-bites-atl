@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
     default-src 'self';
     script-src 'self' ${isDev ? "'unsafe-eval'" : ""} 'unsafe-inline' https://*.googletagmanager.com https://www.google-analytics.com https://maps.googleapis.com https://static.cloudflareinsights.com;
     style-src 'self' 'unsafe-inline';
-    img-src 'self' blob: data: https://*.google-analytics.com https://*.googletagmanager.com;
+    img-src 'self' blob: data: https://*.google-analytics.com https://*.googletagmanager.com https://*.tile.openstreetmap.org;
     connect-src 'self' ${isDev ? "* 'unsafe-eval'" : ""} https://*.google-analytics.com https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cloudflareinsights.com;
     font-src 'self';
     object-src 'none';
