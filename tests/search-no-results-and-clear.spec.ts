@@ -3,7 +3,7 @@ import { RestaurantListPage } from './pages/restaurant-list.page';
 
 // Depends on the homepage listing at least one restaurant (prisma/seed.ts), like TC-SEARCH-001.
 test.describe('Search', () => {
-  test('TC-SEARCH-002: Searching for a non-existent restaurant shows the empty state, and clearing the search restores the list', async ({ page }) => {
+  test('TC-SEARCH-002: Searching for a non-existent restaurant shows the empty state, and clearing the search restores the list', { tag: '@orchestrated' }, async ({ page }) => {
     const list = new RestaurantListPage(page);
     const term = 'zzzxqqnomatch';
 
