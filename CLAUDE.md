@@ -14,6 +14,8 @@ Next.js + Prisma (Postgres) app. Playwright tests live in `tests/`.
   using brittle CSS or text selectors.
 - Use `baseURL` (`page.goto('/')`), never a hardcoded URL. No `page.waitForTimeout`; use web-first
   assertions (`expect(locator).toBeVisible()`, `toHaveCount`) or `waitForResponse`.
+- Every generated test is tagged `{ tag: '@orchestrated' }` (second argument of `test(...)`). CI
+  runs `npm run test:agent -- --grep @orchestrated`, so an untagged test never runs in CI.
 - Test data is created through the API with unique names and deleted in `afterEach`.
 - Admin routes need an `admin_session` cookie (see `src/middleware.ts`); only build an admin login
   helper when a test case needs it.

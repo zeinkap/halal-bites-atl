@@ -20,6 +20,8 @@ first for the conventions.
    testid is missing, add it to the component with no other change and list that in your report.
 3. **Write the spec** at `tests/<feature>.spec.ts` (kebab-case). Map every manual step and every
    expected result to code, and put the case ID and title in the `test.describe`/`test` names.
+   Tag every test with `{ tag: '@orchestrated' }` (`test('...', { tag: '@orchestrated' }, async ...)`);
+   CI only runs tagged tests.
    Add a short comment per step, `// Step N: ...`, so a reviewer can trace it.
 4. **Data**: create it through the API helpers (`createRestaurantViaAPI` etc.) with unique names,
    and delete it in `afterEach`, including when the test fails.
