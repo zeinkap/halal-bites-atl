@@ -21,15 +21,21 @@ test.describe('Search', () => {
     // Step 3: Type "jerusalem"
     await list.searchInput.pressSequentially(term);
 
-    // Expected: at least one result containing "Jerusalem" is shown
-    await expect(list.cardsWithText('Jerusalem').first()).toBeVisible();
+    // The input holds the term, so the filter below is applied to the full query.
+    await expect(list.searchInput).toHaveValue(term);
 
     // Expected: every displayed result contains "jerusalem" (case-insensitive).
-    // This is the primary proof that non-matching restaurants are filtered out.
+    // Asserted before the positive check: it keeps retrying while non-matching cards from the
+    // unfiltered list are still on screen, so it cannot pass until the filter has applied.
+    // Load every page of results first so the check covers the whole result set.
+    await list.loadAllResults();
     await expect(list.cardsWithoutText(termPattern)).toHaveCount(0);
 
-    // Expected: non-matching restaurants are not shown.
-    // Secondary check only: the list paginates, so a count of 0 alone would be weak evidence.
+    // Expected: at least one result containing "Jerusalem" is shown. Run after the check above,
+    // so it can no longer be satisfied by the unfiltered list.
+    await expect(list.cardsWithText('Jerusalem').first()).toBeVisible();
+
+    // Expected: non-matching restaurants are not shown. Meaningful now that all pages are loaded.
     await expect(list.cardsWithText('Bismillah Cafe')).toHaveCount(0);
   });
 });

@@ -11,12 +11,14 @@ export class RestaurantListPage {
   readonly searchInput: Locator;
   readonly resultCards: Locator;
   readonly loadingSection: Locator;
+  readonly hasMoreSpinner: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.searchInput = page.locator('[data-testid="search-input"]:visible');
     this.resultCards = page.locator('[data-testid^="restaurant-list-item-"]');
     this.loadingSection = page.locator('[data-testid="restaurant-list-loading-section"]');
+    this.hasMoreSpinner = page.locator('[data-testid="restaurant-list-has-more-spinner"]');
   }
 
   async goto(): Promise<void> {
@@ -29,6 +31,19 @@ export class RestaurantListPage {
    */
   async waitForResults(): Promise<void> {
     await expect(this.resultCards.first()).toBeVisible({ timeout: INITIAL_LOAD_TIMEOUT_MS });
+  }
+
+  /**
+   * Scrolls until every page of the current results is rendered (the list paginates and loads
+   * the next page when the spinner scrolls into view), so assertions over resultCards cover the
+   * whole result set, not just the first page.
+   */
+  async loadAllResults(): Promise<void> {
+    while ((await this.hasMoreSpinner.count()) > 0) {
+      const before = await this.resultCards.count();
+      await this.hasMoreSpinner.scrollIntoViewIfNeeded();
+      await expect.poll(() => this.resultCards.count()).toBeGreaterThan(before);
+    }
   }
 
   /** Result cards whose text contains the given text (case-insensitive when a RegExp is passed). */
