@@ -10,6 +10,8 @@ export class RestaurantListPage {
   readonly page: Page;
   readonly searchInput: Locator;
   readonly resultCards: Locator;
+  readonly clearSearchButton: Locator;
+  readonly noResults: Locator;
   readonly loadingSection: Locator;
   readonly hasMoreSpinner: Locator;
 
@@ -17,7 +19,9 @@ export class RestaurantListPage {
     this.page = page;
     this.searchInput = page.locator('[data-testid="search-input"]:visible');
     this.resultCards = page.locator('[data-testid^="restaurant-list-item-"]');
-    this.loadingSection = page.locator('[data-testid="restaurant-list-loading-section"]');
+    this.clearSearchButton = page.locator('[data-testid="search-clear-button"]:visible');
+    this.noResults = page.locator('[data-testid="restaurant-list-no-results"]');
+    this.loadingSection =page.locator('[data-testid="restaurant-list-loading-section"]');
     this.hasMoreSpinner = page.locator('[data-testid="restaurant-list-has-more-spinner"]');
   }
 
