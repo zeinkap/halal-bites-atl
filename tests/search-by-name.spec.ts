@@ -6,7 +6,7 @@ import { RestaurantListPage } from './pages/restaurant-list.page';
 // The app matches name, cuisine, address and zip, so the negative assertion uses a restaurant
 // that matches none of these.
 test.describe('Search', () => {
-  test('TC-SEARCH-001: Searching by name shows only matching restaurants', async ({ page }) => {
+  test('TC-SEARCH-001: Searching by name shows only matching restaurants', { tag: '@orchestrated' }, async ({ page }) => {
     const list = new RestaurantListPage(page);
     const term = 'jerusalem';
     const termPattern = new RegExp(term, 'i');

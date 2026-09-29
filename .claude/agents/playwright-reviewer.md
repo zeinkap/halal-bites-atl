@@ -19,7 +19,8 @@ Then read the changed files and check:
    passes before the action completes).
 3. **Conventions** (`CLAUDE.md`): no `waitForTimeout`, no hardcoded URLs, `data-testid`
    selectors that exist in `src/`, duplicated testids scoped to the visible one, no un-awaited
-   promises, no commented-out code.
+   promises, no commented-out code, and every test carries `{ tag: '@orchestrated' }` (CI runs only tagged
+   tests; an untagged test silently never runs in CI).
 4. **Reuse**: nothing duplicates an existing helper or page object.
 5. **Data hygiene**: unique names, cleanup in `afterEach` that also runs on failure, no
    dependence on pre-existing rows.
