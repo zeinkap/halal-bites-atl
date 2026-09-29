@@ -1,9 +1,23 @@
 import { defineConfig, devices } from '@playwright/test';
 import http from 'http';
 import dotenv from 'dotenv';
+import { assertAllowedTestDatabase } from './tests/utils/db-guard';
+
+// TEST_ENV=1 (npm run test:agent) loads .env.test first, so its DATABASE_URL wins over .env
+// (dotenv never overrides an already-set variable). The db-guard then refuses
+// to run unless the database name matches ALLOWED_TEST_DB (see tests/utils/db-guard.ts).
+const isTestEnv = process.env.TEST_ENV === '1';
+if (isTestEnv) {
+  dotenv.config({ path: '.env.test' });
+}
 
 // Load test environment variables
 dotenv.config({ path: '.env' });
+
+// Checked at config load, i.e. before the dev server is started or any test runs.
+if (isTestEnv) {
+  assertAllowedTestDatabase();
+}
 
 // Function to check if server is already running
 const isServerRunning = async (url: string): Promise<boolean> => {
@@ -67,11 +81,15 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: process.env.SERVER_ALREADY_RUNNING === 'true' 
-      ? 'echo "Using existing server"' 
-      : 'dotenv -e .env -- npm run dev',
+    command: isTestEnv
+      ? 'dotenv -e .env.test -e .env -- npm run dev'
+      : process.env.SERVER_ALREADY_RUNNING === 'true'
+        ? 'echo "Using existing server"'
+        : 'dotenv -e .env -- npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    // In test-env mode never reuse a running server: it could be connected to a different DB
+    // than the one the guard verified.
+    reuseExistingServer: !process.env.CI && !isTestEnv,
     timeout: 120000, // 2 minutes timeout
   },
 }); 
