@@ -12,7 +12,7 @@ if (isTestEnv) {
 }
 
 // Load test environment variables
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env.test' });
 
 // Checked at config load, i.e. before the dev server is started or any test runs.
 if (isTestEnv) {

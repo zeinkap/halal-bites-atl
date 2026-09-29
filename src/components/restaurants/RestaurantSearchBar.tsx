@@ -60,6 +60,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
             onClick={() => setSearchQuery('')}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-stone-200/80 focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-stone-500"
             aria-label="Clear search"
+            data-testid="search-clear-button"
             tabIndex={0}
           >
             <XMarkIcon className="h-4 w-4" />
@@ -177,6 +178,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
               onClick={() => setSearchQuery('')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-stone-200/80"
               aria-label="Clear search"
+              data-testid="search-clear-button"
               tabIndex={0}
             >
               <XMarkIcon className="h-4 w-4" />

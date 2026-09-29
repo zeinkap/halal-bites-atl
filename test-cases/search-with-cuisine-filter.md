@@ -18,12 +18,12 @@ cuisine exists.
 1. Go to the homepage.
 2. Type "jerusalem" in the search bar.
 3. Open the filters panel.
-4. Select "Middle Eastern" in the cuisine filter.
+4. Select "Mediterranean" in the cuisine filter.
 
 ## Expected result
 Every restaurant shown has a name, cuisine or address containing "jerusalem" AND has the cuisine
-"Middle Eastern". At least one result ("Jerusalem Bakery & Grill") is shown, and restaurants of
+"Mediterranean". At least one result ("Jerusalem Bakery & Grill") is shown, and restaurants of
 other cuisines are not shown.
 
 ## Actual result
-N/A - new coverage.
+Only one Mediterranean restaurant is shown.
