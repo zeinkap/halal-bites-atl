@@ -57,8 +57,12 @@ const checkServer = async () => {
   }
 };
 
-// Run the check before tests start
-checkServer();
+// Run the check once, in the main process. Config is re-evaluated in every test worker, which
+// would repeat the check and print misleading "already running" lines (the dev server started
+// by webServer is, of course, running by then).
+if (process.env.TEST_WORKER_INDEX === undefined) {
+  checkServer();
+}
 
 export default defineConfig({
   testDir: './tests',
