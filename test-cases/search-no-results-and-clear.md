@@ -18,8 +18,8 @@ The app is running and the homepage lists at least one restaurant.
 4. Click the "Clear search" (X) button in the search bar.
 
 ## Expected result
-- After step 3, no restaurant cards are shown and the "no results" message is displayed.
-- After step 4, the search bar is empty, the "no results" message is gone, and restaurant cards are shown again.
+- After step 3, no restaurant cards are shown and the "No restaurants found" message is displayed.
+- After step 4, the search bar is empty, the "No restaurants found" message is gone, and restaurant cards are shown again.
 
 ## Actual result
-N/A - new coverage.
+No restaurants found message is shown.
