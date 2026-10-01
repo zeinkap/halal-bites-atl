@@ -1,5 +1,4 @@
 import { defineConfig, devices } from '@playwright/test';
-import http from 'http';
 import dotenv from 'dotenv';
 import { assertAllowedTestDatabase } from './tests/utils/db-guard';
 
@@ -17,51 +16,6 @@ dotenv.config({ path: '.env.test' });
 // Checked at config load, i.e. before the dev server is started or any test runs.
 if (isTestEnv) {
   assertAllowedTestDatabase();
-}
-
-// Function to check if server is already running
-const isServerRunning = async (url: string): Promise<boolean> => {
-  return new Promise((resolve) => {
-    const [hostname, port] = url.replace('http://', '').split(':');
-    const options = {
-      hostname,
-      port,
-      timeout: 1000, // 1 second timeout
-    };
-
-    const req = http.get(options, (res) => {
-      resolve(true);
-      res.resume();
-    });
-
-    req.on('error', () => {
-      resolve(false);
-    });
-
-    req.on('timeout', () => {
-      req.destroy();
-      resolve(false);
-    });
-  });
-};
-
-// Check if server is running and set environment variable
-const checkServer = async () => {
-  const serverRunning = await isServerRunning('http://localhost:3000');
-  if (serverRunning) {
-    console.log('Server is already running on http://localhost:3000');
-    process.env.SERVER_ALREADY_RUNNING = 'true';
-  } else {
-    console.log('Starting new server instance...');
-    process.env.SERVER_ALREADY_RUNNING = 'false';
-  }
-};
-
-// Run the check once, in the main process. Config is re-evaluated in every test worker, which
-// would repeat the check and print misleading "already running" lines (the dev server started
-// by webServer is, of course, running by then).
-if (process.env.TEST_WORKER_INDEX === undefined) {
-  checkServer();
 }
 
 export default defineConfig({
@@ -87,9 +41,7 @@ export default defineConfig({
   webServer: {
     command: isTestEnv
       ? 'dotenv -e .env.test -e .env -- npm run dev'
-      : process.env.SERVER_ALREADY_RUNNING === 'true'
-        ? 'echo "Using existing server"'
-        : 'dotenv -e .env -- npm run dev',
+      : 'dotenv -e .env -- npm run dev',
     url: 'http://localhost:3000',
     // In test-env mode never reuse a running server: it could be connected to a different DB
     // than the one the guard verified.
