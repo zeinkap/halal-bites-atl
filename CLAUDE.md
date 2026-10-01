@@ -20,6 +20,8 @@ Next.js + Prisma (Postgres) app. Playwright tests live in `tests/`.
 - Test data is created through the API with unique names and deleted in `afterEach`.
 - Admin routes need an `admin_session` cookie (see `src/middleware.ts`); only build an admin login
   helper when a test case needs it.
+- Playwright never reuses a running dev server, so run `scripts/free-port.sh` (default port 3000)
+  first if one is left over; the reviewer agent does this automatically.
 - Playwright (`npm run test:agent` or `npx playwright test`) always loads `.env.test` and refuses
   to run unless the database name equals `ALLOWED_TEST_DB` (`tests/utils/db-guard.ts`). Never
   print or commit connection strings or any `.env*` file.
