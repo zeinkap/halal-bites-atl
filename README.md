@@ -145,8 +145,8 @@ Generated tests are tagged `@orchestrated`; CI runs only those.
 ### Running tests locally
 
 1. Install Playwright browsers: `npx playwright install`
-2. Create `.env.test` (gitignored) with `DATABASE_URL` and `ALLOWED_TEST_DB` (the database name;
-   runs are refused if it does not match).
+2. Run `cp .env.test.example .env.test` (gitignored), then set `DATABASE_URL` and `ALLOWED_TEST_DB`
+   (the database name; runs are refused if it does not match).
 3. Run: `npm run test:agent` (add `-- --ui` for UI mode, or `-- --debug` to debug).
 
 The tests rely on seeded data (`npm run seed`) and do not create their own restaurants.
