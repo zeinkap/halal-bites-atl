@@ -36,6 +36,9 @@ yarn-error.log*
 .env.production
 .env.test
 
+# screen recordings and extracted frames for /record-to-test (can contain personal data)
+recordings/
+
 # vercel
 .vercel
 
