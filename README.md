@@ -130,52 +130,28 @@ This information is visible in the restaurant cards and list, and can be set whe
 
 ## Testing
 
-- **End-to-End Testing:**
-  - Playwright for E2E testing
-  - Test coverage for critical user flows:
-    - Adding new restaurants
-    - Handling duplicate restaurant submissions
-    - Form validation
-    - Toast notifications
-    - Search functionality
+End-to-end tests use Playwright and are generated from manual test cases by a multi-agent
+orchestrator (see `.claude/agents/`, `.claude/commands/convert-test.md` and `test-cases/README.md`).
 
-### Running Tests
+Current coverage (search): searching by name, and the no-results state with clearing the search.
 
-1. Install Playwright browsers:
-   ```bash
-   npx playwright install
-   ```
+### Adding a test
 
-2. Run all tests:
-   ```bash
-   npm run test
-   ```
+1. Write a manual test case in `test-cases/` following `test-cases/_template.md`.
+2. In Claude Code, run `/convert-test test-cases/<case>.md`. The agents review the case, write the
+   spec (reusing page objects in `tests/pages/` and helpers in `tests/utils/`), review and run it, and
+   open a draft PR.
 
-3. Run tests with UI mode:
-   ```bash
-   npm run test:ui
-   ```
+Generated tests are tagged `@orchestrated`; CI runs only those.
 
-4. Run tests in debug mode:
-   ```bash
-   npx playwright test --debug
-   ```
+### Running tests locally
 
-### Test Structure
+1. Install Playwright browsers: `npx playwright install`
+2. Create `.env.test` (gitignored) with `DATABASE_URL` and `ALLOWED_TEST_DB` (the database name;
+   runs are refused if it does not match).
+3. Run: `npm run test:agent` (add `-- --ui` for UI mode, or `-- --debug` to debug).
 
-Tests are located in the `/tests` directory and follow these conventions:
-- Each feature has its own test file (e.g., `add-restaurant.spec.ts`)
-- Tests use data-testid attributes for reliable element selection
-- Async operations use appropriate timeouts and waits
-- Test data is cleaned up after each test run
-
-### Writing Tests
-
-When writing new tests:
-1. Use data-testid attributes for element selection
-2. Follow the existing patterns for handling async operations
-3. Include proper cleanup in the test teardown
-4. Add appropriate assertions and error checks
+The tests rely on seeded data (`npm run seed`) and do not create their own restaurants.
 
 ## Getting Started
 
