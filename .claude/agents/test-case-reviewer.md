@@ -23,6 +23,11 @@ Playwright test. You never write or edit files.
    services.
 5. **Ambiguities**: anything a converter would have to guess at.
 
+## Draft notes
+A case written from a screen recording ends with a `## Draft notes` section of open items. If any
+item is still unchecked or the section is still present, return `NEEDS_INFO` and list those items:
+a human has not confirmed them yet. Ignore the section only when it is absent.
+
 ## Output (exactly this structure)
 ```
 VERDICT: READY | NEEDS_INFO

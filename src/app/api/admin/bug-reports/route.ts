@@ -47,3 +47,29 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: 'Failed to update bug report status' }, { status: 500 });
   }
 } 
+
+export async function DELETE(req: Request) {
+  // Verify admin access
+  const session = await verifyAdminCustom();
+  if (session) {
+    return session;
+  }
+
+  try {
+    // The admin page sends { id } in the body; ?id= is accepted too (like /api/admin/reports).
+    const { searchParams } = new URL(req.url);
+    const body = await req.json().catch(() => ({}));
+    const id = searchParams.get('id') ?? body?.id;
+    if (!id || typeof id !== 'string') {
+      return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+    }
+    await prisma.bugReport.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    // Prisma P2025: the record to delete does not exist
+    if ((error as { code?: string }).code === 'P2025') {
+      return NextResponse.json({ error: 'Bug report not found' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Failed to delete bug report' }, { status: 500 });
+  }
+}
