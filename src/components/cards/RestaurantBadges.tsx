@@ -131,7 +131,7 @@ export default function RestaurantBadges({ restaurant }: { restaurant: Restauran
           <span className="text-stone-800">{'$'.repeat(priceLevel)}</span>
           <span className="text-stone-300">{'$'.repeat(3 - priceLevel)}</span>
         </span>
-        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full border text-teal-700 bg-white border-teal-200">
+        <span data-testid="restaurant-cuisine-badge" className="text-xs font-semibold px-2.5 py-0.5 rounded-full border text-teal-700 bg-white border-teal-200">
           {formatCuisineName(restaurant.cuisineType)}
         </span>
       </div>

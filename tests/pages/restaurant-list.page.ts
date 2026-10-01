@@ -14,6 +14,10 @@ export class RestaurantListPage {
   readonly noResults: Locator;
   readonly loadingSection: Locator;
   readonly hasMoreSpinner: Locator;
+  readonly filtersButton: Locator;
+  readonly filtersPanel: Locator;
+  readonly cuisineSelect: Locator;
+  readonly cuisineBadges: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -23,6 +27,21 @@ export class RestaurantListPage {
     this.noResults = page.locator('[data-testid="restaurant-list-no-results"]');
     this.loadingSection =page.locator('[data-testid="restaurant-list-loading-section"]');
     this.hasMoreSpinner = page.locator('[data-testid="restaurant-list-has-more-spinner"]');
+    this.filtersButton = page.locator('[data-testid^="filters-button"]:visible');
+    this.filtersPanel = page.locator('[data-testid="filters-panel"]');
+    this.cuisineSelect = page.locator('[data-testid="cuisine-select"]');
+    this.cuisineBadges = this.resultCards.locator('[data-testid="restaurant-cuisine-badge"]');
+  }
+
+  /** Opens the filters panel using whichever filters button (desktop or mobile) is visible. */
+  async openFilters(): Promise<void> {
+    await this.filtersButton.click();
+    await expect(this.filtersPanel).toBeVisible();
+  }
+
+  /** Selects a cuisine in the filters panel by its visible label. */
+  async selectCuisine(label: string): Promise<void> {
+    await this.cuisineSelect.selectOption({ label });
   }
 
   async goto(): Promise<void> {

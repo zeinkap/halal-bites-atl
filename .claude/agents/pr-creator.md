@@ -24,7 +24,7 @@ converter's report, the reviewer's report, and the list of files to commit.
 5. Open a **draft** pull request against the repo's default branch with
    `mcp__github__create_pull_request` (`draft: true`). The body includes: the manual test case
    (title, ID), the traceability table, reused vs. created files, reviewer verdict including the
-   3x flake check result, and anything a human should look at. End the body with the attribution
+   5x flake check result (`--retries=0`, with the reviewer's RAW_SUMMARY line), and anything a human should look at. End the body with the attribution
    line from the session's system reminder.
 6. Never merge, never mark ready for review, never push to any other branch.
 

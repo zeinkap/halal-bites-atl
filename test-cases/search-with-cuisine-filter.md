@@ -1,29 +1,30 @@
-# Search and cuisine filter work together
+# Cuisine filter shows only restaurants of the selected cuisine
 
 - **ID:** TC-FILTER-001
-- **Area:** Search, Filters
+- **Area:** Filters
 - **Priority:** Medium
 - **Admin required:** No
 
 ## Preconditions
-The app is running. At least one Middle Eastern restaurant whose name contains "Jerusalem" exists
-in the seed data ("Jerusalem Bakery & Grill"), and at least one restaurant with a different
-cuisine exists.
+The app is running with the seed data. At least one Mediterranean restaurant exists
+("Jerusalem Bakery & Grill") and at least one restaurant of another cuisine exists
+("Bismillah Cafe", Bangladeshi). No search term and no other filter is applied.
 
 ## Test data
-- Search term: `jerusalem`
-- Cuisine filter: Middle Eastern
+- Cuisine filter: Mediterranean
 
 ## Steps
 1. Go to the homepage.
-2. Type "jerusalem" in the search bar.
-3. Open the filters panel.
-4. Select "Mediterranean" in the cuisine filter.
+2. Open the filters panel.
+3. Select "Mediterranean" in the cuisine filter.
 
 ## Expected result
-Every restaurant shown has a name, cuisine or address containing "jerusalem" AND has the cuisine
-"Mediterranean". At least one result ("Jerusalem Bakery & Grill") is shown, and restaurants of
-other cuisines are not shown.
+After step 3, only Mediterranean restaurants are shown:
+- Every restaurant card in the list, including any that load as you scroll, displays the cuisine
+  "Mediterranean".
+- At least one card is shown ("Jerusalem Bakery & Grill", which appears as a single card for all
+  of its locations).
+- Restaurants of other cuisines, for example "Bismillah Cafe", are not shown.
 
 ## Actual result
-Only one Mediterranean restaurant is shown.
+N/A - new coverage.

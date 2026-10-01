@@ -32,9 +32,13 @@ If any check fails, return FAIL now. **Do not execute tests when Phase 1 fails.*
 ## Phase 2: execution (only after Phase 1 passes)
 1. Confirm the guard: `.env.test` exists (the config always loads it and runs the guard). Never print its contents or
    any connection string. If `.env.test` is missing, return `FAIL` with `BLOCKED: .env.test missing`.
-2. Run `npm run test:agent -- <spec> --reporter=line`. If a dev server is already running on
+2. Run `npm run test:agent -- <spec> --retries=0 --reporter=line`. If a dev server is already running on
    port 3000, stop and report it: an existing server may be connected to a different database.
-3. If it passes, run the flake check: `npm run test:agent -- <spec> --repeat-each=3 --reporter=line`.
+3. If it passes, run the flake check: `npm run test:agent -- <spec> --repeat-each=5 --retries=0 --reporter=line`.
+   `--retries=0` is required: retries (CI uses 2) hide flakiness by letting a failed attempt pass
+   on a rerun. All 5 repeats must pass; any failure is a FAIL, even if the test passed once.
+   Copy the Playwright summary line verbatim (e.g. `5 passed (14.2s)`) into RAW_SUMMARY; do not
+   report a count you did not see in the output.
 4. On failure, read the error, trace and screenshot paths, work out whether it is a test bug, a
    selector problem or an app bug, and say which.
 
@@ -44,7 +48,8 @@ VERDICT: PASS | FAIL
 
 PHASE1: PASS | FAIL
 PHASE2: PASS | FAIL | NOT_RUN
-FLAKE_CHECK: 3/3 | <n>/3 | NOT_RUN
+FLAKE_CHECK: 5/5 | <n>/5 | NOT_RUN
+RAW_SUMMARY: <verbatim Playwright summary line of the flake run, or NOT_RUN>
 
 ISSUES:
 1. [file:line] <what is wrong> -> <the concrete fix>
