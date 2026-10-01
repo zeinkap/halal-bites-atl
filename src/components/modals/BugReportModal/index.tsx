@@ -250,6 +250,7 @@ export default function BugReportModal({ isOpen, onClose }: BugReportModalProps)
                     {/* Advanced Fields Toggle */}
                     <button
                       type="button"
+                      data-testid="bug-report-toggle-details"
                       onClick={() => setShowAdvancedFields(!showAdvancedFields)}
                       className="flex items-center text-base text-gray-600 hover:text-gray-900 focus:outline-none group mb-2"
                     >
