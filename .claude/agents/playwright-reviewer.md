@@ -32,9 +32,14 @@ If any check fails, return FAIL now. **Do not execute tests when Phase 1 fails.*
 ## Phase 2: execution (only after Phase 1 passes)
 1. Confirm the guard: `.env.test` exists (the config always loads it and runs the guard). Never print its contents or
    any connection string. If `.env.test` is missing, return `FAIL` with `BLOCKED: .env.test missing`.
-2. Run `npm run test:agent -- <spec> --retries=0 --reporter=line`. If a dev server is already running on
-   port 3000, stop and report it: an existing server may be connected to a different database.
-3. If it passes, run the flake check: `npm run test:agent -- <spec> --repeat-each=5 --retries=0 --reporter=line`.
+2. Free port 3000 first: run `scripts/free-port.sh 3000`. Playwright never reuses a running
+   server (it could be connected to a different database than the one the guard checked), so a
+   leftover `next dev` would fail the run. The script stops whatever listens there and prints its
+   pid and process name; copy that line into NOTES. Do this automatically, without asking. If it
+   exits non-zero, return `FAIL` with `BLOCKED: port 3000 could not be freed`. Run it again before
+   the flake check in step 3, since a server from the previous run may still be shutting down.
+   Then run `npm run test:agent -- <spec> --retries=0 --reporter=line`.
+3. If it passes, run `scripts/free-port.sh 3000` again, then the flake check: `npm run test:agent -- <spec> --repeat-each=5 --retries=0 --reporter=line`.
    `--retries=0` is required: retries (CI uses 2) hide flakiness by letting a failed attempt pass
    on a rerun. All 5 repeats must pass; any failure is a FAIL, even if the test passed once.
    Copy the Playwright summary line verbatim (e.g. `5 passed (14.2s)`) into RAW_SUMMARY; do not
