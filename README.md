@@ -117,7 +117,6 @@ This information is visible in the restaurant cards and list, and can be set whe
   - Tailwind CSS for styling
   - React Toastify for notifications
   - Heroicons for icons
-  - NextAuth.js for authentication
 
 - **Backend:**
   - Next.js API routes
@@ -126,56 +125,31 @@ This information is visible in the restaurant cards and list, and can be set whe
   - Cloudinary for image storage
   - Redis (Upstash) for caching
   - Nodemailer with SendGrid for email notifications
-  - Google OAuth for authentication
 
 ## Testing
 
-- **End-to-End Testing:**
-  - Playwright for E2E testing
-  - Test coverage for critical user flows:
-    - Adding new restaurants
-    - Handling duplicate restaurant submissions
-    - Form validation
-    - Toast notifications
-    - Search functionality
+End-to-end tests use Playwright and are generated from manual test cases by a multi-agent
+orchestrator (see `.claude/agents/`, `.claude/commands/convert-test.md` and `test-cases/README.md`).
 
-### Running Tests
+Current coverage (search): searching by name, and the no-results state with clearing the search.
 
-1. Install Playwright browsers:
-   ```bash
-   npx playwright install
-   ```
+### Adding a test
 
-2. Run all tests:
-   ```bash
-   npm run test
-   ```
+1. Write a manual test case in `test-cases/` following `test-cases/_template.md`.
+2. In Claude Code, run `/convert-test test-cases/<case>.md`. The agents review the case, write the
+   spec (reusing page objects in `tests/pages/` and helpers in `tests/utils/`), review and run it, and
+   open a draft PR.
 
-3. Run tests with UI mode:
-   ```bash
-   npm run test:ui
-   ```
+Generated tests are tagged `@orchestrated`; CI runs only those.
 
-4. Run tests in debug mode:
-   ```bash
-   npx playwright test --debug
-   ```
+### Running tests locally
 
-### Test Structure
+1. Install Playwright browsers: `npx playwright install`
+2. Run `cp .env.test.example .env.test` (gitignored), then set `DATABASE_URL` and `ALLOWED_TEST_DB`
+   (the database name; runs are refused if it does not match).
+3. Run: `npm run test:agent` (add `-- --ui` for UI mode, or `-- --debug` to debug).
 
-Tests are located in the `/tests` directory and follow these conventions:
-- Each feature has its own test file (e.g., `add-restaurant.spec.ts`)
-- Tests use data-testid attributes for reliable element selection
-- Async operations use appropriate timeouts and waits
-- Test data is cleaned up after each test run
-
-### Writing Tests
-
-When writing new tests:
-1. Use data-testid attributes for element selection
-2. Follow the existing patterns for handling async operations
-3. Include proper cleanup in the test teardown
-4. Add appropriate assertions and error checks
+The tests rely on seeded data (`npm run seed`) and do not create their own restaurants.
 
 ## Getting Started
 
@@ -213,11 +187,7 @@ When writing new tests:
      SMTP_PASS="your_sendgrid_api_key"
      SMTP_FROM="your_verified_sender@yourdomain.com"
 
-     # Authentication
-     GOOGLE_CLIENT_ID="your_google_oauth_client_id"
-     GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
-     NEXTAUTH_URL="http://localhost:3000"
-     NEXTAUTH_SECRET="your_nextauth_secret"
+     # Admin (see "Custom Admin Authentication" below for ADMIN_USERS / ADMIN_PASSWORDS)
      NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
      ```
 
@@ -263,11 +233,7 @@ SMTP_USER="apikey"
 SMTP_PASS="your_sendgrid_api_key"
 SMTP_FROM="your_verified_sender@yourdomain.com"
 
-# Authentication
-GOOGLE_CLIENT_ID="your_google_oauth_client_id"
-GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your_nextauth_secret"
+# Admin (see "Custom Admin Authentication" below for ADMIN_USERS / ADMIN_PASSWORDS)
 NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
 ```
 

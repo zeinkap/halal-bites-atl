@@ -7,8 +7,9 @@ Next.js + Prisma (Postgres) app. Playwright tests live in `tests/`.
 - Page objects: `tests/pages/<name>.page.ts`, one class per page or component, locators as
   readonly properties, actions as methods, no assertions on unrelated pages. Created only when
   no existing one fits.
-- Helpers: `tests/utils/test-helpers.ts` (flat exported functions with JSDoc), test data in
-  `tests/utils/test-data.ts`. Search these before writing anything new.
+- Helpers: shared code goes in `tests/utils/` (flat exported functions with JSDoc, e.g. a new
+  `test-helpers.ts` for data setup or common actions; `db-guard.ts` is already there). Search
+  `tests/utils/` and `tests/pages/` before writing anything new.
 - Selectors: `data-testid` first. Some testids appear twice (desktop and mobile layouts), so
   scope to the visible one. If a testid is missing, add it to the component in `src/` rather than
   using brittle CSS or text selectors.
@@ -19,6 +20,6 @@ Next.js + Prisma (Postgres) app. Playwright tests live in `tests/`.
 - Test data is created through the API with unique names and deleted in `afterEach`.
 - Admin routes need an `admin_session` cookie (see `src/middleware.ts`); only build an admin login
   helper when a test case needs it.
-- Agent runs use `npm run test:agent`, which loads `.env.test` and refuses to run unless the
-  database name equals `ALLOWED_TEST_DB` (`tests/utils/db-guard.ts`). Never print or commit
-  connection strings or any `.env*` file.
+- Playwright (`npm run test:agent` or `npx playwright test`) always loads `.env.test` and refuses
+  to run unless the database name equals `ALLOWED_TEST_DB` (`tests/utils/db-guard.ts`). Never
+  print or commit connection strings or any `.env*` file.

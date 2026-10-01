@@ -22,9 +22,11 @@ step), an expected result, preconditions, test data, and a stated admin requirem
 
 ## Running the generated tests
 `npm run test:agent` runs Playwright against the database in `.env.test`. Create that file
-(it is gitignored) with:
+(it is gitignored) from the template and fill in the values:
 
 ```
-DATABASE_URL=<your test database connection string>
-ALLOWED_TEST_DB=<the database name; runs are refused if it does not match>
+cp .env.test.example .env.test
 ```
+
+`ALLOWED_TEST_DB` is the database name; runs are refused if it does not match the name in
+`DATABASE_URL`.

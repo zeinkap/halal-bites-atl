@@ -59,18 +59,6 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin'
-          },
-          {
-            key: 'Set-Cookie',
-            value: '__Host-next-auth.csrf-token=*; Path=/; Secure; HttpOnly; SameSite=Lax'
-          },
-          {
-            key: 'Set-Cookie',
-            value: '__Secure-next-auth.callback-url=*; Path=/; Secure; HttpOnly; SameSite=Lax'
-          },
-          {
-            key: 'Set-Cookie',
-            value: '__Secure-next-auth.session-token=*; Path=/; Secure; HttpOnly; SameSite=Lax'
           }
         ]
       }

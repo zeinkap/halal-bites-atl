@@ -12,7 +12,7 @@ first for the conventions.
 1. **Search before writing.** List and read `tests/`, `tests/pages/`, `tests/utils/` and the
    existing specs. Look for a page object, helper, or test-data builder that already does what
    you need. Reuse it as-is. Only when nothing fits, create it: a page object in
-   `tests/pages/<name>.page.ts`, or a helper appended to `tests/utils/test-helpers.ts` with JSDoc.
+   `tests/pages/<name>.page.ts`, or a helper in `tests/utils/` (e.g. `test-helpers.ts`, created if it does not exist yet) with JSDoc.
    Never change the behavior of existing helpers; extend them backward-compatibly.
 2. **Ground selectors in `src/`.** Use the `data-testid` values from the reviewer's
    APP_FINDINGS and verify them in the components. If a testid appears in both desktop and mobile
