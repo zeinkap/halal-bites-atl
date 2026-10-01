@@ -117,7 +117,6 @@ This information is visible in the restaurant cards and list, and can be set whe
   - Tailwind CSS for styling
   - React Toastify for notifications
   - Heroicons for icons
-  - NextAuth.js for authentication
 
 - **Backend:**
   - Next.js API routes
@@ -126,7 +125,6 @@ This information is visible in the restaurant cards and list, and can be set whe
   - Cloudinary for image storage
   - Redis (Upstash) for caching
   - Nodemailer with SendGrid for email notifications
-  - Google OAuth for authentication
 
 ## Testing
 
@@ -189,11 +187,7 @@ The tests rely on seeded data (`npm run seed`) and do not create their own resta
      SMTP_PASS="your_sendgrid_api_key"
      SMTP_FROM="your_verified_sender@yourdomain.com"
 
-     # Authentication
-     GOOGLE_CLIENT_ID="your_google_oauth_client_id"
-     GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
-     NEXTAUTH_URL="http://localhost:3000"
-     NEXTAUTH_SECRET="your_nextauth_secret"
+     # Admin (see "Custom Admin Authentication" below for ADMIN_USERS / ADMIN_PASSWORDS)
      NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
      ```
 
@@ -239,11 +233,7 @@ SMTP_USER="apikey"
 SMTP_PASS="your_sendgrid_api_key"
 SMTP_FROM="your_verified_sender@yourdomain.com"
 
-# Authentication
-GOOGLE_CLIENT_ID="your_google_oauth_client_id"
-GOOGLE_CLIENT_SECRET="your_google_oauth_client_secret"
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your_nextauth_secret"
+# Admin (see "Custom Admin Authentication" below for ADMIN_USERS / ADMIN_PASSWORDS)
 NEXT_PUBLIC_ADMIN_EMAIL="your_admin_email@domain.com"
 ```
 
