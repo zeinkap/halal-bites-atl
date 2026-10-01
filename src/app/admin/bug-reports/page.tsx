@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 import { Button } from '../../../components/ui/Button';
 import { Badge } from '../../../components/ui/Badge';
 
@@ -76,12 +77,19 @@ export default function AdminBugReportsPage() {
 
   // Bulk actions
   const bulkAction = async (action: 'resolved'|'rejected'|'delete') => {
+    let failed = 0;
     for (const id of selected) {
-      if (action === 'delete') {
-        await fetch(`/api/admin/bug-reports`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      } else {
-        await fetch(`/api/admin/bug-reports`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status: action }) });
+      try {
+        const response = action === 'delete'
+          ? await fetch(`/api/admin/bug-reports`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+          : await fetch(`/api/admin/bug-reports`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status: action }) });
+        if (!response.ok) failed++;
+      } catch {
+        failed++;
       }
+    }
+    if (failed > 0) {
+      toast.error(`${failed} of ${selected.length} bug report${selected.length === 1 ? '' : 's'} could not be updated`);
     }
     setSelected([]);
     fetchBugReports();

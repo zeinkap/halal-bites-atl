@@ -178,7 +178,7 @@ export async function POST(request: Request) {
     console.log('Email sent successfully');
 
     // Save bug report to database (prisma.bugReport is the correct accessor for the BugReport model)
-    await prisma.bugReport.create({
+    const bugReport = await prisma.bugReport.create({
       data: {
         title,
         description,
@@ -190,7 +190,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ message: 'Bug report submitted successfully' });
+    return NextResponse.json({ message: 'Bug report submitted successfully', id: bugReport.id });
   } catch (error) {
     const customError = error as CustomError;
     console.error('Detailed error in bug report submission:', {
