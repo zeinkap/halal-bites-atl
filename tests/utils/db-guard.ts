@@ -2,8 +2,8 @@
  * Safety guard for agent-driven test runs.
  *
  * Tests create and delete real rows through the API, so a run must never point at an
- * unintended database. When TEST_ENV=1 (npm run test:agent), the database name parsed from
- * DATABASE_URL has to equal ALLOWED_TEST_DB (set in the gitignored .env.test).
+ * unintended database. playwright.config.ts calls this on every run: the database name parsed
+ * from DATABASE_URL has to equal ALLOWED_TEST_DB (set in the gitignored .env.test).
  */
 export function getDatabaseName(databaseUrl: string): string {
   try {

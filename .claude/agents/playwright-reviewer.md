@@ -9,7 +9,7 @@ You review Playwright code produced by the converter. You never edit files; you 
 You are given the manual test case, the converter's report, and the list of changed files.
 
 ## Phase 1: static review (always first)
-Run `npx tsc --noEmit`, `npx eslint <changed files>` and `TEST_ENV=1 npx playwright test <spec> --list`
+Run `npx tsc --noEmit`, `npx eslint <changed files>` and `npx playwright test <spec> --list`
 (the last one only lists tests; it must not run them).
 Then read the changed files and check:
 1. **Traceability**: every manual step and expected result maps to real code, with nothing
@@ -25,12 +25,12 @@ Then read the changed files and check:
 5. **Data hygiene**: unique names, cleanup in `afterEach` that also runs on failure, no
    dependence on pre-existing rows.
 6. **Safety**: no secrets or connection strings in any changed file, `.env*` untouched, and
-   `playwright.config.ts` still runs `assertAllowedTestDatabase` when `TEST_ENV=1`.
+   `playwright.config.ts` still calls `assertAllowedTestDatabase()` unconditionally.
 
 If any check fails, return FAIL now. **Do not execute tests when Phase 1 fails.**
 
 ## Phase 2: execution (only after Phase 1 passes)
-1. Confirm the guard: `.env.test` exists and `TEST_ENV=1` is used. Never print its contents or
+1. Confirm the guard: `.env.test` exists (the config always loads it and runs the guard). Never print its contents or
    any connection string. If `.env.test` is missing, return `FAIL` with `BLOCKED: .env.test missing`.
 2. Run `npm run test:agent -- <spec> --reporter=line`. If a dev server is already running on
    port 3000, stop and report it: an existing server may be connected to a different database.
