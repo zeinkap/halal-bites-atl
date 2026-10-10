@@ -11,7 +11,6 @@ export class NearMePage {
   readonly page: Page;
   readonly radiusSelect: Locator;
   readonly nearMeButton: Locator;
-  readonly confirmDialog: Locator;
   readonly confirmUseButton: Locator;
   readonly chip: Locator;
   readonly clearButton: Locator;
@@ -22,7 +21,6 @@ export class NearMePage {
     this.page = page;
     this.radiusSelect = page.locator('[data-testid="radius-select"]:visible');
     this.nearMeButton = page.locator('[data-testid="location-search-button"]:visible');
-    this.confirmDialog = page.getByRole('dialog').filter({ has: page.locator('[data-testid="location-confirm-use"]') });
     this.confirmUseButton = page.locator('[data-testid="location-confirm-use"]');
     this.chip = page.locator('[data-testid="near-me-chip"]:visible');
     this.clearButton = page.locator('[data-testid="clear-near-me-button"]:visible');
