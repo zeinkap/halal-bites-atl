@@ -18,12 +18,20 @@ types below, and never do an agent's job yourself.
    - `READY`: continue, and carry its APP_FINDINGS and ASSUMPTIONS forward.
 3. **Agent 2: `playwright-converter`.** Pass the case, APP_FINDINGS and ASSUMPTIONS.
 4. **Agent 3: `playwright-reviewer`.** Pass the case, the converter report and changed files.
-   - `PASS`: go to step 5.
+   - `PASS`: verify the report is complete before going on. It must contain `FLAKE_CHECK: 5/5`
+     and a `RAW_SUMMARY:` line holding a verbatim Playwright summary such as `5 passed (7.7s)`.
+     If either is missing or says `NOT_RUN`, do NOT continue: send the reviewer a follow-up asking
+     for the missing field (re-running the flake check if it was skipped), and only go on once the
+     report has both. A PASS without a summary line it can show is incomplete.
    - `FAIL`: send the numbered ISSUES back to `playwright-converter` (with the case and its
      previous report), then re-run `playwright-reviewer`. **Maximum 3 fix rounds.**
    - Still `FAIL` after round 3, or reviewer says `BLOCKED`: stop and escalate. Show the last
      reviewer report, the files changed so far, and what you think the blocker is. Do not open a PR.
-5. **Agent 4: `pr-creator`.** Pass the case, converter report, reviewer report and file list.
+5. **Agent 4: `pr-creator`.** Pass the case, the converter's final report, the reviewer's final
+   (PASS) report and the file list. Pass both reports **verbatim**: copy them into the prompt
+   inside fenced blocks, unedited, never summarized or reworded. The reports carry fields the PR
+   body needs (`FLAKE_CHECK`, `RAW_SUMMARY`, the traceability table), and a paraphrase drops them.
+   Use the report from the last round only.
 
 ## Rules
 - Run agents strictly in sequence; each depends on the previous output.
