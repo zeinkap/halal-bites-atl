@@ -117,7 +117,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
         <div className="text-xs text-stone-500 flex items-center justify-center gap-2 flex-wrap">
           {showingNearMe && !locationError && (
             <>
-              <span className="text-emerald-700 font-medium flex items-center gap-1">
+              <span className="text-emerald-700 font-medium flex items-center gap-1" data-testid="near-me-chip">
                 <MapPinIcon className="h-4 w-4" />
                 Within {radiusMiles === 'all' ? 'all distances' : `${radiusMiles} mi`}
               </span>
@@ -127,6 +127,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
                 onClick={handleClearNearMe}
                 className="px-2 py-1"
                 aria-label="Clear Near Me"
+                data-testid="clear-near-me-button"
                 title="Show all restaurants"
               >
                 <XMarkIcon className="h-4 w-4" />
@@ -236,11 +237,11 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
             <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
               {showingNearMe && !locationError && (
                 <>
-                  <span className="text-emerald-700 font-medium flex items-center gap-1">
+                  <span className="text-emerald-700 font-medium flex items-center gap-1" data-testid="near-me-chip">
                     <MapPinIcon className="h-4 w-4" />
                     Within {radiusMiles === 'all' ? 'all' : `${radiusMiles} mi`}
                   </span>
-                  <Button variant="outline" size="sm" onClick={handleClearNearMe} className="px-2 py-1" aria-label="Clear Near Me">
+                  <Button variant="outline" size="sm" onClick={handleClearNearMe} className="px-2 py-1" aria-label="Clear Near Me" data-testid="clear-near-me-button">
                     <XMarkIcon className="h-4 w-4" />
                   </Button>
                 </>
