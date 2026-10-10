@@ -1,31 +1,60 @@
 ---
-description: Turn a screen recording into a draft manual test case, confirm it with you, then run the convert-test pipeline
-argument-hint: <path to recording (.mp4/.mov/.webm)> [what you were testing / what should happen]
+description: Turn a recording into a draft manual test case, with two human checkpoints, then run the convert-test pipeline
+argument-hint: <recordings/<name> folder from `npm run record`, or a video file> [what you were testing / what should happen]
 ---
 
 Run the recording-to-test pipeline on: $ARGUMENTS
 
-The first word is the video path; anything after it is the recorder's notes. Subagents don't share
-context, so pass the path and the notes to each agent. Use the Agent tool with the named subagent
-types, and never do an agent's job yourself.
+The first word is the input; anything after it is extra notes from the recorder. Subagents don't
+share context, so pass the folder path and the notes to each agent. Use the Agent tool with the
+named subagent types, and never do an agent's job yourself.
+
+## Input
+- **Best:** a folder made by `npm run record -- <name>` (`recordings/<name>/`), holding
+  `recording.webm`, `events.jsonl` (what was clicked and typed), `network.json`, `intake.md` and
+  `meta.json`. This is what makes the draft accurate.
+- **Fallback:** a bare video (`.mp4`, `.mov`, `.webm`, `.mkv`). There are no recorded actions, so
+  the agent reads everything from frames. Tell the user this is less accurate and that
+  `npm run record` is better. Create `recordings/<video name>/` and use it as the working folder.
 
 ## Pipeline
-1. **Check inputs.** The file must exist and be `.mp4`, `.mov`, `.webm` or `.mkv`. Run
-   `command -v ffmpeg ffprobe`; if either is missing, stop and tell the user to install ffmpeg
-   (macOS: `brew install ffmpeg`). Recordings stay in `recordings/` (gitignored): remind the user
-   not to move one into a tracked folder, and never `git add` a video or frames.
-2. **Agent 0: `recording-to-test-case`.** Pass the video path and notes. It writes
-   `test-cases/<slug>.md` and returns NEEDS_CONFIRMATION items.
-3. **Human checkpoint (always).** Show the user the draft path, a short summary of the steps and
-   the expected result, and every NEEDS_CONFIRMATION item. Then STOP and wait. Expected results are
-   inferred from a video, so never skip this, even if the list is empty. Apply the user's answers
-   to the file (or let them edit it) and delete the `## Draft notes` section once resolved.
-4. **Convert.** Once the user confirms, follow `.claude/commands/convert-test.md` exactly for the
+1. **Check inputs.** The folder or file must exist. Run `command -v ffmpeg ffprobe`; if either is
+   missing, stop and tell the user to install ffmpeg (macOS: `brew install ffmpeg`). Recordings
+   stay in `recordings/` (gitignored): never `git add` a video, frames or any recording file.
+2. **Intake (before anything is extracted).** Read `recordings/<name>/intake.md` and the user's
+   notes. The test case's expected result comes from the user, never from guessing, so if
+   **Expected outcome** is missing or `not provided`, ask the user now, in one message:
+   - What behavior are you testing?
+   - What should be true at the end (what the app should show or do)?
+   - What data does it rely on (seed restaurants, none)?
+   - Visitor or admin?
+   - Anything in the recording to ignore (mistakes, retries)?
+   Write the answers to `recordings/<name>/intake.md` in the same `- **Label:** value` format. If
+   the user says they don't know the expected outcome, write `not provided`; the draft will then
+   carry a note that it is inferred and unconfirmed.
+3. **Phase A: Agent `recording-to-test-case`, phase `observe`.** It writes
+   `recordings/<name>/observed.md`: a neutral timeline of what happened, with no expectations.
+4. **Checkpoint 1: confirm what happened.** Show the user the timeline table (condensed if long),
+   the start and end state, and every question. Ask them to correct anything wrong or missing.
+   Apply the corrections to `observed.md` (or let them edit the file). STOP and wait; do not
+   continue until they confirm. This is the cheap place to catch a misread click or typed value.
+5. **Phase B: Agent `recording-to-test-case`, phase `draft`.** It writes `test-cases/<slug>.md`
+   from the confirmed `observed.md` and `intake.md`, and returns NEEDS_CONFIRMATION items,
+   IMPLEMENTATION_HINTS and SUGGESTED_SPLITS.
+6. **Checkpoint 2: confirm the test case.** Show the user the draft path, the steps, the expected
+   result and its source (`intake` or `inferred`), every NEEDS_CONFIRMATION item and any suggested
+   splits. STOP and wait, even if the list is empty. Apply the answers and delete the
+   `## Draft notes` section once resolved.
+7. **Convert.** Once the user confirms, follow `.claude/commands/convert-test.md` exactly for the
    confirmed file: Agent 1 `test-case-reviewer`, Agent 2 `playwright-converter`, Agent 3
-   `playwright-reviewer` (max 3 fix rounds), Agent 4 `pr-creator`.
+   `playwright-reviewer` (max 3 fix rounds), Agent 4 `pr-creator`. Pass the converter the
+   IMPLEMENTATION_HINTS from step 5 along with the case.
 
 ## Rules
 - One line per stage as it completes, as in `/convert-test`.
-- If the recording agent reports that frames were too sparse or unreadable, say so and ask for a
-  shorter or higher-quality recording instead of guessing.
-- Finish with: the draft path, what the user confirmed, and then the `/convert-test` summary.
+- Two checkpoints are mandatory. Never skip either, and never carry on past a question the user
+  has not answered.
+- If the recording agent reports that frames were too sparse or unreadable, or that events and
+  video disagree in a way it cannot resolve, say so and ask for a re-recording instead of guessing.
+- Finish with: the draft path, what the user confirmed at each checkpoint, then the
+  `/convert-test` summary.

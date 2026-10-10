@@ -12,6 +12,7 @@
     "checkTSErrors": "tsc --noEmit",
     "seed": "ts-node prisma/seed.ts",
     "test:agent": "playwright test",
+    "record": "node scripts/record-flow.mjs",
     "clear-redis-cache": "ts-node scripts/clear-redis-cache.ts",
     "migrate-prod": "dotenv -e .env.production -- npx prisma migrate deploy",
     "backup-prod-db": "dotenv -e .env.production -- pg_dump \"$DATABASE_URL\" > prod-backup-$(date +%Y%m%d-%H%M%S).sql",
