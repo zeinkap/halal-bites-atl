@@ -42,9 +42,11 @@ named subagent types, and never do an agent's job yourself.
    from the confirmed `observed.md` and `intake.md`, and returns NEEDS_CONFIRMATION items,
    IMPLEMENTATION_HINTS and SUGGESTED_SPLITS.
 6. **Checkpoint 2: confirm the test case.** Show the user the draft path, the steps, the expected
-   result and its source (`intake` or `inferred`), every NEEDS_CONFIRMATION item and any suggested
-   splits. STOP and wait, even if the list is empty. Apply the answers and delete the
-   `## Draft notes` section once resolved.
+   result and its source (`intake` or `inferred`), the confidence summary (list every `low` row of
+   the Provenance table), the DUPLICATE_CHECK and DATA_CHECK results, and every question **with
+   its proposed default**. Tell them they can reply `accept defaults` to apply all the proposed
+   defaults, or answer individually. STOP and wait, even if there are no questions. Apply the
+   answers (or the defaults), then delete the whole `## Draft notes` section.
 7. **Convert.** Once the user confirms, follow `.claude/commands/convert-test.md` exactly for the
    confirmed file: Agent 1 `test-case-reviewer`, Agent 2 `playwright-converter`, Agent 3
    `playwright-reviewer` (max 3 fix rounds), Agent 4 `pr-creator`. Pass the converter the

@@ -29,12 +29,18 @@ and which API calls fired. That is what makes the draft accurate.
 The command works in two phases with a checkpoint after each:
 - **Observe:** an agent reads your actions, the video and the network log and writes
   `recordings/my-flow/observed.md`, a neutral timeline of what happened with no expectations.
-  You correct anything it got wrong.
+  It looks at frames taken right after every action (when a toast or dialog is on screen), checks
+  whether existing specs already cover the flow, and checks that any restaurants shown exist in
+  the seed data. You correct anything it got wrong.
 - **Draft:** it then writes the test case from the confirmed timeline and your intake answers.
-  The expected result comes from what you said, not from guessing. You confirm the draft, and
-  the normal pipeline below runs.
+  The expected result comes from what you said, not from guessing. The draft ends with a
+  provenance table (each step and expected result, where it came from, and how confident it is)
+  and questions that each carry a proposed default, so you can reply `accept defaults`. You
+  confirm the draft, and the normal pipeline below runs.
 
 Notes:
+- The recording shows a blue dot for the pointer and a red ring where you click, so frames can
+  show what was clicked. `--no-cursor` turns that off.
 - Options: `--url` (default `http://localhost:3000`), `--viewport 1280x720`, `--no-prompt`.
   Record at desktop width: the tests run in desktop Chrome, and the desktop and mobile layouts
   have different testids.
@@ -43,7 +49,8 @@ Notes:
   a login once and pass `--storage-state <file>` instead of typing a password on camera.
 - Recordings are gitignored (`recordings/`); they can contain personal data.
 - A bare video file still works (`/record-to-test path/to/video.mov`, needs `ffmpeg`:
-  `brew install ffmpeg`), but without the recorded actions it is less accurate.
+  `brew install ffmpeg`), but without the recorded actions it is less accurate. For a video
+  with no event log, `DENSE=1 scripts/extract-frames.sh <video>` samples more finely.
 
 ## Pipeline
 1. `test-case-reviewer` checks the case is complete enough to automate (`READY` / `NEEDS_INFO`).

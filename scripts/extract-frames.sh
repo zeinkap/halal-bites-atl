@@ -7,6 +7,9 @@
 #
 # A frame is kept when the screen changes (scene score > 0.01) or at least 2s passed since the
 # last kept frame, so quiet stretches are still sampled. The final frame is always included.
+# DENSE=1 samples more finely (scene score > 0.003, at least one frame per second), for a video
+# with no event log where small changes (a toast, a typed character) matter. Raise max_frames too.
+# For recordings made by `npm run record`, scripts/event-frames.mjs is more precise.
 # Writes frame_NNN.jpg (max 1280px wide) and index.tsv ("file<TAB>seconds"), in time order.
 # Requires ffmpeg and ffprobe (macOS: brew install ffmpeg). The video is only read, never changed.
 set -euo pipefail
@@ -26,14 +29,15 @@ done
 name="$(basename "${video%.*}")"
 out="${2:-recordings/.frames/$name}"
 max="${3:-40}"
+if [[ "${DENSE:-0}" == "1" ]]; then scene=0.003; interval=1; else scene=0.01; interval=2; fi
 
 duration="$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$video")"
 rm -rf "$out"
 mkdir -p "$out"
 
-# Main pass: scene changes, or >= 2s since the last kept frame. showinfo logs each frame's time.
+# Main pass: scene changes, or >= $interval s since the last kept frame. showinfo logs each frame's time.
 ffmpeg -v info -i "$video" \
-  -vf "select='isnan(prev_selected_t)+gt(scene,0.01)+gte(t-prev_selected_t,2)',scale='min(1280,iw)':-2,showinfo" \
+  -vf "select='isnan(prev_selected_t)+gt(scene,${scene})+gte(t-prev_selected_t,${interval})',scale='min(1280,iw)':-2,showinfo" \
   -fps_mode vfr -q:v 4 "$out/frame_%03d.jpg" 2> "$out/.ffmpeg.log" || {
   echo "ffmpeg failed; see $out/.ffmpeg.log" >&2
   exit 4

@@ -4,11 +4,13 @@
 // appear, and which API calls fired).
 //
 // Usage:  npm run record -- [name] [--url http://localhost:3000] [--viewport 1280x720]
-//                           [--storage-state file.json] [--no-prompt] [--headless]
+//                           [--storage-state file.json] [--no-prompt] [--no-cursor] [--headless]
 //
 // Start the app first, against the test database, so the data matches what tests will see:
 //   npx dotenv -e .env.test -e .env -- npm run dev
 // A browser window opens. Do the flow, then close the window (or press Enter in this terminal).
+// The video shows a blue dot for the pointer and a red ring where you click (--no-cursor to turn
+// that off), because a screen video of the page does not otherwise show the mouse.
 //
 // Output, in recordings/<name>/ (gitignored: it can contain personal data):
 //   recording.webm  screen video
@@ -29,10 +31,67 @@ import path from 'node:path';
 import readline from 'node:readline/promises';
 import { pathToFileURL } from 'node:url';
 
-/** Runs in every page. Reports user actions to Node through the __recEvent binding. */
-function pageScript() {
+/**
+ * Runs in every page. Reports user actions to Node through the __recEvent binding, and (unless
+ * disabled) draws a pointer dot and a click ring: Playwright's video shows the page only, not the
+ * mouse, so without these the frames cannot show where a click landed.
+ */
+function pageScript(opts) {
   if (window.__recInstalled) return;
   window.__recInstalled = true;
+  if (opts?.cursor) {
+    const mount = () => {
+      const base = { position: 'fixed', zIndex: '2147483647', pointerEvents: 'none', transform: 'translate(-50%, -50%)' };
+      const dot = document.createElement('div');
+      Object.assign(dot.style, base, {
+        width: '14px',
+        height: '14px',
+        borderRadius: '50%',
+        background: 'rgba(37, 99, 235, 0.85)',
+        border: '2px solid #fff',
+        boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.45)',
+        left: '-30px',
+        top: '-30px',
+      });
+      document.documentElement.appendChild(dot);
+      document.addEventListener(
+        'mousemove',
+        (e) => {
+          dot.style.left = e.clientX + 'px';
+          dot.style.top = e.clientY + 'px';
+        },
+        true,
+      );
+      document.addEventListener(
+        'mousedown',
+        (e) => {
+          dot.style.left = e.clientX + 'px';
+          dot.style.top = e.clientY + 'px';
+          const ring = document.createElement('div');
+          Object.assign(ring.style, base, {
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            border: '4px solid rgba(220, 38, 38, 0.9)',
+            left: e.clientX + 'px',
+            top: e.clientY + 'px',
+          });
+          document.documentElement.appendChild(ring);
+          const anim = ring.animate(
+            [
+              { opacity: 1, transform: 'translate(-50%, -50%) scale(0.6)' },
+              { opacity: 0, transform: 'translate(-50%, -50%) scale(1.6)' },
+            ],
+            { duration: 1100, easing: 'ease-out' },
+          );
+          anim.onfinish = () => ring.remove();
+        },
+        true,
+      );
+    };
+    if (document.documentElement) mount();
+    else document.addEventListener('DOMContentLoaded', mount);
+  }
   const send = (payload) => {
     try {
       window.__recEvent(payload);
@@ -174,7 +233,7 @@ const round = (n) => Math.round(n * 10) / 10;
  * wait for the human. Resolves with the output directory.
  */
 export async function record(options, drive) {
-  const { name, url, viewport, storageState, headless, outRoot = 'recordings', intake } = options;
+  const { name, url, viewport, storageState, headless, outRoot = 'recordings', intake, cursor = true } = options;
   const dir = path.join(outRoot, name);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
@@ -202,7 +261,7 @@ export async function record(options, drive) {
     }
     events.push(event);
   });
-  await context.addInitScript(pageScript);
+  await context.addInitScript(pageScript, { cursor });
 
   // Field NAMES only, never values (they can hold personal data).
   const bodyKeys = (req) => {
@@ -334,6 +393,7 @@ function parseArgs(argv) {
       opts.viewport = { width: w, height: h };
     } else if (a === '--storage-state') opts.storageState = argv[++i];
     else if (a === '--no-prompt') opts.prompt = false;
+    else if (a === '--no-cursor') opts.cursor = false;
     else if (a === '--headless') opts.headless = true;
     else if (a.startsWith('--')) throw new Error(`Unknown option ${a}`);
     else if (!opts.name) opts.name = a;
