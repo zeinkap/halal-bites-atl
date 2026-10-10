@@ -16,7 +16,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Half the cores (Playwright's own default): 2 on a public-repo runner (4 vCPU), 1 on a 2-vCPU
+  // private one. Safe in parallel because tests are read-only or use unique names (CLAUDE.md).
+  workers: '50%',
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
@@ -32,7 +34,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'dotenv -e .env.test -e .env -- npm run dev',
+    // CI serves the production build (`npm run build` runs first in the workflow): it is what ships,
+    // and starts without compiling pages on demand. Locally, run the dev server against .env.test.
+    command: process.env.CI ? 'npm run start' : 'dotenv -e .env.test -e .env -- npm run dev',
     url: 'http://localhost:3000',
     // Never reuse a running server: it could be connected to a different DB than the one the
     // guard verified.
