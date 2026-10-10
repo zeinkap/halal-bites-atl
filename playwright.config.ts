@@ -34,7 +34,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'dotenv -e .env.test -e .env -- npm run dev',
+    // CI serves the production build (`npm run build` runs first in the workflow): it is what ships,
+    // and starts without compiling pages on demand. Locally, run the dev server against .env.test.
+    command: process.env.CI ? 'npm run start' : 'dotenv -e .env.test -e .env -- npm run dev',
     url: 'http://localhost:3000',
     // Never reuse a running server: it could be connected to a different DB than the one the
     // guard verified.
