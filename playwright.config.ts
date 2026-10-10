@@ -16,7 +16,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Half the cores (Playwright's own default): 2 on a public-repo runner (4 vCPU), 1 on a 2-vCPU
+  // private one. Safe in parallel because tests are read-only or use unique names (CLAUDE.md).
+  workers: '50%',
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
