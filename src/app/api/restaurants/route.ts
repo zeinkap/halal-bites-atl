@@ -5,6 +5,8 @@ import { Redis } from '@upstash/redis';
 
 const CACHE_TTL = 60 * 5; // 5 minutes
 const RESTAURANTS_CACHE_KEY = 'restaurants:all';
+// Let browsers and the CDN reuse the full list for 5 min and serve it stale while refreshing.
+const LIST_CACHE_CONTROL = 'public, s-maxage=300, stale-while-revalidate=600';
 
 // Only initialise Redis when valid credentials are present so a missing/empty
 // env var doesn't throw at module-load time and silently break the entire route.
@@ -69,12 +71,11 @@ export async function GET(req: NextRequest) {
     if (!lat && !lng) {
       const cachedData = await redisGet(cacheKey);
       if (cachedData) {
-        return NextResponse.json(cachedData);
+        return NextResponse.json(cachedData, { headers: { 'Cache-Control': LIST_CACHE_CONTROL } });
       }
     }
 
     // If not in cache, get from database
-    await prisma.$connect();
     const whereClause = {
       status: 'approved',
       ...(featured === 'true' ? { isFeatured: true } : {}),
@@ -82,22 +83,21 @@ export async function GET(req: NextRequest) {
     const restaurants = await prisma.restaurant.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { comments: true }
-        },
-        comments: {
-          select: { rating: true }
-        }
-      }
     });
+
+    // Aggregate ratings in the database instead of loading every comment row.
+    const ratingStats = await prisma.comment.groupBy({
+      by: ['restaurantId'],
+      where: { restaurant: whereClause },
+      _count: { _all: true },
+      _avg: { rating: true },
+    });
+    const statsByRestaurant = new Map(ratingStats.map(s => [s.restaurantId, s]));
 
     // Transform the data to include only the fields needed for the API response
     const restaurantsWithCommentCount = restaurants.map(restaurant => {
-      const avgRating =
-        restaurant.comments.length > 0
-          ? restaurant.comments.reduce((sum, c) => sum + c.rating, 0) / restaurant.comments.length
-          : null;
+      const stats = statsByRestaurant.get(restaurant.id);
+      const avgRating = stats?._avg.rating ?? null;
       return {
         id: restaurant.id,
         name: restaurant.name,
@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
         latitude: restaurant.latitude,
         longitude: restaurant.longitude,
         isFeatured: restaurant.isFeatured,
-        commentCount: restaurant._count.comments,
+        commentCount: stats?._count._all ?? 0,
         avgRating,
       };
     });
@@ -169,13 +169,14 @@ export async function GET(req: NextRequest) {
       await redisSet(cacheKey, result, CACHE_TTL);
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(
+      result,
+      lat && lng ? undefined : { headers: { 'Cache-Control': LIST_CACHE_CONTROL } },
+    );
   } catch (error) {
     console.error('Error fetching restaurants:', error);
     // Return an empty array instead of an error object to prevent frontend mapping errors
     return NextResponse.json([]);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -201,7 +202,6 @@ export async function POST(request: Request) {
     }
 
     // Reject if a restaurant with the same address already exists (case-insensitive)
-    await prisma.$connect();
     const existing = await prisma.restaurant.findFirst({
       where: {
         address: { equals: trimmedAddress, mode: 'insensitive' }

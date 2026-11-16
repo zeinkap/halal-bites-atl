@@ -7,22 +7,32 @@ import {
   StarIcon,
 } from '@heroicons/react/24/solid';
 import { ArrowTopRightOnSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import CommentModal from '../modals/CommentModal/index';
-import ReportModal from '../modals/ReportModal';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Card } from '../ui/Card';
 import RestaurantBadges, { AmenityRow, hasZabihaMeat, hasPartiallyHalalMeat } from './RestaurantBadges';
 import { formatDistanceMiles } from '@/utils/formatDistance';
 import DistanceBlock from './DistanceBlock';
 
+// Modals are only needed after a tap, so keep them out of the initial bundle.
+const CommentModal = dynamic(() => import('../modals/CommentModal/index'), { ssr: false });
+const ReportModal = dynamic(() => import('../modals/ReportModal'), { ssr: false });
+
 interface RestaurantCardProps {
   restaurant: Restaurant;
+  /** Preload the image; only for the first card, which is above the fold. */
+  priority?: boolean;
 }
 
 // Tier 1 — Headline halal-status badge (solid fill, the most important signal)
-export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant, priority = false }: RestaurantCardProps) {
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  // Mount each modal on first open and keep it, so its close transition still plays.
+  const [commentModalMounted, setCommentModalMounted] = useState(false);
+  const [reportModalMounted, setReportModalMounted] = useState(false);
+  if (isCommentModalOpen && !commentModalMounted) setCommentModalMounted(true);
+  if (isReportModalOpen && !reportModalMounted) setReportModalMounted(true);
   const [localRestaurant, setLocalRestaurant] = useState(restaurant);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -107,8 +117,8 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
               fill
               className={isFallbackLogo ? 'object-contain p-2 sm:p-6 opacity-60' : 'object-cover'}
               sizes="(max-width: 640px) 72px, 176px"
-              priority
-              quality={85}
+              priority={priority}
+              quality={75}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/images/logo.png';
               }}
@@ -347,19 +357,23 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
         </div>
       </Card>
 
-      <CommentModal
-        isOpen={isCommentModalOpen}
-        onClose={() => setIsCommentModalOpen(false)}
-        restaurantId={localRestaurant.id}
-        restaurantName={localRestaurant.name}
-        onCommentAdded={handleCommentAdded}
-      />
-      <ReportModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        restaurantId={localRestaurant.id}
-        restaurantName={localRestaurant.name}
-      />
+      {commentModalMounted && (
+        <CommentModal
+          isOpen={isCommentModalOpen}
+          onClose={() => setIsCommentModalOpen(false)}
+          restaurantId={localRestaurant.id}
+          restaurantName={localRestaurant.name}
+          onCommentAdded={handleCommentAdded}
+        />
+      )}
+      {reportModalMounted && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          restaurantId={localRestaurant.id}
+          restaurantName={localRestaurant.name}
+        />
+      )}
     </>
   );
 }

@@ -16,7 +16,9 @@ import RestaurantBadges, { AmenityRow } from './RestaurantBadges';
 import { locationLabel } from '@/utils/groupRestaurants';
 import { formatDistanceMiles, formatDriveTime, DRIVE_TIME_NOTE } from '@/utils/formatDistance';
 import DistanceBlock from './DistanceBlock';
-import CommentModal from '../modals/CommentModal/index';
+import dynamic from 'next/dynamic';
+
+const CommentModal = dynamic(() => import('../modals/CommentModal/index'), { ssr: false });
 
 const mapsUrlFor = (r: Restaurant) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name} ${r.address}`)}`;
@@ -109,10 +111,13 @@ export default function BrandCard({
   brandName,
   representative,
   locations,
+  priority = false,
 }: {
   brandName: string;
   representative: Restaurant;
   locations: Restaurant[];
+  /** Preload the image; only for the first card, which is above the fold. */
+  priority?: boolean;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentFor, setCommentFor] = useState<Restaurant | null>(null);
@@ -147,7 +152,8 @@ export default function BrandCard({
               fill
               className={isFallbackLogo ? 'object-contain p-2 sm:p-6 opacity-60' : 'object-cover'}
               sizes="(max-width: 640px) 72px, 176px"
-              quality={85}
+              priority={priority}
+              quality={75}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/images/logo.png';
               }}
