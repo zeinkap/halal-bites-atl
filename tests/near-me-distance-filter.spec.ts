@@ -31,7 +31,7 @@ test.describe('Search', () => {
     // Permission is granted only now so the on-load auto Near Me does not run before the baseline.
     await context.grantPermissions(['geolocation']);
 
-    // Step 2: Click "Near Me"; Step 3: click "Use my location" in the dialog
+    // Steps 2-3: Click "Near Me" (location already allowed, so no "Use my location" explainer)
     const response5 = await nearMe.searchNearMe(5);
 
     // Step 4: Chip shows "Within 5 mi" and the count is smaller than the unfiltered count
@@ -45,7 +45,7 @@ test.describe('Search', () => {
     await nearMe.selectRadius('3');
     await expect(nearMe.radiusSelect).toHaveValue('3');
 
-    // Step 6: Click "Near Me"; Step 7: click "Use my location"
+    // Steps 6-7: Click "Near Me"
     const response3 = await nearMe.searchNearMe(3);
 
     // Step 8: Chip shows "Within 3 mi" and the count is smaller than the unfiltered count
@@ -59,7 +59,7 @@ test.describe('Search', () => {
     await nearMe.selectRadius('10');
     await expect(nearMe.radiusSelect).toHaveValue('10');
 
-    // Step 10: Click "Near Me"; Step 11: click "Use my location"
+    // Steps 10-11: Click "Near Me"
     const response10 = await nearMe.searchNearMe(10);
 
     // Step 12: Chip shows "Within 10 mi" and the count is smaller than the unfiltered count

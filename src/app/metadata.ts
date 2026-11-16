@@ -33,7 +33,15 @@ export const metadata: Metadata = {
     icon: [
       { url: '/images/logo-transparent.png', type: 'image/png' }
     ],
-    shortcut: '/favicon.ico'
+    shortcut: '/favicon.ico',
+    // iOS "Add to Home Screen" icon (Android and desktop use the icons in app/manifest.ts).
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  // Launched from the iOS home screen, run full-screen without Safari's toolbars.
+  appleWebApp: {
+    capable: true,
+    title: 'Halal Bites',
+    statusBarStyle: 'default',
   },
   openGraph: {
     type: "website",

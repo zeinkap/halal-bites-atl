@@ -7,7 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { Restaurant } from '@/types';
 import { formatCuisineName } from '@/utils/formatCuisineName';
-import { formatDistanceMiles } from '@/utils/formatDistance';
+import { formatDistanceMiles, formatDriveTime } from '@/utils/formatDistance';
 
 /** The point Near Me results are measured from: the user's device location or a typed city/ZIP. */
 export type SearchCenter = { lat: number; lng: number; source: 'device' | 'place' };
@@ -348,6 +348,7 @@ export default function RestaurantMapView({
                   <div className="flex gap-2.5 overflow-x-auto snap-x snap-mandatory px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     {inView.map((r) => {
                       const distance = formatDistanceMiles(r.distance);
+                      const drive = formatDriveTime(r.distance);
                       const selected = r.id === selectedId;
                       return (
                         <div
@@ -372,7 +373,12 @@ export default function RestaurantMapView({
                         >
                           <p className="font-bold text-stone-900 text-sm leading-tight line-clamp-1">{r.name}</p>
                           <p className="mt-1 text-xs text-stone-500 flex items-center gap-1.5 flex-wrap">
-                            {distance && <span className="font-semibold text-emerald-700">{distance}</span>}
+                            {distance && (
+                              <span className="font-semibold text-emerald-700">
+                                {distance}
+                                {drive && <span className="font-normal text-stone-500"> ({drive.replace(' drive', '')})</span>}
+                              </span>
+                            )}
                             {distance && <span aria-hidden="true">·</span>}
                             <span>{formatCuisineName(r.cuisineType)}</span>
                             <span aria-hidden="true">·</span>

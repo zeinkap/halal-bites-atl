@@ -45,7 +45,7 @@ export class NearMePage {
 
   /**
    * Distance in miles of each rendered result card, in list order. Reads each card's first
-   * "X mi away" badge (a brand card shows its nearest location first); a card without one is NaN.
+   * "X mi" badge (a brand card shows its nearest location first); a card without one is NaN.
    */
   async resultDistancesMiles(): Promise<number[]> {
     return this.page.locator('[data-testid^="restaurant-list-item-"]').evaluateAll((cards) =>
@@ -75,13 +75,12 @@ export class NearMePage {
   }
 
   /**
-   * Clicks Near Me, confirms "Use my location" and returns the resulting /api/restaurants
-   * response for that radius in miles ('all' = "Any", which sends no radius).
+   * Clicks Near Me as a returning visitor (geolocation permission already granted, so there is no
+   * "Use your location?" explainer) and returns the resulting /api/restaurants response for that
+   * radius in miles ('all' = "Any", which sends no radius). Grant the permission first.
    */
   async searchNearMe(radiusMiles: number | 'all'): Promise<Response> {
     const radiusKm = radiusMiles === 'all' ? null : radiusMiles * 1.60934;
-    await this.nearMeButton.click();
-    await expect(this.confirmUseButton).toBeVisible();
     const responsePromise = this.page.waitForResponse(
       (res) => {
         const url = new URL(res.url());
@@ -94,11 +93,11 @@ export class NearMePage {
       },
       { timeout: RESULTS_TIMEOUT_MS },
     );
-    await this.confirmUseButton.click();
-    // The dialog must be fully gone, not merely invisible: a stuck, transparent dialog
-    // covers the page and makes the next click time out with no obvious cause.
+    await this.nearMeButton.click();
+    const response = await responsePromise;
+    // Location went straight through: the explainer never opened (it would have blocked the request).
     await expect(this.confirmDialog).toHaveCount(0);
-    return responsePromise;
+    return response;
   }
 
   /** Clicks the X on the chip and returns the unfiltered /api/restaurants response. */

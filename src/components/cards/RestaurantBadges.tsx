@@ -89,7 +89,7 @@ export default function RestaurantBadges({
   leading,
 }: {
   restaurant: Restaurant;
-  /** Rendered first in the price/cuisine row, e.g. the "2.7 mi away" distance badge. */
+  /** Rendered first in the price/cuisine row, e.g. the rating chip when distance takes its place by the name. */
   leading?: React.ReactNode;
 }) {
   const hasZabiha = hasZabihaMeat(restaurant);

@@ -18,15 +18,15 @@
 ## Steps
 1. Open the home page and note the restaurant count (121 restaurants).
 2. Click the "Near Me" button.
-3. In the "Use your location?" dialog, click "Use my location".
+3. No "Use your location?" dialog appears (location permission is already granted), so results load straight away.
 4. Wait for the results to load and note the "Within 5 mi" chip and the restaurant count.
 5. Open the Distance selector and choose "3 mi".
 6. Click the "Near Me" button.
-7. In the "Use your location?" dialog, click "Use my location".
+7. No "Use your location?" dialog appears (location permission is already granted), so results load straight away.
 8. Wait for the results to load and note the "Within 3 mi" chip and the restaurant count.
 9. Open the Distance selector and choose "10 mi".
 10. Click the "Near Me" button.
-11. In the "Use your location?" dialog, click "Use my location".
+11. No "Use your location?" dialog appears (location permission is already granted), so results load straight away.
 12. Wait for the results to load and note the "Within 10 mi" chip and the restaurant count.
 13. Click the X on the distance chip ("Clear Near Me").
 
