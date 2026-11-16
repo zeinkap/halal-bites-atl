@@ -84,7 +84,14 @@ export function hasPartiallyHalalMeat(r: Restaurant): boolean {
  * The tiered badge stack shared by single restaurant cards and grouped brand
  * cards: Tier 1 halal headline, Tier 2 price + cuisine, Tier 3 amenities.
  */
-export default function RestaurantBadges({ restaurant }: { restaurant: Restaurant }) {
+export default function RestaurantBadges({
+  restaurant,
+  leading,
+}: {
+  restaurant: Restaurant;
+  /** Rendered first in the price/cuisine row, e.g. the "2.7 mi away" distance badge. */
+  leading?: React.ReactNode;
+}) {
   const hasZabiha = hasZabihaMeat(restaurant);
   const hasPartiallyHalal = hasPartiallyHalalMeat(restaurant);
   const priceLevel =
@@ -123,6 +130,7 @@ export default function RestaurantBadges({ restaurant }: { restaurant: Restauran
 
       {/* Tier 2 — Price + Cuisine pills */}
       <div className="flex flex-wrap items-center gap-1.5">
+        {leading}
         <span
           title={priceTitle}
           aria-label={`Price: ${priceTitle}`}

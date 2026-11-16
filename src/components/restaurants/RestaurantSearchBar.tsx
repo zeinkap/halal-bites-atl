@@ -277,7 +277,7 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
         </div>
       </div>
 
-      {/* Secondary: search by name and filters */}
+      {/* Secondary: search by name. Filters open from the bottom bar (MobileBottomBar). */}
       <div className="flex flex-col gap-3">
         <div className="relative w-full">
           <input
@@ -309,22 +309,6 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
             </button>
           )}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-center gap-2 relative"
-          data-testid="filters-button-mobile"
-          type="button"
-        >
-          <AdjustmentsHorizontalIcon className="h-5 w-5" />
-          <span>Filters</span>
-          {activeFilterCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
       </div>
     </div>
   </>

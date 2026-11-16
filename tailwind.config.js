@@ -39,10 +39,16 @@ module.exports = {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
+        // Mobile bottom sheet (filters) slides up from the bottom edge.
+        'sheet-in': {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
+        },
       },
       animation: {
         'dialog-overlay-in': 'dialog-overlay-in 300ms ease-out',
         'dialog-panel-in': 'dialog-panel-in 300ms ease-out',
+        'sheet-in': 'sheet-in 250ms ease-out',
       },
     },
   },

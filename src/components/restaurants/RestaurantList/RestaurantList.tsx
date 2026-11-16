@@ -18,12 +18,18 @@ import BrandCard from '../../cards/BrandCard';
 import { groupRestaurants, type CardEntry } from '@/utils/groupRestaurants';
 import RestaurantResultsCount from '../RestaurantResultsCount';
 import QuickFilterChips from '../QuickFilterChips';
+import MobileBottomBar from '../MobileBottomBar';
+import { BottomSheet } from '../../ui/BottomSheet';
+import { useModalContext } from '../../ui/ModalContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
+import type { SearchCenter } from '../RestaurantMapView';
 
 // Leaflet must be loaded client-side only (uses browser APIs)
 const RestaurantMapView = dynamic(() => import('../RestaurantMapView'), {
   ssr: false,
   loading: () => (
-    <div className="w-full rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-center" style={{ height: '560px' }}>
+    <div className="w-full h-[560px] rounded-2xl border border-stone-200 bg-stone-50 flex items-center justify-center max-sm:fixed max-sm:inset-x-0 max-sm:top-0 max-sm:z-[45] max-sm:h-auto max-sm:rounded-none max-sm:border-0 max-sm:bottom-[calc(var(--bottom-bar-h)+env(safe-area-inset-bottom))]">
       <div className="flex flex-col items-center gap-3 text-stone-400">
         <div className="h-8 w-8 border-2 border-stone-300 border-t-teal-500 rounded-full animate-spin" />
         <span className="text-sm">Loading map…</span>
@@ -99,7 +105,14 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const [geocoding, setGeocoding] = useState(false);
   const [showCityZip, setShowCityZip] = useState(false);
   // Remember the last searched coordinates so changing the distance re-filters in place.
-  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
+  const lastCoordsRef = useRef<SearchCenter | null>(null);
+  // The same point as state, for the map's "you are here" / searched-place marker.
+  const [searchCenter, setSearchCenter] = useState<SearchCenter | null>(null);
+  const isMobile = useIsMobile();
+  const { setAddRestaurantOpen } = useModalContext();
+  // Phones show the map full-screen between the top edge and the bottom bar; the page behind
+  // it must not scroll.
+  useBodyScrollLock(isMobile && view === 'map');
 
   const handleSetSearchQuery = (q: string) => {
     if (setSearchQuery) {
@@ -252,8 +265,10 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   // Fetch + display restaurants near a given coordinate. Shared by the device-location
   // ("Near Me") flow, the city/ZIP fallback, and the mobile distance re-filter.
   // radiusOverride lets callers pass a just-chosen radius without waiting for state to settle.
-  const applyProximityResults = useCallback(async (latitude: number, longitude: number, radiusOverride?: string): Promise<boolean> => {
-    lastCoordsRef.current = { lat: latitude, lng: longitude };
+  // source: 'device' for the user's own location, 'place' for a geocoded city/ZIP.
+  const applyProximityResults = useCallback(async (latitude: number, longitude: number, source: SearchCenter['source'], radiusOverride?: string): Promise<boolean> => {
+    const center: SearchCenter = { lat: latitude, lng: longitude, source };
+    lastCoordsRef.current = center;
     const effectiveRadius = radiusOverride ?? radiusMiles;
     try {
       setIsLoading(true);
@@ -266,6 +281,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       if (!response.ok) throw new Error('Failed to fetch by location');
       const data = await response.json();
       setRestaurants(data);
+      setSearchCenter(center);
       // A typed name/ZIP search would fight the location search, so it is cleared. Cuisine,
       // price and feature filters (Zabihah, Fully Halal, No Alcohol) are kept, so a user who
       // tapped Zabihah and then Near Me sees Zabihah places nearby.
@@ -299,7 +315,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         return;
       }
       const { lat, lng } = await res.json();
-      await applyProximityResults(lat, lng);
+      await applyProximityResults(lat, lng, 'place');
     } catch {
       setLocationError('We could not search that location. Please try again.');
     } finally {
@@ -313,7 +329,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const handleRadiusChange = useCallback((value: string) => {
     setRadiusMiles(value);
     if (showingNearMe && lastCoordsRef.current) {
-      void applyProximityResults(lastCoordsRef.current.lat, lastCoordsRef.current.lng, value);
+      const last = lastCoordsRef.current;
+      void applyProximityResults(last.lat, last.lng, last.source, value);
     }
   }, [showingNearMe, applyProximityResults]);
 
@@ -340,7 +357,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       (position) => {
         clearSafety();
         const { latitude, longitude } = position.coords;
-        void applyProximityResults(latitude, longitude).then((ok) => {
+        void applyProximityResults(latitude, longitude, 'device').then((ok) => {
           if (ok && !auto) localStorage.setItem('halal-atl-location-allowed', '1');
           setLocationLoading(false);
         });
@@ -368,6 +385,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const handleClearNearMe = async () => {
     setLocationError(null);
     setShowingNearMe(false);
+    setSearchCenter(null);
+    lastCoordsRef.current = null;
     // Without Near Me there are no distances to sort by.
     setSortBy(prev => (prev === 'distance-asc' ? 'name-asc' : prev));
     setIsLoading(true);
@@ -383,6 +402,52 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       setIsLoading(false);
     }
   };
+
+  const clearAllFilters = () => {
+    setSelectedCuisine('all');
+    setSelectedPriceRange('all');
+    setSortBy(showingNearMe ? 'distance-asc' : 'name-asc');
+    setSelectedFeatures(NO_FEATURES);
+    handleSetSearchQuery('');
+  };
+
+  // Sort, cuisine, price and feature controls: shown inline on desktop and in the bottom sheet
+  // on phones.
+  const filterControls = (
+    <>
+      <QuickFilterChips
+        selectedCuisine={selectedCuisine}
+        selectedPriceRange={selectedPriceRange}
+        selectedFeatures={selectedFeatures}
+        onRemoveCuisine={() => setSelectedCuisine('all')}
+        onRemovePriceRange={() => setSelectedPriceRange('all')}
+        onRemoveFeature={handleFeatureChange}
+        formatCuisineName={formatCuisineName as (cuisine: string) => string}
+      />
+
+      <RestaurantFilterControls
+        sortBy={sortBy}
+        setSortBy={(value) => setSortBy(value as SortOption)}
+        showDistanceSort={showingNearMe}
+        selectedCuisine={selectedCuisine}
+        setSelectedCuisine={(value) => setSelectedCuisine(value as typeof selectedCuisine)}
+        selectedPriceRange={selectedPriceRange}
+        setSelectedPriceRange={(value) => setSelectedPriceRange(value as typeof selectedPriceRange)}
+        restaurants={restaurants}
+        formatCuisineName={formatCuisineName as (cuisine: string) => string}
+      />
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-2">
+          Features
+        </label>
+        <RestaurantFeatureFilters
+          selectedFeatures={selectedFeatures}
+          onFeatureChange={handleFeatureChange}
+        />
+      </div>
+    </>
+  );
 
   if (error) {
     return (
@@ -454,52 +519,15 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           setShowCityZip={setShowCityZip}
         />
 
-        {showFilters && (
+        {/* Desktop: filters expand inline. Phones: the same controls in a bottom sheet, opened
+            from the bottom bar. Only one is ever mounted, so "filters-panel" stays unique. */}
+        {showFilters && !isMobile && (
           <Card className="bg-stone-50/80 rounded-xl border border-stone-200 p-4 sm:p-5 mb-4 space-y-4" data-testid="filters-panel">
-            {/* Quick Filter Chips */}
-            <QuickFilterChips
-              selectedCuisine={selectedCuisine}
-              selectedPriceRange={selectedPriceRange}
-              selectedFeatures={selectedFeatures}
-              onRemoveCuisine={() => setSelectedCuisine('all')}
-              onRemovePriceRange={() => setSelectedPriceRange('all')}
-              onRemoveFeature={handleFeatureChange}
-              formatCuisineName={formatCuisineName as (cuisine: string) => string}
-            />
-
-            <RestaurantFilterControls
-              sortBy={sortBy}
-              setSortBy={(value) => setSortBy(value as SortOption)}
-              showDistanceSort={showingNearMe}
-              selectedCuisine={selectedCuisine}
-              setSelectedCuisine={(value) => setSelectedCuisine(value as typeof selectedCuisine)}
-              selectedPriceRange={selectedPriceRange}
-              setSelectedPriceRange={(value) => setSelectedPriceRange(value as typeof selectedPriceRange)}
-              restaurants={restaurants}
-              formatCuisineName={formatCuisineName as (cuisine: string) => string}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">
-                Features
-              </label>
-              <RestaurantFeatureFilters
-                selectedFeatures={selectedFeatures}
-                onFeatureChange={handleFeatureChange}
-              />
-            </div>
-
-            {/* Clear All Filters Button */}
+            {filterControls}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                setSelectedCuisine('all');
-                setSelectedPriceRange('all');
-                setSortBy(showingNearMe ? 'distance-asc' : 'name-asc');
-                setSelectedFeatures(NO_FEATURES);
-                handleSetSearchQuery('');
-              }}
+              onClick={clearAllFilters}
               data-testid="clear-filters-button"
             >
               Clear All Filters
@@ -533,7 +561,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         {/* Results count + Map/List toggle */}
         <div className="flex items-center justify-between gap-2 mt-3">
           <RestaurantResultsCount isLoading={isLoading} filteredCount={filteredCount} />
-          <div className="flex items-center gap-1 bg-stone-100 rounded-xl p-1 flex-shrink-0" role="group" aria-label="View toggle">
+          {/* Phones switch views from the bottom bar. */}
+          <div className="hidden sm:flex items-center gap-1 bg-stone-100 rounded-xl p-1 flex-shrink-0" role="group" aria-label="View toggle">
             <button
               onClick={() => setView('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
@@ -564,7 +593,12 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
 
       {/* Map View */}
       {view === 'map' && (
-        <RestaurantMapView restaurants={allFilteredRestaurants} />
+        <RestaurantMapView
+          restaurants={allFilteredRestaurants}
+          searchCenter={searchCenter}
+          onLocate={() => setShowLocationConfirmDialog(true)}
+          fullScreen={isMobile}
+        />
       )}
 
       {/* Restaurant List */}
@@ -680,6 +714,49 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           </div>
         )
       )}
+
+      {/* Phones: filters in a bottom sheet, opened from the bottom bar. */}
+      {isMobile && (
+        <BottomSheet
+          open={showFilters}
+          onClose={() => setShowFilters(false)}
+          title="Filters"
+          data-testid="filters-panel"
+          footer={
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={clearAllFilters}
+                className="flex-shrink-0 min-h-[48px]"
+                data-testid="clear-filters-button"
+              >
+                Clear all
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => setShowFilters(false)}
+                className="flex-1 min-h-[48px] font-semibold"
+                data-testid="filters-sheet-apply"
+              >
+                {isLoading ? 'Show results' : `Show ${filteredCount} result${filteredCount === 1 ? '' : 's'}`}
+              </Button>
+            </div>
+          }
+        >
+          <div className="space-y-4">{filterControls}</div>
+        </BottomSheet>
+      )}
+
+      <MobileBottomBar
+        view={view}
+        onToggleView={() => setView(v => (v === 'list' ? 'map' : 'list'))}
+        showingNearMe={showingNearMe}
+        locationLoading={locationLoading}
+        onNearMe={() => setShowLocationConfirmDialog(true)}
+        activeFilterCount={activeFilterCount()}
+        onOpenFilters={() => setShowFilters(true)}
+        onAddRestaurant={() => setAddRestaurantOpen(true)}
+      />
     </div>
   );
 } 

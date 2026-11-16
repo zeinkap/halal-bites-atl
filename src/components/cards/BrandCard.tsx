@@ -121,11 +121,15 @@ export default function BrandCard({
 
   return (
     <>
+      {/* Same grid as RestaurantCard: on phones a compact headline row (small thumbnail beside
+          the brand name and badges), the nearest location with its Directions button, and the
+          description/amenities only once "View all locations" is open. sm and up: image column
+          on the left, everything shown. */}
       <Card hoverable className="overflow-hidden" padding={false}>
-        <div className="flex flex-col sm:flex-row">
-          {/* Image panel */}
+        <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3 p-3 sm:grid-cols-[11rem_minmax(0,1fr)] sm:grid-rows-[auto_auto_1fr] sm:gap-x-0 sm:p-0">
+          {/* Image */}
           <div
-            className={`relative w-full h-44 sm:w-44 sm:h-auto sm:min-h-[220px] flex-shrink-0 border-b sm:border-b-0 sm:border-r border-stone-100 ${
+            className={`relative col-start-1 row-start-1 h-[4.5rem] w-[4.5rem] rounded-xl overflow-hidden sm:row-span-3 sm:h-auto sm:w-full sm:min-h-[220px] sm:rounded-none sm:border-r border-stone-100 ${
               isFallbackLogo
                 ? 'bg-gradient-to-br from-teal-50 via-stone-50 to-teal-100/60'
                 : 'bg-stone-100'
@@ -135,65 +139,73 @@ export default function BrandCard({
               src={isFallbackLogo ? '/images/logo.png' : (representative.imageUrl as string)}
               alt={brandName}
               fill
-              className={isFallbackLogo ? 'object-contain p-6 opacity-60' : 'object-cover'}
-              sizes="(max-width: 640px) 100vw, 176px"
+              className={isFallbackLogo ? 'object-contain p-2 sm:p-6 opacity-60' : 'object-cover'}
+              sizes="(max-width: 640px) 72px, 176px"
               quality={85}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/images/logo.png';
               }}
             />
-            {/* Multi-location badge */}
-            <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-white/90 backdrop-blur-sm border border-teal-200 px-2 py-0.5 rounded-full shadow-sm">
+            {/* Multi-location badge (sm and up; phones show it next to the name) */}
+            <span className="hidden sm:inline-flex absolute top-2.5 left-2.5 items-center gap-1 text-xs font-bold text-teal-700 bg-white/90 backdrop-blur-sm border border-teal-200 px-2 py-0.5 rounded-full shadow-sm">
               <BuildingStorefrontIcon className="h-3.5 w-3.5" />
               {locations.length} locations
             </span>
           </div>
 
-          {/* Content panel */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex-1 p-4 sm:p-5 space-y-2.5">
-              <h3 className="text-base sm:text-lg font-bold text-stone-900 leading-tight">
-                {brandName}
-              </h3>
+          {/* Headline */}
+          <div className="col-start-2 row-start-1 min-w-0 space-y-1.5 sm:space-y-2.5 sm:px-5 sm:pt-5">
+            <h3 className="text-[15px] sm:text-lg font-bold text-stone-900 leading-tight line-clamp-2 sm:line-clamp-none">
+              {brandName}
+            </h3>
+            <span className="sm:hidden inline-flex items-center gap-1 text-[11px] font-bold text-teal-700">
+              <BuildingStorefrontIcon className="h-3.5 w-3.5" />
+              {locations.length} locations
+            </span>
+            <RestaurantBadges restaurant={representative} />
+          </div>
 
-              <RestaurantBadges restaurant={representative} />
+          {/* Description + amenities: always on sm+, with the full location list on phones */}
+          <div
+            className={`${isExpanded ? 'block' : 'hidden'} sm:block col-span-2 row-start-2 mt-3 sm:mt-2.5 sm:col-span-1 sm:col-start-2 sm:px-5 space-y-2.5`}
+          >
+            <AmenityRow restaurant={representative} />
+            {representative.description && (
+              <p className="text-xs sm:text-sm text-stone-500 sm:line-clamp-2 leading-relaxed">
+                {representative.description}
+              </p>
+            )}
+          </div>
 
-              <AmenityRow restaurant={representative} />
-
-              {representative.description && (
-                <p className="text-xs sm:text-sm text-stone-500 line-clamp-2 leading-relaxed">
-                  {representative.description}
-                </p>
-              )}
-
-              {/* Locations */}
-              <div className="rounded-xl border border-stone-200 divide-y divide-stone-100 px-3">
-                {visibleLocations.map((loc) => (
-                  <LocationRow key={loc.id} location={loc} onComments={setCommentFor} />
-                ))}
-              </div>
-
-              {locations.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded((p) => !p)}
-                  className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-0 text-xs font-semibold text-teal-700 hover:text-teal-800 transition-colors"
-                >
-                  {isExpanded ? (
-                    <>
-                      Show less
-                      <ChevronUpIcon className="h-4 w-4" />
-                    </>
-                  ) : (
-                    <>
-                      View all {locations.length} locations
-                      {hiddenCount > 0 && <span className="text-stone-400">(+{hiddenCount})</span>}
-                      <ChevronDownIcon className="h-4 w-4" />
-                    </>
-                  )}
-                </button>
-              )}
+          {/* Locations (nearest first when Near Me is on) */}
+          <div className="col-span-2 row-start-3 mt-3 sm:mt-2.5 sm:col-span-1 sm:col-start-2 sm:px-5 sm:pb-5 space-y-1.5">
+            <div className="rounded-xl border border-stone-200 divide-y divide-stone-100 px-3">
+              {visibleLocations.map((loc) => (
+                <LocationRow key={loc.id} location={loc} onComments={setCommentFor} />
+              ))}
             </div>
+
+            {locations.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setIsExpanded((p) => !p)}
+                aria-expanded={isExpanded}
+                className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-0 text-xs font-semibold text-teal-700 hover:text-teal-800 transition-colors"
+              >
+                {isExpanded ? (
+                  <>
+                    Show less
+                    <ChevronUpIcon className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    View all {locations.length} locations
+                    {hiddenCount > 0 && <span className="text-stone-400">(+{hiddenCount})</span>}
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </Card>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ExclamationTriangleIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { HeartIcon } from '@heroicons/react/24/solid';
 import { useState, useEffect } from 'react';
@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import BugReportModal from '@/components/modals/BugReportModal/index';
 import DonationModal from '@/components/modals/DonationModal/index';
 import { toast } from 'react-hot-toast';
+import { useModalContext } from '@/components/ui/ModalContext';
 
 const AddRestaurantForm = dynamic(
   () => import('@/components/modals/AddRestaurantForm/index'),
@@ -25,7 +26,10 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
   const searchParams = useSearchParams();
   const [showBugReportModal, setShowBugReportModal] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
-  const [showAddRestaurantForm, setShowAddRestaurantForm] = useState(false);
+  // Shared with the mobile bottom bar, which also opens this form.
+  const { addRestaurantOpen: showAddRestaurantForm, setAddRestaurantOpen: setShowAddRestaurantForm } = useModalContext();
+  // On the home page, phones get the bottom bar (with its own Add button) instead of the FAB.
+  const isHome = usePathname() === '/';
 
   useEffect(() => {
     if (searchParams.get('donation') === 'success') {
@@ -131,10 +135,11 @@ export default function Navbar({ showBanner = false }: NavbarProps) {
         </div>
       </nav>
 
-      {/* Mobile FAB — fixed bottom-right, primary teal pill */}
+      {/* Mobile FAB — fixed bottom-right, primary teal pill. Hidden below sm on the home page,
+          where the bottom bar's Add button replaces it. */}
       <button
         onClick={() => setShowAddRestaurantForm(true)}
-        className="md:hidden fixed z-50 right-5 w-14 h-14 rounded-full bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white shadow-lg flex items-center justify-center transition-all duration-150 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+        className={`${isHome ? 'hidden sm:flex' : 'flex'} md:hidden fixed z-50 right-5 w-14 h-14 rounded-full bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white shadow-lg items-center justify-center transition-all duration-150 active:scale-[0.95] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2`}
         style={{ bottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))" }}
         data-testid="add-restaurant-floating-button"
         aria-label="Add a new restaurant"
