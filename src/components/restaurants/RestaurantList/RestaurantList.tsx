@@ -649,9 +649,10 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
                       brandName={entry.brandName}
                       representative={entry.representative}
                       locations={entry.locations}
+                      priority={idx === 0}
                     />
                   ) : (
-                    <RestaurantCard restaurant={entry.restaurant} />
+                    <RestaurantCard restaurant={entry.restaurant} priority={idx === 0} />
                   )}
                 </div>
               </div>
