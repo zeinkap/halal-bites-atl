@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { Card } from '../ui/Card';
 import RestaurantBadges, { AmenityRow, hasZabihaMeat, hasPartiallyHalalMeat } from './RestaurantBadges';
 import { formatDistanceMiles } from '@/utils/formatDistance';
+import DistanceBlock from './DistanceBlock';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -57,6 +58,18 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   const hasZabiha = hasZabihaMeat(localRestaurant);
   const hasPartiallyHalal = hasPartiallyHalalMeat(localRestaurant);
   const distanceLabel = formatDistanceMiles(localRestaurant.distance);
+
+  const ratingChip = localRestaurant.avgRating != null && (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full flex-shrink-0">
+      <StarIcon className="h-3 w-3 text-amber-400" />
+      {localRestaurant.avgRating.toFixed(1)}
+      {localRestaurant.commentCount > 0 && (
+        <span className="hidden sm:inline font-normal text-amber-600/80">
+          &nbsp;·&nbsp;{localRestaurant.commentCount}
+        </span>
+      )}
+    </span>
+  );
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${localRestaurant.name} ${localRestaurant.address}`
@@ -117,33 +130,19 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
               >
                 {localRestaurant.name}
               </h3>
-              {localRestaurant.avgRating != null && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full flex-shrink-0">
-                  <StarIcon className="h-3 w-3 text-amber-400" />
-                  {localRestaurant.avgRating.toFixed(1)}
-                  {localRestaurant.commentCount > 0 && (
-                    <span className="hidden sm:inline font-normal text-amber-600/80">
-                      &nbsp;·&nbsp;{localRestaurant.commentCount}
-                    </span>
-                  )}
-                </span>
+              {/* With Near Me on, distance + drive time take the top-right spot and the rating
+                  moves into the badge row; otherwise the rating stays here. */}
+              {distanceLabel ? (
+                <DistanceBlock
+                  distanceKm={localRestaurant.distance}
+                  testId={`restaurant-distance-${localRestaurant.id}`}
+                />
+              ) : (
+                ratingChip
               )}
             </div>
 
-            <RestaurantBadges
-              restaurant={localRestaurant}
-              leading={
-                distanceLabel && (
-                  <span
-                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full"
-                    data-testid={`restaurant-distance-${localRestaurant.id}`}
-                  >
-                    <MapPinIcon className="h-3 w-3 text-emerald-500" />
-                    {distanceLabel}
-                  </span>
-                )
-              }
-            />
+            <RestaurantBadges restaurant={localRestaurant} leading={distanceLabel ? ratingChip : null} />
           </div>
 
           {/* ── Details: always on sm+, behind "More" on phones ── */}

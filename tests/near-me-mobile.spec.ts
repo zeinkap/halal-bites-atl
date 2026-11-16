@@ -5,6 +5,7 @@ import { RestaurantListPage } from './pages/restaurant-list.page';
 const MIDTOWN_ATLANTA = { latitude: 33.749, longitude: -84.388 };
 const MI_TO_KM = 1.60934;
 const distanceBadge = '[data-testid^="restaurant-distance-"]';
+const driveTime = '[data-testid^="restaurant-drive-time-"]';
 
 // Mobile viewport so the Near-Me-first layout (sm:hidden) renders. Read-only: relies on the
 // seeded restaurants with lat/lng around Midtown Atlanta, so there is no data setup or cleanup.
@@ -25,14 +26,15 @@ test.describe('Near Me mobile home page', () => {
     // Permission is granted only now so the on-load auto Near Me does not run before this point.
     await context.grantPermissions(['geolocation']);
 
-    // Step 2: Tap Near Me and confirm -> results are filtered to within 5 miles
+    // Step 2: Tap Near Me (location already allowed, so no explainer) -> results within 5 miles
     const response5 = await nearMe.searchNearMe(5);
     expect(response5.ok()).toBeTruthy();
     await expect(nearMe.chip).toHaveText(/Within 5 mi/);
 
-    // Step 3: Nearby result cards show a distance badge ("X mi away")
+    // Step 3: Nearby result cards show a distance badge ("X mi") and an estimated drive time
     await expect(page.locator(distanceBadge).first()).toBeVisible();
-    await expect(page.locator(distanceBadge).first()).toHaveText(/mi away/);
+    await expect(page.locator(distanceBadge).first()).toHaveText(/^\s*\d+(\.\d)? mi\s*$/);
+    await expect(page.locator(driveTime).first()).toHaveText(/^~\d+ (min|hr)/);
 
     // Step 4: Changing the distance pill to 10 mi re-filters around the same location
     const response10Promise = page.waitForResponse((res) => {
@@ -129,5 +131,25 @@ test.describe('Near Me mobile home page', () => {
     expect(response.ok()).toBeTruthy();
     await expect(nearMe.chip).toHaveText(/Within all/);
     await expect(nearMe.featurePill('isZabiha')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('TC-NEARME-MOBILE-005: First-time visitors see the location explainer; returning visitors skip it', { tag: '@orchestrated' }, async ({ page, context }) => {
+    const list = new RestaurantListPage(page);
+    const nearMe = new NearMePage(page);
+
+    // Step 1: First visit (location never allowed) -> Near Me opens the "Use your location?" explainer
+    await list.goto();
+    await list.waitForResults();
+    await nearMe.nearMeButton.click();
+    await expect(nearMe.confirmUseButton).toBeVisible();
+    await page.locator('[data-testid="location-confirm-cancel"]').click();
+    await expect(nearMe.confirmDialog).toHaveCount(0);
+    await expect(nearMe.chip).toHaveCount(0);
+
+    // Step 2: Once location is allowed, Near Me goes straight to results with no explainer
+    await context.grantPermissions(['geolocation']);
+    const response = await nearMe.searchNearMe(5);
+    expect(response.ok()).toBeTruthy();
+    await expect(nearMe.chip).toHaveText(/Within 5 mi/);
   });
 });

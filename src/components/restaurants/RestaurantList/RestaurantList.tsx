@@ -381,6 +381,35 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
     );
   };
 
+  // Near Me entry point for the hero button, the bottom bar and the map's locate button.
+  // The "Use your location?" explainer only shows when the browser would actually prompt.
+  // Returning visitors who already allowed location go straight to results. Visitors who
+  // blocked it get the "allow location in settings" message (and the city/ZIP fallback)
+  // instead of an explainer whose button can't work.
+  const requestNearMe = async () => {
+    let state: PermissionState | null = null;
+    try {
+      if ('permissions' in navigator) {
+        state = (await navigator.permissions.query({ name: 'geolocation' })).state;
+      }
+    } catch {
+      // Browsers without a queryable geolocation permission fall back to the remembered flag.
+    }
+    let allowedBefore = state === 'granted';
+    if (state === null) {
+      try {
+        allowedBefore = localStorage.getItem('halal-atl-location-allowed') === '1';
+      } catch {
+        allowedBefore = false;
+      }
+    }
+    if (allowedBefore || state === 'denied') {
+      void handleLocationSearch(false);
+    } else {
+      setShowLocationConfirmDialog(true);
+    }
+  };
+
   // Helper to clear near me mode and fetch all restaurants
   const handleClearNearMe = async () => {
     setLocationError(null);
@@ -503,7 +532,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           setRadiusMiles={setRadiusMiles}
           onRadiusChange={handleRadiusChange}
           locationLoading={locationLoading}
-          handleLocationSearch={() => setShowLocationConfirmDialog(true)}
+          handleLocationSearch={() => void requestNearMe()}
           onLocationRetry={() => handleLocationSearch(false)}
           showingNearMe={showingNearMe}
           locationError={locationError}
@@ -596,7 +625,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         <RestaurantMapView
           restaurants={allFilteredRestaurants}
           searchCenter={searchCenter}
-          onLocate={() => setShowLocationConfirmDialog(true)}
+          onLocate={() => void requestNearMe()}
           fullScreen={isMobile}
         />
       )}
@@ -752,7 +781,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         onToggleView={() => setView(v => (v === 'list' ? 'map' : 'list'))}
         showingNearMe={showingNearMe}
         locationLoading={locationLoading}
-        onNearMe={() => setShowLocationConfirmDialog(true)}
+        onNearMe={() => void requestNearMe()}
         activeFilterCount={activeFilterCount()}
         onOpenFilters={() => setShowFilters(true)}
         onAddRestaurant={() => setAddRestaurantOpen(true)}

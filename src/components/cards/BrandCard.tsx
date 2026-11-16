@@ -14,7 +14,8 @@ import Image from 'next/image';
 import { Card } from '../ui/Card';
 import RestaurantBadges, { AmenityRow } from './RestaurantBadges';
 import { locationLabel } from '@/utils/groupRestaurants';
-import { formatDistanceMiles } from '@/utils/formatDistance';
+import { formatDistanceMiles, formatDriveTime, DRIVE_TIME_NOTE } from '@/utils/formatDistance';
+import DistanceBlock from './DistanceBlock';
 import CommentModal from '../modals/CommentModal/index';
 
 const mapsUrlFor = (r: Restaurant) =>
@@ -39,10 +40,15 @@ function LocationRow({
           </p>
           {formatDistanceMiles(location.distance) && (
             <span
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full"
+              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full"
               data-testid={`restaurant-distance-${location.id}`}
             >
               {formatDistanceMiles(location.distance)}
+            </span>
+          )}
+          {formatDriveTime(location.distance) && (
+            <span className="text-[11px] font-medium text-stone-500" title={DRIVE_TIME_NOTE}>
+              {formatDriveTime(location.distance)}
             </span>
           )}
         </div>
@@ -155,9 +161,14 @@ export default function BrandCard({
 
           {/* Headline */}
           <div className="col-start-2 row-start-1 min-w-0 space-y-1.5 sm:space-y-2.5 sm:px-5 sm:pt-5">
-            <h3 className="text-[15px] sm:text-lg font-bold text-stone-900 leading-tight line-clamp-2 sm:line-clamp-none">
-              {brandName}
-            </h3>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-[15px] sm:text-lg font-bold text-stone-900 leading-tight line-clamp-2 sm:line-clamp-none">
+                {brandName}
+              </h3>
+              {/* Nearest location (the representative) while Near Me is on. The test id stays on
+                  that location's own row below. */}
+              <DistanceBlock distanceKm={representative.distance} />
+            </div>
             <span className="sm:hidden inline-flex items-center gap-1 text-[11px] font-bold text-teal-700">
               <BuildingStorefrontIcon className="h-3.5 w-3.5" />
               {locations.length} locations
