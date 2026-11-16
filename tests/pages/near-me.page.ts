@@ -38,6 +38,24 @@ export class NearMePage {
     this.cityZipSearchButton = page.locator('[data-testid="city-zip-search-button"]:visible');
   }
 
+  /** An always-visible feature pill by its feature key ("isZabiha", "isFullyHalal", "servesAlcohol"). */
+  featurePill(key: 'isZabiha' | 'isFullyHalal' | 'servesAlcohol'): Locator {
+    return this.page.locator(`[data-testid="feature-pill-${key}"]`);
+  }
+
+  /**
+   * Distance in miles of each rendered result card, in list order. Reads each card's first
+   * "X mi away" badge (a brand card shows its nearest location first); a card without one is NaN.
+   */
+  async resultDistancesMiles(): Promise<number[]> {
+    return this.page.locator('[data-testid^="restaurant-list-item-"]').evaluateAll((cards) =>
+      cards.map((card) => {
+        const badge = card.querySelector('[data-testid^="restaurant-distance-"]');
+        return parseFloat(badge?.textContent ?? '');
+      }),
+    );
+  }
+
   /** A distance pill in the mobile Near-Me layout, by value ("3", "5", "10", "all"). */
   radiusOption(value: string): Locator {
     return this.page.locator(`[data-testid="radius-option-${value}"]:visible`);
@@ -58,10 +76,10 @@ export class NearMePage {
 
   /**
    * Clicks Near Me, confirms "Use my location" and returns the resulting /api/restaurants
-   * response for that radius in miles.
+   * response for that radius in miles ('all' = "Any", which sends no radius).
    */
-  async searchNearMe(radiusMiles: number): Promise<Response> {
-    const radiusKm = radiusMiles * 1.60934;
+  async searchNearMe(radiusMiles: number | 'all'): Promise<Response> {
+    const radiusKm = radiusMiles === 'all' ? null : radiusMiles * 1.60934;
     await this.nearMeButton.click();
     await expect(this.confirmUseButton).toBeVisible();
     const responsePromise = this.page.waitForResponse(
@@ -71,7 +89,7 @@ export class NearMePage {
         return (
           url.pathname === '/api/restaurants' &&
           url.searchParams.has('lat') &&
-          Math.abs(radius - radiusKm) < 0.05
+          (radiusKm === null ? !url.searchParams.has('radius') : Math.abs(radius - radiusKm) < 0.05)
         );
       },
       { timeout: RESULTS_TIMEOUT_MS },

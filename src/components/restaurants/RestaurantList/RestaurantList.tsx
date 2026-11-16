@@ -34,6 +34,18 @@ const RestaurantMapView = dynamic(() => import('../RestaurantMapView'), {
 
 const ITEMS_PER_PAGE = 10;
 
+type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'rating-desc' | 'comments-desc' | 'distance-asc';
+
+const NO_FEATURES = {
+  isZabiha: false,
+  hasPrayerRoom: false,
+  hasHighChair: false,
+  hasOutdoorSeating: false,
+  isFullyHalal: false,
+  servesAlcohol: false,
+  isPartiallyHalal: false,
+};
+
 interface RestaurantListProps {
   initialSearch?: string;
   aboveResults?: React.ReactNode;
@@ -52,7 +64,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCuisine, setSelectedCuisine] = useState<CuisineType | 'all'>('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'rating-desc' | 'comments-desc'>('name-asc');
+  const [sortBy, setSortBy] = useState<SortOption>('name-asc');
   const [view, setView] = useState<'list' | 'map'>('list');
   const [allFilteredRestaurants, setAllFilteredRestaurants] = useState<Restaurant[]>([]);
   const [page, setPage] = useState(1);
@@ -76,15 +88,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
     isFullyHalal: boolean;
     servesAlcohol: boolean;
     isPartiallyHalal: boolean;
-  }>({
-    isZabiha: false,
-    hasPrayerRoom: false,
-    hasHighChair: false,
-    hasOutdoorSeating: false,
-    isFullyHalal: false,
-    servesAlcohol: false,
-    isPartiallyHalal: false,
-  });
+  }>(NO_FEATURES);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [radiusMiles, setRadiusMiles] = useState<string>('5'); // Default to 5 miles
@@ -184,12 +188,16 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           return (b.avgRating ?? -1) - (a.avgRating ?? -1);
         case 'comments-desc':
           return b.commentCount - a.commentCount;
+        case 'distance-asc':
+          // Near Me results carry a distance; anything without one goes last.
+          return (a.distance ?? Infinity) - (b.distance ?? Infinity);
         default:
           return 0;
       }
     });
 
-    // Collapse multi-location brands into single cards (nearest/first represents).
+    // Collapse multi-location brands into single cards. Order is preserved, so with the
+    // distance sort a brand's nearest location represents it and places the card.
     const entries = groupRestaurants(filteredRestaurants);
 
     setFilteredCount(entries.length);
@@ -214,12 +222,13 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
     let count = 0;
     if (selectedCuisine !== 'all') count++;
     if (selectedPriceRange !== 'all') count++;
-    if (sortBy !== 'name-asc') count++;
+    // The default sort is name order, or nearest-first while Near Me is on.
+    if (sortBy !== (showingNearMe ? 'distance-asc' : 'name-asc')) count++;
     if (Object.values(selectedFeatures).some(v => v === true)) {
       count += Object.values(selectedFeatures).filter(v => v === true).length;
     }
     return count;
-  }, [selectedCuisine, selectedPriceRange, sortBy, selectedFeatures]);
+  }, [selectedCuisine, selectedPriceRange, sortBy, selectedFeatures, showingNearMe]);
 
   const handleFeatureChange = (feature: keyof typeof selectedFeatures) => {
     setSelectedFeatures(prev => ({
@@ -257,18 +266,13 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       if (!response.ok) throw new Error('Failed to fetch by location');
       const data = await response.json();
       setRestaurants(data);
+      // A typed name/ZIP search would fight the location search, so it is cleared. Cuisine,
+      // price and feature filters (Zabihah, Fully Halal, No Alcohol) are kept, so a user who
+      // tapped Zabihah and then Near Me sees Zabihah places nearby.
       handleSetSearchQuery('');
-      setSelectedCuisine('all');
-      setSelectedPriceRange('all');
-      setSelectedFeatures({
-        isZabiha: false,
-        hasPrayerRoom: false,
-        hasHighChair: false,
-        hasOutdoorSeating: false,
-        isFullyHalal: false,
-        servesAlcohol: false,
-        isPartiallyHalal: false,
-      });
+      // Entering Near Me sorts nearest-first; re-filtering by a new distance keeps the
+      // user's chosen sort.
+      if (!showingNearMe) setSortBy('distance-asc');
       setShowingNearMe(true);
       return true;
     } catch {
@@ -279,7 +283,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [radiusMiles]);
+  }, [radiusMiles, showingNearMe]);
 
   // Geocode a typed city or ZIP, then show restaurants near it (location-denied fallback).
   const handleCityZipSearch = useCallback(async () => {
@@ -364,6 +368,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const handleClearNearMe = async () => {
     setLocationError(null);
     setShowingNearMe(false);
+    // Without Near Me there are no distances to sort by.
+    setSortBy(prev => (prev === 'distance-asc' ? 'name-asc' : prev));
     setIsLoading(true);
     try {
       const response = await fetch('/api/restaurants');
@@ -404,17 +410,18 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
         iconContainerClassName="bg-teal-100"
         testIds={{ root: 'location-confirm-dialog', confirm: 'location-confirm-use', cancel: 'location-confirm-cancel' }}
       />
-      {/* Hero */}
-      <header className="text-center mb-8 sm:mb-10 px-2">
+      {/* Hero. Below sm it is a one-line title only, so the first result starts on screen;
+          the badge and subtitle show from sm up. */}
+      <header className="text-center mb-3 sm:mb-10 px-2">
         {/* Pill badge */}
-        <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200/80 text-teal-700 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-4 shadow-sm">
+        <div className="hidden sm:inline-flex items-center gap-1.5 bg-teal-50 border border-teal-200/80 text-teal-700 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-4 shadow-sm">
           🕌 <span>Atlanta&apos;s Halal Restaurant Guide</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 mb-3 leading-tight">
+        <h1 className="text-xl sm:text-4xl font-bold tracking-tight text-stone-900 sm:mb-3 leading-tight">
           Find Halal Food in{' '}
           <span className="text-teal-600">Atlanta</span>
         </h1>
-        <p className="text-stone-500 text-sm sm:text-base max-w-sm mx-auto leading-relaxed">
+        <p className="hidden sm:block text-stone-500 text-sm sm:text-base max-w-sm mx-auto leading-relaxed">
           {!isLoading && totalUniqueCount > 0
             ? `Explore ${totalUniqueCount} halal-verified restaurants & cafes across Metro Atlanta`
             : 'Discover halal-verified restaurants & cafes across Metro Atlanta'}
@@ -423,7 +430,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
 
       {aboveResults}
 
-      <div className="mb-8 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 shadow-soft z-10 ring-1 ring-teal-100/40" data-testid="restaurant-list-searchbar-section">
+      <div className="mb-4 sm:mb-8 rounded-2xl border border-stone-200 bg-white p-3 sm:p-5 shadow-soft z-10 ring-1 ring-teal-100/40" data-testid="restaurant-list-searchbar-section">
         <RestaurantSearchBar
           searchQuery={effectiveSearchQuery}
           setSearchQuery={handleSetSearchQuery}
@@ -462,7 +469,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
 
             <RestaurantFilterControls
               sortBy={sortBy}
-              setSortBy={(value) => setSortBy(value as typeof sortBy)}
+              setSortBy={(value) => setSortBy(value as SortOption)}
+              showDistanceSort={showingNearMe}
               selectedCuisine={selectedCuisine}
               setSelectedCuisine={(value) => setSelectedCuisine(value as typeof selectedCuisine)}
               selectedPriceRange={selectedPriceRange}
@@ -488,16 +496,8 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
               onClick={() => {
                 setSelectedCuisine('all');
                 setSelectedPriceRange('all');
-                setSortBy('name-asc');
-                setSelectedFeatures({
-                  isZabiha: false,
-                  hasPrayerRoom: false,
-                  hasHighChair: false,
-                  hasOutdoorSeating: false,
-                  isFullyHalal: false,
-                  servesAlcohol: false,
-                  isPartiallyHalal: false,
-                });
+                setSortBy(showingNearMe ? 'distance-asc' : 'name-asc');
+                setSelectedFeatures(NO_FEATURES);
                 handleSetSearchQuery('');
               }}
               data-testid="clear-filters-button"
@@ -523,6 +523,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
                 selectedFeatures[key] ? activeClass : inactiveClass
               }`}
               aria-pressed={selectedFeatures[key]}
+              data-testid={`feature-pill-${key}`}
             >
               {label}
             </button>
@@ -645,7 +646,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
               )}
               {Object.values(selectedFeatures).some(Boolean) && (
                 <button
-                  onClick={() => setSelectedFeatures({ isZabiha: false, hasPrayerRoom: false, hasHighChair: false, hasOutdoorSeating: false, isFullyHalal: false, servesAlcohol: false, isPartiallyHalal: false })}
+                  onClick={() => setSelectedFeatures(NO_FEATURES)}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-sm text-stone-700 hover:bg-stone-50 transition-colors"
                 >
                   ✕ Remove feature filters
