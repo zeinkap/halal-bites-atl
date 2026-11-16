@@ -56,6 +56,24 @@
   }
 }
 
+/* Mobile bottom bar (MobileBottomBar, home page below sm). Its height, excluding the home-indicator
+   inset, is shared with the page padding, the scroll-to-top button, toasts and the full-screen map. */
+:root {
+  --bottom-bar-h: 4rem;
+}
+@media (max-width: 639.98px) {
+  body:has([data-bottom-bar]) {
+    padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom, 0px));
+  }
+  body:has([data-bottom-bar]) .safe-bottom-scroll {
+    bottom: calc(var(--bottom-bar-h) + 1rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* react-hot-toast positions its container with an inline inset, hence !important. */
+  body:has([data-bottom-bar]) .toaster-above-bar {
+    bottom: calc(var(--bottom-bar-h) + 0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
 /* Scroll-to-top button: above FAB on mobile, standard inset on larger screens */
 .safe-bottom-scroll {
   bottom: calc(6rem + env(safe-area-inset-bottom, 0px));

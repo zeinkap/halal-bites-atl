@@ -24,6 +24,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {!isAdmin && <Footer />}
       <Toaster 
         position="bottom-center"
+        containerClassName="toaster-above-bar"
         toastOptions={{
           duration: 3000,
           style: {
