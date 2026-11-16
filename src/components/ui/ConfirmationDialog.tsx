@@ -1,6 +1,5 @@
 import React from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { ExclamationTriangleIcon } from './icons';
@@ -78,62 +77,50 @@ export function ConfirmationDialog({
     </Button>
   );
 
+  // No Headless UI transition on purpose. With a transition (legacy <Transition> wrapper or
+  // the v2 `transition` prop, on 2.2.2 through 2.2.10), closing the dialog in the same frame
+  // it opens leaves it mounted forever at opacity-0 (data-closed + data-enter), invisibly
+  // covering the page and swallowing every click. Without one, the dialog unmounts the moment
+  // `open` is false; the enter animation is plain CSS that plays on mount.
   return (
-    <Transition appear show={open} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-[60]"
-        onClose={onCancel}
-        data-testid={testIds.root || 'confirm-dialog'}
-      >
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" data-testid={testIds.backdrop || 'confirm-dialog-backdrop'} />
-        </Transition.Child>
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 sm:p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Card className="max-w-md w-full mx-4 transform transition-all shadow-2xl" data-testid={testIds.root || 'confirm-dialog'}>
-                <Card.Header className="p-4 sm:p-6">
-                  <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-4">
-                    <div className={`flex-shrink-0 w-14 h-14 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-sm ${iconContainerClassName}`}>
-                      {icon ?? <ExclamationTriangleIcon className="h-7 w-7 sm:h-6 sm:w-6 text-orange-600" />}
-                    </div>
-                    <div className="flex-1 text-center sm:text-left w-full">
-                      <Card.Title className="text-xl sm:text-lg font-bold text-gray-900 mb-2 sm:mb-0" data-testid={testIds.title || 'confirm-dialog-title'}>
-                        {title}
-                      </Card.Title>
-                      <Card.Description className="mt-2 sm:mt-2 text-sm sm:text-sm text-gray-600 leading-relaxed" data-testid={testIds.message || 'confirm-dialog-message'}>
-                        {message}
-                      </Card.Description>
-                      {children}
-                    </div>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      className="relative z-[60]"
+      data-testid={testIds.root || 'confirm-dialog'}
+    >
+      <DialogBackdrop
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-dialog-overlay-in motion-reduce:animate-none"
+        data-testid={testIds.backdrop || 'confirm-dialog-backdrop'}
+      />
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex min-h-full items-center justify-center p-4 sm:p-4 text-center">
+          <DialogPanel className="w-full max-w-md flex justify-center animate-dialog-panel-in motion-reduce:animate-none">
+            <Card className="max-w-md w-full mx-4 shadow-2xl" data-testid={testIds.root || 'confirm-dialog'}>
+              <Card.Header className="p-4 sm:p-6">
+                <div className="flex flex-col items-center sm:flex-row sm:items-start gap-4 sm:gap-4">
+                  <div className={`flex-shrink-0 w-14 h-14 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shadow-sm ${iconContainerClassName}`}>
+                    {icon ?? <ExclamationTriangleIcon className="h-7 w-7 sm:h-6 sm:w-6 text-orange-600" />}
                   </div>
-                  <div className="mt-6 sm:mt-4 flex flex-col-reverse sm:flex-row gap-3 sm:gap-3 sm:justify-end">
-                    {CancelButton}
-                    {ConfirmButton}
+                  <div className="flex-1 text-center sm:text-left w-full">
+                    <Card.Title className="text-xl sm:text-lg font-bold text-gray-900 mb-2 sm:mb-0" data-testid={testIds.title || 'confirm-dialog-title'}>
+                      {title}
+                    </Card.Title>
+                    <Card.Description className="mt-2 sm:mt-2 text-sm sm:text-sm text-gray-600 leading-relaxed" data-testid={testIds.message || 'confirm-dialog-message'}>
+                      {message}
+                    </Card.Description>
+                    {children}
                   </div>
-                </Card.Header>
-              </Card>
-            </Transition.Child>
-          </div>
+                </div>
+                <div className="mt-6 sm:mt-4 flex flex-col-reverse sm:flex-row gap-3 sm:gap-3 sm:justify-end">
+                  {CancelButton}
+                  {ConfirmButton}
+                </div>
+              </Card.Header>
+            </Card>
+          </DialogPanel>
         </div>
-      </Dialog>
-    </Transition>
+      </div>
+    </Dialog>
   );
 } 

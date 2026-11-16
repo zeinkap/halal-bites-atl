@@ -32,6 +32,18 @@ module.exports = {
         'soft-md': 'var(--shadow-md)',
         'soft-lg': 'var(--shadow-lg)',
       },
+      // Enter-only animations for ConfirmationDialog (it unmounts instantly on close).
+      keyframes: {
+        'dialog-overlay-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'dialog-panel-in': {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'dialog-overlay-in': 'dialog-overlay-in 300ms ease-out',
+        'dialog-panel-in': 'dialog-panel-in 300ms ease-out',
+      },
     },
   },
   plugins: [],
