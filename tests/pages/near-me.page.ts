@@ -12,20 +12,35 @@ export class NearMePage {
   readonly radiusSelect: Locator;
   readonly nearMeButton: Locator;
   readonly confirmUseButton: Locator;
+  /** The "Use your location?" dialog (both its root and its card carry this testid). */
+  readonly confirmDialog: Locator;
   readonly chip: Locator;
   readonly clearButton: Locator;
   readonly resultsCount: Locator;
   readonly loadingSpinner: Locator;
+  // Mobile Near-Me-first layout
+  readonly cityZipToggle: Locator;
+  readonly cityZipInput: Locator;
+  readonly cityZipSearchButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.radiusSelect = page.locator('[data-testid="radius-select"]:visible');
     this.nearMeButton = page.locator('[data-testid="location-search-button"]:visible');
     this.confirmUseButton = page.locator('[data-testid="location-confirm-use"]');
+    this.confirmDialog = page.locator('[data-testid="location-confirm-dialog"]');
     this.chip = page.locator('[data-testid="near-me-chip"]:visible');
     this.clearButton = page.locator('[data-testid="clear-near-me-button"]:visible');
     this.resultsCount = page.locator('[data-testid="restaurant-list-results-count"]');
     this.loadingSpinner = page.locator('[data-testid="restaurant-list-loading-spinner"]');
+    this.cityZipToggle = page.locator('[data-testid="city-zip-toggle"]:visible');
+    this.cityZipInput = page.locator('[data-testid="city-zip-input"]:visible');
+    this.cityZipSearchButton = page.locator('[data-testid="city-zip-search-button"]:visible');
+  }
+
+  /** A distance pill in the mobile Near-Me layout, by value ("3", "5", "10", "all"). */
+  radiusOption(value: string): Locator {
+    return this.page.locator(`[data-testid="radius-option-${value}"]:visible`);
   }
 
   /** Waits until loading finishes and returns the number shown in the results count. */
@@ -62,6 +77,9 @@ export class NearMePage {
       { timeout: RESULTS_TIMEOUT_MS },
     );
     await this.confirmUseButton.click();
+    // The dialog must be fully gone, not merely invisible: a stuck, transparent dialog
+    // covers the page and makes the next click time out with no obvious cause.
+    await expect(this.confirmDialog).toHaveCount(0);
     return responsePromise;
   }
 

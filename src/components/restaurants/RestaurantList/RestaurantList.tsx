@@ -90,6 +90,12 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
   const [radiusMiles, setRadiusMiles] = useState<string>('5'); // Default to 5 miles
   const [showingNearMe, setShowingNearMe] = useState(false);
   const [showLocationConfirmDialog, setShowLocationConfirmDialog] = useState(false);
+  // City/ZIP fallback (used when device location is denied/unavailable)
+  const [locationQuery, setLocationQuery] = useState('');
+  const [geocoding, setGeocoding] = useState(false);
+  const [showCityZip, setShowCityZip] = useState(false);
+  // Remember the last searched coordinates so changing the distance re-filters in place.
+  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
 
   const handleSetSearchQuery = (q: string) => {
     if (setSearchQuery) {
@@ -234,6 +240,79 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch + display restaurants near a given coordinate. Shared by the device-location
+  // ("Near Me") flow, the city/ZIP fallback, and the mobile distance re-filter.
+  // radiusOverride lets callers pass a just-chosen radius without waiting for state to settle.
+  const applyProximityResults = useCallback(async (latitude: number, longitude: number, radiusOverride?: string): Promise<boolean> => {
+    lastCoordsRef.current = { lat: latitude, lng: longitude };
+    const effectiveRadius = radiusOverride ?? radiusMiles;
+    try {
+      setIsLoading(true);
+      let url = `/api/restaurants?lat=${latitude}&lng=${longitude}`;
+      if (effectiveRadius !== 'all') {
+        const radiusKm = (parseFloat(effectiveRadius) * 1.60934).toFixed(2);
+        url += `&radius=${radiusKm}`;
+      }
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch by location');
+      const data = await response.json();
+      setRestaurants(data);
+      handleSetSearchQuery('');
+      setSelectedCuisine('all');
+      setSelectedPriceRange('all');
+      setSelectedFeatures({
+        isZabiha: false,
+        hasPrayerRoom: false,
+        hasHighChair: false,
+        hasOutdoorSeating: false,
+        isFullyHalal: false,
+        servesAlcohol: false,
+        isPartiallyHalal: false,
+      });
+      setShowingNearMe(true);
+      return true;
+    } catch {
+      setLocationError('Failed to fetch restaurants by location.');
+      setShowingNearMe(false);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [radiusMiles]);
+
+  // Geocode a typed city or ZIP, then show restaurants near it (location-denied fallback).
+  const handleCityZipSearch = useCallback(async () => {
+    const q = locationQuery.trim();
+    if (!q) return;
+    setLocationError(null);
+    setGeocoding(true);
+    try {
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({} as { error?: string }));
+        setLocationError(body.error || 'We could not find that location. Try a city or ZIP.');
+        return;
+      }
+      const { lat, lng } = await res.json();
+      await applyProximityResults(lat, lng);
+    } catch {
+      setLocationError('We could not search that location. Please try again.');
+    } finally {
+      setGeocoding(false);
+    }
+  }, [locationQuery, applyProximityResults]);
+
+  // Mobile distance pills: change the radius and, when already showing Near Me results,
+  // re-filter around the same coordinates immediately (no need to tap Near Me again).
+  // Desktop keeps the plain setRadiusMiles + tap flow.
+  const handleRadiusChange = useCallback((value: string) => {
+    setRadiusMiles(value);
+    if (showingNearMe && lastCoordsRef.current) {
+      void applyProximityResults(lastCoordsRef.current.lat, lastCoordsRef.current.lng, value);
+    }
+  }, [showingNearMe, applyProximityResults]);
+
   const handleLocationSearch = async (auto = false) => {
     if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by your browser.');
@@ -257,41 +336,10 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
       (position) => {
         clearSafety();
         const { latitude, longitude } = position.coords;
-        const doFetch = async () => {
-          try {
-            setIsLoading(true);
-            let url = `/api/restaurants?lat=${latitude}&lng=${longitude}`;
-            if (radiusMiles !== 'all') {
-              const radiusKm = (parseFloat(radiusMiles) * 1.60934).toFixed(2);
-              url += `&radius=${radiusKm}`;
-            }
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to fetch by location');
-            const data = await response.json();
-            setRestaurants(data);
-            handleSetSearchQuery('');
-            setSelectedCuisine('all');
-            setSelectedPriceRange('all');
-            setSelectedFeatures({
-              isZabiha: false,
-              hasPrayerRoom: false,
-              hasHighChair: false,
-              hasOutdoorSeating: false,
-              isFullyHalal: false,
-              servesAlcohol: false,
-              isPartiallyHalal: false,
-            });
-            setShowingNearMe(true);
-            if (!auto) localStorage.setItem('halal-atl-location-allowed', '1');
-          } catch {
-            setLocationError('Failed to fetch restaurants by location.');
-            setShowingNearMe(false);
-          } finally {
-            setIsLoading(false);
-            setLocationLoading(false);
-          }
-        };
-        void doFetch();
+        void applyProximityResults(latitude, longitude).then((ok) => {
+          if (ok && !auto) localStorage.setItem('halal-atl-location-allowed', '1');
+          setLocationLoading(false);
+        });
       },
       (err: GeolocationPositionError) => {
         clearSafety();
@@ -381,6 +429,7 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           setSearchQuery={handleSetSearchQuery}
           radiusMiles={radiusMiles}
           setRadiusMiles={setRadiusMiles}
+          onRadiusChange={handleRadiusChange}
           locationLoading={locationLoading}
           handleLocationSearch={() => setShowLocationConfirmDialog(true)}
           onLocationRetry={() => handleLocationSearch(false)}
@@ -390,6 +439,12 @@ export default function RestaurantList({ initialSearch = '', aboveResults, setSe
           showFilters={showFilters}
           setShowFilters={setShowFilters}
           activeFilterCount={activeFilterCount()}
+          locationQuery={locationQuery}
+          setLocationQuery={setLocationQuery}
+          handleCityZipSearch={handleCityZipSearch}
+          geocoding={geocoding}
+          showCityZip={showCityZip}
+          setShowCityZip={setShowCityZip}
         />
 
         {showFilters && (

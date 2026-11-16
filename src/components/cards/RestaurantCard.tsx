@@ -12,6 +12,7 @@ import ReportModal from '../modals/ReportModal';
 import Image from 'next/image';
 import { Card } from '../ui/Card';
 import RestaurantBadges, { AmenityRow, hasZabihaMeat, hasPartiallyHalalMeat } from './RestaurantBadges';
+import { formatDistanceMiles } from '@/utils/formatDistance';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -55,6 +56,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
   const hasZabiha = hasZabihaMeat(localRestaurant);
   const hasPartiallyHalal = hasPartiallyHalalMeat(localRestaurant);
+  const distanceLabel = formatDistanceMiles(localRestaurant.distance);
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${localRestaurant.name} ${localRestaurant.address}`
@@ -127,7 +129,7 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
 
               <RestaurantBadges restaurant={localRestaurant} />
 
-              {/* Address */}
+              {/* Address + distance */}
               <div className="flex items-start gap-1.5">
                 <MapPinIcon className="h-3.5 w-3.5 text-stone-400 flex-shrink-0 mt-0.5" />
                 <p
@@ -137,6 +139,15 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                   {localRestaurant.address}
                 </p>
               </div>
+              {distanceLabel && (
+                <span
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full"
+                  data-testid={`restaurant-distance-${localRestaurant.id}`}
+                >
+                  <MapPinIcon className="h-3 w-3 text-emerald-500" />
+                  {distanceLabel}
+                </span>
+              )}
 
               {/* Description */}
               {localRestaurant.description && (

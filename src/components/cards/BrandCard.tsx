@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { Card } from '../ui/Card';
 import RestaurantBadges, { AmenityRow } from './RestaurantBadges';
 import { locationLabel } from '@/utils/groupRestaurants';
+import { formatDistanceMiles } from '@/utils/formatDistance';
 import CommentModal from '../modals/CommentModal/index';
 
 const mapsUrlFor = (r: Restaurant) =>
@@ -32,9 +33,16 @@ function LocationRow({
     <div className="flex items-start gap-2 py-2.5">
       <MapPinIcon className="h-4 w-4 text-stone-400 flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-stone-800 leading-tight">
-          {locationLabel(location)}
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-stone-800 leading-tight">
+            {locationLabel(location)}
+          </p>
+          {formatDistanceMiles(location.distance) && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+              {formatDistanceMiles(location.distance)}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-stone-500 leading-relaxed">{location.address}</p>
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
           <a
