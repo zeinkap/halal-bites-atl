@@ -1,10 +1,26 @@
 name: Playwright tests
 
+# A pull request can only restore caches saved on its own branch or on the base branch (main).
+# Running on pushes to main is what fills the caches below for every later PR; without it each PR
+# starts with an empty cache.
 on:
   pull_request:
     paths:
       - 'tests/**'
       - 'src/**'
+      - 'prisma/**'
+      - 'next.config.mjs'
+      - 'playwright.config.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/playwright.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/**'
+      - 'src/**'
+      - 'prisma/**'
+      - 'next.config.mjs'
       - 'playwright.config.ts'
       - 'package.json'
       - 'package-lock.json'
@@ -25,10 +41,21 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
+        id: setup-node
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
+      # Cache node_modules itself and skip `npm ci` on a hit (a cached ~/.npm still runs the full
+      # install). Keyed on the exact Node version and lockfile, so any dependency change misses.
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('package-lock.json') }}
+      - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
+      # Always regenerate: the cached client may come from a different prisma/schema.prisma.
       - run: npx prisma generate
       # Cache the browser download (~150 MB) per Playwright version. The system libraries it needs are
       # apt packages, which are not cached, so they are installed on every run.
