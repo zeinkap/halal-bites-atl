@@ -7,6 +7,8 @@ interface RestaurantSearchBarProps {
   setSearchQuery: (value: string) => void;
   radiusMiles: string;
   setRadiusMiles: (value: string) => void;
+  /** Mobile distance pills: change radius and re-filter in place when already in Near Me mode. */
+  onRadiusChange?: (value: string) => void;
   locationLoading: boolean;
   handleLocationSearch: () => void;
   /** Optional: when provided, Retry button uses this instead of handleLocationSearch (e.g. to skip the location confirmation dialog). */
@@ -17,13 +19,28 @@ interface RestaurantSearchBarProps {
   showFilters: boolean;
   setShowFilters: (value: boolean) => void;
   activeFilterCount?: number;
+  /** City/ZIP fallback (mobile) — used when device location is denied/unavailable. */
+  locationQuery?: string;
+  setLocationQuery?: (value: string) => void;
+  handleCityZipSearch?: () => void;
+  geocoding?: boolean;
+  showCityZip?: boolean;
+  setShowCityZip?: (value: boolean) => void;
 }
+
+const RADIUS_OPTIONS = [
+  { value: '3', label: '3 mi' },
+  { value: '5', label: '5 mi' },
+  { value: '10', label: '10 mi' },
+  { value: 'all', label: 'Any' },
+] as const;
 
 const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
   searchQuery,
   setSearchQuery,
   radiusMiles,
   setRadiusMiles,
+  onRadiusChange,
   locationLoading,
   handleLocationSearch,
   onLocationRetry,
@@ -33,6 +50,12 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
   showFilters,
   setShowFilters,
   activeFilterCount = 0,
+  locationQuery = '',
+  setLocationQuery,
+  handleCityZipSearch,
+  geocoding = false,
+  showCityZip = false,
+  setShowCityZip,
 }) => (
   <>
     {/* Desktop: Search input row */}
@@ -153,10 +176,110 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
       </div>
     </div>
 
-    {/* Mobile */}
-    <div className="flex flex-col sm:hidden gap-4 mb-4">
-      <div className="flex-1 flex flex-col gap-3 items-center">
-        <div className="relative flex-grow min-w-0 w-full max-w-full">
+    {/* Mobile — Near-Me-first */}
+    <div className="flex flex-col sm:hidden gap-4 mb-4" data-testid="near-me-mobile">
+      {/* Primary action: find restaurants near me */}
+      <div className="rounded-2xl border border-teal-100 bg-gradient-to-b from-teal-50/90 to-white p-4 flex flex-col gap-3 shadow-sm">
+        <Button
+          variant="primary"
+          onClick={handleLocationSearch}
+          disabled={locationLoading}
+          className="w-full flex items-center justify-center gap-2 py-3.5 text-base font-semibold"
+          data-testid="location-search-button"
+        >
+          <MapPinIcon className="h-5 w-5" />
+          {locationLoading ? 'Finding you…' : 'Find halal food near me'}
+        </Button>
+
+        {/* Distance — segmented control, default 5 mi */}
+        <div>
+          <p className="text-xs font-medium text-stone-500 mb-1.5 text-center">Within</p>
+          <div className="grid grid-cols-4 gap-1.5" role="group" aria-label="Search distance">
+            {RADIUS_OPTIONS.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => (onRadiusChange ?? setRadiusMiles)(value)}
+                aria-pressed={radiusMiles === value}
+                data-testid={`radius-option-${value}`}
+                className={`py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                  radiusMiles === value
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                    : 'bg-white text-stone-600 border-stone-200 hover:border-teal-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Status: active Near Me chip, or error + retry */}
+        {showingNearMe && !locationError && (
+          <div className="flex items-center justify-center gap-2 text-xs">
+            <span className="text-emerald-700 font-semibold flex items-center gap-1" data-testid="near-me-chip">
+              <MapPinIcon className="h-4 w-4" />
+              Within {radiusMiles === 'all' ? 'all' : `${radiusMiles} mi`}
+            </span>
+            <Button variant="outline" size="sm" onClick={handleClearNearMe} className="px-2 py-1" aria-label="Clear Near Me" data-testid="clear-near-me-button">
+              <XMarkIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        {locationError && (
+          <div className="flex flex-col items-center gap-2 text-xs text-center">
+            <span className="text-red-600">{locationError}</span>
+            <Button variant="outline" size="sm" onClick={onLocationRetry ?? handleLocationSearch} disabled={locationLoading} className="px-2 py-1 text-xs">
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {/* City/ZIP fallback */}
+        <div className="pt-1">
+          <button
+            type="button"
+            onClick={() => setShowCityZip?.(!showCityZip)}
+            className="w-full text-xs font-medium text-teal-700 hover:text-teal-800 flex items-center justify-center gap-1"
+            data-testid="city-zip-toggle"
+            aria-expanded={showCityZip}
+          >
+            <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+            {showCityZip ? 'Hide city / ZIP search' : 'Not here? Search by city or ZIP'}
+          </button>
+          {showCityZip && (
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery?.(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCityZipSearch?.();
+                }}
+                placeholder="City or ZIP (e.g. 30303)"
+                className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-stone-900 placeholder-stone-400 text-sm"
+                data-testid="city-zip-input"
+                aria-label="Search by city or ZIP"
+                inputMode="text"
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleCityZipSearch?.()}
+                disabled={geocoding || !locationQuery.trim()}
+                className="px-4 flex-shrink-0"
+                data-testid="city-zip-search-button"
+              >
+                {geocoding ? '…' : 'Go'}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Secondary: search by name and filters */}
+      <div className="flex flex-col gap-3">
+        <div className="relative w-full">
           <input
             type="text"
             value={searchQuery}
@@ -186,77 +309,22 @@ const RestaurantSearchBar: React.FC<RestaurantSearchBarProps> = ({
             </button>
           )}
         </div>
-        <div className="w-full">
-          <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4 grid grid-cols-1 gap-3 w-full">
-            <div className="flex items-center gap-2 w-full">
-              <MapPinIcon className="h-5 w-5 text-teal-600 flex-shrink-0" />
-              <label htmlFor="radius-select-mobile" className="text-xs text-stone-600 flex-shrink-0">Distance:</label>
-              <select
-                id="radius-select-mobile"
-                value={radiusMiles}
-                onChange={(e) => setRadiusMiles(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-stone-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-teal-500/40 text-stone-800 flex-1 min-w-0"
-                data-testid="radius-select"
-              >
-                <option value="3">3 mi</option>
-                <option value="5">5 mi</option>
-                <option value="10">10 mi</option>
-                <option value="all">All</option>
-              </select>
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleLocationSearch}
-              disabled={locationLoading}
-              className="w-full flex items-center justify-center"
-              data-testid="location-search-button"
-            >
-              <MapPinIcon className="h-4 w-4 mr-1.5" />
-              {locationLoading ? 'Locating...' : 'Near Me'}
-            </Button>
-            {!showingNearMe && (
-              <p className="text-xs text-stone-500 text-center">Choose distance and tap Near Me.</p>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className="w-full flex items-center justify-center gap-2 relative"
-              data-testid="filters-button-mobile"
-              type="button"
-            >
-              <AdjustmentsHorizontalIcon className="h-5 w-5" />
-              <span>Filters</span>
-              {activeFilterCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
-                  {activeFilterCount}
-                </span>
-              )}
-            </Button>
-            <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-              {showingNearMe && !locationError && (
-                <>
-                  <span className="text-emerald-700 font-medium flex items-center gap-1" data-testid="near-me-chip">
-                    <MapPinIcon className="h-4 w-4" />
-                    Within {radiusMiles === 'all' ? 'all' : `${radiusMiles} mi`}
-                  </span>
-                  <Button variant="outline" size="sm" onClick={handleClearNearMe} className="px-2 py-1" aria-label="Clear Near Me" data-testid="clear-near-me-button">
-                    <XMarkIcon className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-              {locationError && (
-                <>
-                  <span className="text-red-600">{locationError}</span>
-                  <Button variant="outline" size="sm" onClick={onLocationRetry ?? handleLocationSearch} disabled={locationLoading} className="px-2 py-1 text-xs">
-                    Retry
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="w-full flex items-center justify-center gap-2 relative"
+          data-testid="filters-button-mobile"
+          type="button"
+        >
+          <AdjustmentsHorizontalIcon className="h-5 w-5" />
+          <span>Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
+              {activeFilterCount}
+            </span>
+          )}
+        </Button>
       </div>
     </div>
   </>

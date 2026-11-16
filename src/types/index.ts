@@ -32,4 +32,6 @@ export interface Restaurant {
   latitude?: number | null;
   longitude?: number | null;
   brandId?: string | null;
+  /** Distance in kilometers from the searched location; present only in proximity ("Near Me") results. */
+  distance?: number | null;
 } 

@@ -18,6 +18,10 @@ export class NearMePage {
   readonly clearButton: Locator;
   readonly resultsCount: Locator;
   readonly loadingSpinner: Locator;
+  // Mobile Near-Me-first layout
+  readonly cityZipToggle: Locator;
+  readonly cityZipInput: Locator;
+  readonly cityZipSearchButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -29,6 +33,14 @@ export class NearMePage {
     this.clearButton = page.locator('[data-testid="clear-near-me-button"]:visible');
     this.resultsCount = page.locator('[data-testid="restaurant-list-results-count"]');
     this.loadingSpinner = page.locator('[data-testid="restaurant-list-loading-spinner"]');
+    this.cityZipToggle = page.locator('[data-testid="city-zip-toggle"]:visible');
+    this.cityZipInput = page.locator('[data-testid="city-zip-input"]:visible');
+    this.cityZipSearchButton = page.locator('[data-testid="city-zip-search-button"]:visible');
+  }
+
+  /** A distance pill in the mobile Near-Me layout, by value ("3", "5", "10", "all"). */
+  radiusOption(value: string): Locator {
+    return this.page.locator(`[data-testid="radius-option-${value}"]:visible`);
   }
 
   /** Waits until loading finishes and returns the number shown in the results count. */
