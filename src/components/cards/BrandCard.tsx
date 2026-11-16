@@ -38,33 +38,43 @@ function LocationRow({
             {locationLabel(location)}
           </p>
           {formatDistanceMiles(location.distance) && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
+            <span
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full"
+              data-testid={`restaurant-distance-${location.id}`}
+            >
               {formatDistanceMiles(location.distance)}
             </span>
           )}
         </div>
         <p className="text-xs text-stone-500 leading-relaxed">{location.address}</p>
-        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+        {/* Mobile: icon-only Maps/Comments (44px tap targets) and a Directions button that
+            takes the remaining width, placed last. sm and up: the original labelled pills. */}
+        <div
+          className="flex items-center gap-1.5 mt-2"
+          data-testid={`restaurant-actions-${location.id}`}
+        >
           <a
             href={mapsUrlFor(location)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 border border-stone-200 px-2.5 py-1 rounded-full transition-colors"
+            aria-label="Open in Google Maps"
+            className="inline-flex flex-shrink-0 items-center justify-center gap-1 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 border border-stone-200 h-11 w-11 sm:h-auto sm:w-auto sm:px-2.5 sm:py-1 rounded-full transition-colors"
           >
-            <MapPinIcon className="h-3 w-3 text-stone-500" />
-            <span>Maps</span>
-            <ArrowTopRightOnSquareIcon className="h-3 w-3 text-stone-400" />
+            <MapPinIcon className="h-4 w-4 sm:h-3 sm:w-3 text-stone-500" />
+            <span className="hidden sm:inline">Maps</span>
+            <ArrowTopRightOnSquareIcon className="hidden sm:block h-3 w-3 text-stone-400" />
           </a>
           <a
             href={directionsUrlFor(location)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 px-2.5 py-1 rounded-full transition-colors"
+            className="order-last sm:order-none inline-flex flex-1 min-w-0 sm:flex-none items-center justify-center gap-1 text-sm sm:text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 h-11 px-3 sm:h-auto sm:px-2.5 sm:py-1 rounded-full transition-colors"
+            data-testid={`restaurant-directions-${location.id}`}
           >
             <span>Directions</span>
-            <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white/80" />
+            <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-white/80 flex-shrink-0" />
           </a>
           <button
             type="button"
@@ -72,10 +82,11 @@ function LocationRow({
               e.stopPropagation();
               onComments(location);
             }}
-            className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-full transition-colors"
+            aria-label={location.commentCount > 0 ? `Comments (${location.commentCount})` : 'Comments'}
+            className="inline-flex flex-shrink-0 items-center justify-center gap-1 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 h-11 min-w-[44px] px-2 sm:h-auto sm:min-w-0 sm:px-2.5 sm:py-1 rounded-full transition-colors"
           >
-            <ChatBubbleLeftIcon className="h-3 w-3" />
-            <span>Comments</span>
+            <ChatBubbleLeftIcon className="h-4 w-4 sm:h-3 sm:w-3" />
+            <span className="hidden sm:inline">Comments</span>
             {location.commentCount > 0 && (
               <span className="bg-teal-600 text-white font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px] text-[10px]">
                 {location.commentCount}
@@ -166,7 +177,7 @@ export default function BrandCard({
                 <button
                   type="button"
                   onClick={() => setIsExpanded((p) => !p)}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 hover:text-teal-800 transition-colors"
+                  className="inline-flex items-center gap-1 min-h-[44px] sm:min-h-0 text-xs font-semibold text-teal-700 hover:text-teal-800 transition-colors"
                 >
                   {isExpanded ? (
                     <>

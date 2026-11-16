@@ -10,6 +10,8 @@ interface RestaurantFilterControlsProps {
   setSelectedPriceRange: (value: string) => void;
   restaurants: Restaurant[];
   formatCuisineName: (cuisine: string) => string;
+  /** Offer the "Nearest" sort; only meaningful while Near Me results (with distances) are shown. */
+  showDistanceSort?: boolean;
 }
 
 const RestaurantFilterControls: React.FC<RestaurantFilterControlsProps> = ({
@@ -21,6 +23,7 @@ const RestaurantFilterControls: React.FC<RestaurantFilterControlsProps> = ({
   setSelectedPriceRange,
   restaurants,
   formatCuisineName,
+  showDistanceSort = false,
 }) => {
   const inputClass =
     'w-full px-3 py-2 border border-stone-200 rounded-xl bg-white text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500';
@@ -31,6 +34,7 @@ const RestaurantFilterControls: React.FC<RestaurantFilterControlsProps> = ({
       <div>
         <label htmlFor="sort" className={labelClass}>Sort by</label>
         <select id="sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)} className={inputClass} data-testid="sort-select">
+          {showDistanceSort && <option value="distance-asc">📍 Nearest</option>}
           <option value="name-asc">Name: A → Z</option>
           <option value="name-desc">Name: Z → A</option>
           <option value="price-asc">Price: Low to High</option>

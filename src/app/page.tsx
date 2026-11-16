@@ -22,7 +22,7 @@ function SearchWrapper() {
 export default function Home() {
   return (
     <main className="min-h-dvh">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 sm:pt-10 sm:pb-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-16 sm:pt-10 sm:pb-20">
         <Suspense fallback={
           <div className="text-center pt-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-stone-200 border-t-teal-500" />

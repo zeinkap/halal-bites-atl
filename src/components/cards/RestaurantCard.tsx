@@ -234,7 +234,13 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
             </div>
 
             {/* ── Action bar ──────────────────────────────── */}
-            <div className="border-t border-stone-100 px-4 sm:px-5 py-2.5 flex items-center gap-2">
+            {/* Mobile: icon-only Comments/Report/Maps (44px tap targets) and a Directions button
+                that takes the remaining width, so it always fits (down to 320px wide).
+                sm and up: the original labelled pills, with Maps + Directions pushed right. */}
+            <div
+              className="border-t border-stone-100 px-3 sm:px-5 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2"
+              data-testid={`restaurant-actions-${localRestaurant.id}`}
+            >
               {/* Comment pill */}
               <button
                 type="button"
@@ -242,10 +248,11 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                   e.stopPropagation();
                   setIsCommentModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-3 py-1.5 rounded-full transition-colors"
+                aria-label={localRestaurant.commentCount > 0 ? `Comments (${localRestaurant.commentCount})` : 'Comments'}
+                className="inline-flex flex-shrink-0 items-center justify-center gap-1.5 text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 h-11 min-w-[44px] px-2 sm:h-auto sm:min-w-0 sm:px-3 sm:py-1.5 rounded-full transition-colors"
               >
-                <ChatBubbleLeftIcon className="h-3.5 w-3.5" />
-                <span>Comments</span>
+                <ChatBubbleLeftIcon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                <span className="hidden sm:inline">Comments</span>
                 {localRestaurant.commentCount > 0 && (
                   <span className="bg-teal-600 text-white font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px] text-[10px]">
                     {localRestaurant.commentCount}
@@ -260,41 +267,42 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                   e.stopPropagation();
                   setIsReportModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1 text-xs font-medium text-stone-400 hover:text-stone-600 hover:bg-stone-100 px-2.5 py-1.5 rounded-full transition-colors"
+                aria-label="Report"
+                className="inline-flex flex-shrink-0 items-center justify-center gap-1 text-xs font-medium text-stone-400 hover:text-stone-600 hover:bg-stone-100 h-11 w-11 sm:h-auto sm:w-auto sm:px-2.5 sm:py-1.5 rounded-full transition-colors"
               >
-                <FlagIcon className="h-3.5 w-3.5" />
+                <FlagIcon className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden sm:inline">Report</span>
               </button>
 
-              {/* Spacer + map controls */}
-              <div className="ml-auto flex items-center gap-2">
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 border border-stone-200 px-3 py-1.5 rounded-full transition-colors"
-                >
-                  <MapPinIcon className="h-3.5 w-3.5 text-stone-500" />
-                  <span>Maps</span>
-                  <ArrowTopRightOnSquareIcon className="h-3 w-3 text-stone-400" />
-                </a>
-                <a
-                  href={directionsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 px-3 py-1.5 rounded-full transition-colors"
-                >
-                  <span>Directions</span>
-                  <ArrowTopRightOnSquareIcon className="h-3 w-3 text-white/80" />
-                </a>
-                {isExpanded ? (
-                  <ChevronUpIcon className="h-4 w-4 text-stone-400 ml-0.5 flex-shrink-0" />
-                ) : (
-                  <ChevronDownIcon className="h-4 w-4 text-stone-400 ml-0.5 flex-shrink-0" />
-                )}
-              </div>
+              {/* Map controls (pushed right from sm up) */}
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Open in Google Maps"
+                className="inline-flex flex-shrink-0 items-center justify-center gap-1 sm:ml-auto text-xs font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 border border-stone-200 h-11 w-11 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 rounded-full transition-colors"
+              >
+                <MapPinIcon className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-stone-500" />
+                <span className="hidden sm:inline">Maps</span>
+                <ArrowTopRightOnSquareIcon className="hidden sm:block h-3 w-3 text-stone-400" />
+              </a>
+              <a
+                href={directionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex flex-1 min-w-0 sm:flex-none items-center justify-center gap-1 text-sm sm:text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 h-11 px-3 sm:h-auto sm:py-1.5 rounded-full transition-colors"
+                data-testid={`restaurant-directions-${localRestaurant.id}`}
+              >
+                <span>Directions</span>
+                <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5 sm:h-3 sm:w-3 text-white/80 flex-shrink-0" />
+              </a>
+              {isExpanded ? (
+                <ChevronUpIcon className="h-4 w-4 text-stone-400 sm:ml-0.5 flex-shrink-0" />
+              ) : (
+                <ChevronDownIcon className="h-4 w-4 text-stone-400 sm:ml-0.5 flex-shrink-0" />
+              )}
             </div>
           </div>
         </div>

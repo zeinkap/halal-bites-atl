@@ -83,4 +83,51 @@ test.describe('Near Me mobile home page', () => {
     await expect(nearMe.chip).toHaveText(/Within 5 mi/);
     await expect(page.locator(distanceBadge).first()).toBeVisible();
   });
+
+  test('TC-NEARME-MOBILE-003: Near Me results are sorted nearest first', { tag: '@orchestrated' }, async ({ page, context }) => {
+    const list = new RestaurantListPage(page);
+    const nearMe = new NearMePage(page);
+
+    // Step 1: Open the home page and choose "Any" distance (widest set, most cards to compare)
+    await list.goto();
+    await list.waitForResults();
+    await nearMe.radiusOption('all').click();
+    await expect(nearMe.radiusOption('all')).toHaveAttribute('aria-pressed', 'true');
+    await context.grantPermissions(['geolocation']);
+
+    // Step 2: Run Near Me
+    const response = await nearMe.searchNearMe('all');
+    expect(response.ok()).toBeTruthy();
+    await expect(nearMe.chip).toHaveText(/Within all/);
+    await expect(page.locator(distanceBadge).first()).toBeVisible();
+
+    // Step 3: Every card shows a distance and the cards are in ascending distance order
+    const distances = await nearMe.resultDistancesMiles();
+    expect(distances.length).toBeGreaterThan(1);
+    expect(distances.every((d) => Number.isFinite(d))).toBe(true);
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
+
+    // Step 4: The sort control offers and shows "Nearest"
+    await list.openFilters();
+    await expect(page.locator('[data-testid="sort-select"]')).toHaveValue('distance-asc');
+  });
+
+  test('TC-NEARME-MOBILE-004: Near Me keeps a feature filter chosen beforehand', { tag: '@orchestrated' }, async ({ page, context }) => {
+    const list = new RestaurantListPage(page);
+    const nearMe = new NearMePage(page);
+
+    // Step 1: Open the home page and tap the Zabihah pill
+    await list.goto();
+    await list.waitForResults();
+    await nearMe.featurePill('isZabiha').click();
+    await expect(nearMe.featurePill('isZabiha')).toHaveAttribute('aria-pressed', 'true');
+    await context.grantPermissions(['geolocation']);
+
+    // Step 2: Run Near Me (Any distance) -> the Zabihah filter is still on
+    await nearMe.radiusOption('all').click();
+    const response = await nearMe.searchNearMe('all');
+    expect(response.ok()).toBeTruthy();
+    await expect(nearMe.chip).toHaveText(/Within all/);
+    await expect(nearMe.featurePill('isZabiha')).toHaveAttribute('aria-pressed', 'true');
+  });
 });
